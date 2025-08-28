@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-header">
+        <h1><i class="fas fa-user"></i> My Profile</h1>
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="user-details">
+                <h2>{{ current_user.username }}</h2>
+                <p><i class="fas fa-envelope"></i> {{ current_user.email }}</p>
+                <span class="user-role">{{ current_user.role.title() }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="profile-tabs">
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('bookings')">
+                <i class="fas fa-ticket-alt"></i> My Bookings
+            </button>
+            <button class="tab-button" onclick="showTab('payments')">
+                <i class="fas fa-credit-card"></i> Payment History
+            </button>
+        </div>
+        
+        <div id="bookings" class="tab-content active">
+            <h3>Booking History</h3>
+            
+            {% if bookings %}
+                <div class="bookings-list">
+                    {% for booking in bookings %}
+                        <div class="booking-card">
+                            <div class="booking-header">
+                                <div class="pnr-info">
+                                    <strong>PNR: {{ booking.pnr }}</strong>
+                                    <span class="booking-status status-{{ booking.status }}">
+                                        {{ booking.status.replace('_', ' ').title() }}
+                                    </span>
+                                </div>
+                                <div class="booking-date">
+                                    {{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}
+                                </div>
+                            </div>
+                            
+                            <div class="booking-details">
+                                <div class="journey-info">
+                                    <div class="train-details">
+                                        <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                                    </div>
+                                    <div class="route-info">
+                                        <span class="station">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {{ booking.from_station.name }}
+                                        </span>
+                                        <i class="fas fa-arrow-right"></i>
+                                        <span class="station">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {{ booking.to_station.name }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="booking-info">
+                                    <div class="info-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>Passengers: {{ booking.passengers }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <i class="fas fa-rupee-sign"></i>
+                                        <span>Amount: ₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-actions">
+                                {% if booking.status in ['confirmed', 'waitlisted'] %}
+                                    <a href="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                {% endif %}
+                                
+                                {% if booking.status == 'pending_payment' %}
+                                    <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-credit-card"></i> Pay Now
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-ticket-alt"></i>
+                    <h3>No bookings yet</h3>
+                    <p>Start your journey by booking your first ticket!</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search Trains
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div id="payments" class="tab-content">
+            <h3>Payment History</h3>
+            
+            {% if payments %}
+                <div class="payments-list">
+                    {% for payment in payments %}
+                        <div class="payment-card">
+                            <div class="payment-header">
+                                <div class="transaction-info">
+                                    <strong>Transaction ID: {{ payment.transaction_id or 'N/A' }}</strong>
+                                    <span class="payment-status status-{{ payment.status }}">
+                                        {{ payment.status.title() }}
+                                    </span>
+                                </div>
+                                <div class="payment-amount">
+                                    ₹{{ "%.2f"|format(payment.amount) }}
+                                </div>
+                            </div>
+                            
+                            <div class="payment-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Payment Method: {{ payment.payment_method.title() }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>Date: {{ payment.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                </div>
+                                {% if payment.booking %}
+                                    <div class="detail-item">
+                                        <i class="fas fa-ticket-alt"></i>
+                                        <span>PNR: {{ payment.booking.pnr }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>No payment history</h3>
+                    <p>Your payment transactions will appear here.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showTab(tabName) {
+        // Hide all tabs
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        // Remove active class from all buttons
+        const buttons = document.querySelectorAll('.tab-button');
+        buttons.forEach(button => button.classList.remove('active'));
+        
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+        
+        // Add active class to clicked button
+        event.target.classList.add('active');
+    }
+</script>
+{% endblock %}

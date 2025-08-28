@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Trains - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-train"></i> Manage Trains</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-plus"></i> Add New Train</h3>
+        
+        <form method="POST" action="{{ url_for('admin.add_train') }}" class="admin-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="number">Train Number</label>
+                    <input type="text" id="number" name="number" required>
+                </div>
+                <div class="form-group">
+                    <label for="name">Train Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="total_seats">Total Seats</label>
+                    <input type="number" id="total_seats" name="total_seats" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="fare_per_km">Fare per KM (₹)</label>
+                    <input type="number" id="fare_per_km" name="fare_per_km" step="0.01" min="0" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Train
+            </button>
+        </form>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-list"></i> All Trains</h3>
+        
+        {% if trains %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Total Seats</th>
+                            <th>Available Seats</th>
+                            <th>Fare/KM</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for train in trains %}
+                            <tr>
+                                <td><strong>{{ train.number }}</strong></td>
+                                <td>{{ train.name }}</td>
+                                <td>{{ train.total_seats }}</td>
+                                <td>
+                                    <span class="seat-count {% if train.available_seats > 50 %}high{% elif train.available_seats > 20 %}medium{% else %}low{% endif %}">
+                                        {{ train.available_seats }}
+                                    </span>
+                                </td>
+                                <td>₹{{ "%.2f"|format(train.fare_per_km) }}</td>
+                                <td>
+                                    <span class="status-badge {% if train.active %}status-active{% else %}status-inactive{% endif %}">
+                                        {{ 'Active' if train.active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td class="actions">
+                                    <a href="{{ url_for('admin.toggle_train', train_id=train.id) }}" 
+                                       class="btn btn-sm {% if train.active %}btn-warning{% else %}btn-success{% endif %}"
+                                       onclick="return confirm('Are you sure?')">
+                                        {% if train.active %}
+                                            <i class="fas fa-pause"></i> Deactivate
+                                        {% else %}
+                                            <i class="fas fa-play"></i> Activate
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-train"></i>
+                <h3>No trains found</h3>
+                <p>Add your first train using the form above.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

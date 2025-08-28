@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+        <p>Welcome, {{ current_user.username }}! Here's your system overview.</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_users }}</h3>
+                <p>Total Users</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-train"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_trains }}</h3>
+                <p>Active Trains</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_bookings }}</h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>₹{{ "%.2f"|format(total_revenue) }}</h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="admin-grid">
+        <div class="admin-card">
+            <h3><i class="fas fa-chart-pie"></i> Booking Statistics</h3>
+            <div class="booking-stats">
+                {% for status, count in booking_stats %}
+                    <div class="stat-item">
+                        <span class="status-badge status-{{ status }}">{{ status.replace('_', ' ').title() }}</span>
+                        <span class="stat-count">{{ count }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="admin-card">
+            <h3><i class="fas fa-clock"></i> Recent Bookings</h3>
+            <div class="recent-bookings">
+                {% if recent_bookings %}
+                    {% for booking in recent_bookings %}
+                        <div class="booking-item">
+                            <div class="booking-info">
+                                <strong>{{ booking.pnr }}</strong>
+                                <small>{{ booking.user.username }}</small>
+                            </div>
+                            <div class="booking-details">
+                                <span>{{ booking.train.number }}</span>
+                                <span class="status-badge status-{{ booking.status }}">
+                                    {{ booking.status.replace('_', ' ').title() }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No recent bookings</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="quick-actions">
+        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+        <div class="actions-grid">
+            <a href="{{ url_for('admin.trains') }}" class="action-card">
+                <i class="fas fa-train"></i>
+                <h4>Manage Trains</h4>
+                <p>Add, edit, or remove trains</p>
+            </a>
+            
+            <a href="{{ url_for('admin.stations') }}" class="action-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h4>Manage Stations</h4>
+                <p>Add or update railway stations</p>
+            </a>
+            
+            {% if current_user.is_super_admin() %}
+                <a href="{{ url_for('admin.users') }}" class="action-card">
+                    <i class="fas fa-users-cog"></i>
+                    <h4>Manage Users</h4>
+                    <p>User management and permissions</p>
+                </a>
+            {% endif %}
+            
+            <a href="{{ url_for('admin.analytics') }}" class="action-card">
+                <i class="fas fa-chart-line"></i>
+                <h4>Analytics</h4>
+                <p>View detailed reports and trends</p>
+            </a>
+            
+            <a href="{{ url_for('admin.export_bookings') }}" class="action-card">
+                <i class="fas fa-download"></i>
+                <h4>Export Data</h4>
+                <p>Download booking reports</p>
+            </a>
+            
+            <a href="{{ url_for('index') }}" class="action-card">
+                <i class="fas fa-eye"></i>
+                <h4>View Site</h4>
+                <p>See the public website</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

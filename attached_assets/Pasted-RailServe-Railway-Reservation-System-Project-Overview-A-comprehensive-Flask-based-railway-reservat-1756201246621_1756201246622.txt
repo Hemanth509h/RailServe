@@ -1,0 +1,45 @@
+RailServe - Railway Reservation System
+Project Overview
+A comprehensive Flask-based railway reservation system with custom authentication, secure payments, and dedicated admin panel.
+Features
+⦁	Custom user registration and login system
+⦁	Three-level access (User, Admin, Super Admin)
+⦁	Database storage for up to 150 trains with corresponding stations
+⦁	Unique PNR number generation for every booking
+⦁	Booking status management (Confirmed, Waitlisted, Cancelled, Pending Payment)
+⦁	Secure payment interface for online transactions
+⦁	Automatic seat availability and waitlist updates after booking/cancellation
+⦁	PNR enquiry module for checking booking details and status
+⦁	Admin CRUD operations for trains and stations
+⦁	Dropdown lists for From/To station selection
+⦁	Running train list on homepage with booking options
+⦁	Queue-based waitlist management system
+⦁	Graph-based train route modeling
+⦁	Passenger profile with booking history and payments view
+⦁	Separate admin panel for managing trains, schedules, and user queries
+⦁	Admin analytics dashboard with visual reports
+⦁	User management system with ability to block suspicious users
+⦁	Station management for adding/updating stations
+⦁	Report generation for CSV/Excel downloads
+Technology Stack
+⦁	Backend: Flask, SQLAlchemy
+⦁	Frontend: HTML, CSS, JavaScript (no Bootstrap)
+⦁	Database: PostgreSQL
+⦁	Queue System: Python queue for waitlist management
+⦁	Graph Modeling: Custom graph implementation for train routes
+Project Architecture
+⦁	Models: User, Train, Station, Booking, Payment, Route
+⦁	Authentication: Custom Flask-Login implementation
+⦁	Authorization: Role-based access control (User, Admin, Super Admin)
+⦁	Queue System: FIFO queue for waitlist management
+⦁	Graph System: Adjacency list for train route modeling
+User Preferences
+⦁	No Bootstrap framework usage
+⦁	Custom HTML/CSS/JS for frontend
+⦁	Queue-based waitlist management
+⦁	Graph-based route modeling
+⦁	Comprehensive documentation with mind maps
+Recent Changes
+⦁	Project initialization (August 26, 2025)
+⦁	Setting up Flask application structure
+⦁	Creating database models and relationships

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Stations - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-map-marker-alt"></i> Manage Stations</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-plus"></i> Add New Station</h3>
+        
+        <form method="POST" action="{{ url_for('admin.add_station') }}" class="admin-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Station Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="code">Station Code</label>
+                    <input type="text" id="code" name="code" maxlength="10" style="text-transform: uppercase;" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" name="state" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Station
+            </button>
+        </form>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-list"></i> All Stations</h3>
+        
+        {% if stations %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Station Code</th>
+                            <th>Station Name</th>
+                            <th>City</th>
+                            <th>State</th>
+                            <th>Status</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for station in stations %}
+                            <tr>
+                                <td><strong>{{ station.code }}</strong></td>
+                                <td>{{ station.name }}</td>
+                                <td>{{ station.city }}</td>
+                                <td>{{ station.state }}</td>
+                                <td>
+                                    <span class="status-badge {% if station.active %}status-active{% else %}status-inactive{% endif %}">
+                                        {{ 'Active' if station.active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>{{ station.created_at.strftime('%d %b %Y') }}</td>
+                                <td class="actions">
+                                    <a href="{{ url_for('admin.toggle_station', station_id=station.id) }}" 
+                                       class="btn btn-sm {% if station.active %}btn-warning{% else %}btn-success{% endif %}"
+                                       onclick="return confirm('Are you sure?')">
+                                        {% if station.active %}
+                                            <i class="fas fa-pause"></i> Deactivate
+                                        {% else %}
+                                            <i class="fas fa-play"></i> Activate
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>No stations found</h3>
+                <p>Add your first railway station using the form above.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-uppercase station code
+    document.getElementById('code').addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+</script>
+{% endblock %}

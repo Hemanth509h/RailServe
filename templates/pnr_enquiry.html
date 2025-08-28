@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}PNR Enquiry - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="pnr-enquiry-container">
+        <div class="enquiry-header">
+            <h1><i class="fas fa-search"></i> PNR Enquiry</h1>
+            <p>Check your booking status and journey details</p>
+        </div>
+        
+        <div class="enquiry-form-card">
+            <form method="POST" class="pnr-form">
+                <div class="form-group">
+                    <label for="pnr">
+                        <i class="fas fa-ticket-alt"></i> Enter PNR Number
+                    </label>
+                    <div class="input-group">
+                        <input type="text" id="pnr" name="pnr" placeholder="Enter 10-digit PNR number" 
+                               pattern="[0-9]{10}" maxlength="10" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Check Status
+                        </button>
+                    </div>
+                    <small>Enter the 10-digit PNR number from your booking confirmation</small>
+                </div>
+            </form>
+        </div>
+        
+        {% if booking %}
+            <div class="booking-details-card">
+                <div class="booking-header">
+                    <h2><i class="fas fa-ticket-alt"></i> Booking Details</h2>
+                    <span class="booking-status status-{{ booking.status }}">
+                        {{ booking.status.replace('_', ' ').title() }}
+                    </span>
+                </div>
+                
+                <div class="booking-info">
+                    <div class="info-section">
+                        <h3><i class="fas fa-train"></i> Train Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">Train Number:</span>
+                                <span class="value">{{ booking.train.number }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Train Name:</span>
+                                <span class="value">{{ booking.train.name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">PNR Number:</span>
+                                <span class="value pnr-highlight">{{ booking.pnr }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Journey Date:</span>
+                                <span class="value">{{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3><i class="fas fa-route"></i> Journey Details</h3>
+                        <div class="journey-route">
+                            <div class="station-info">
+                                <div class="station">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div class="station-details">
+                                        <strong>{{ booking.from_station.name }}</strong>
+                                        <small>{{ booking.from_station.code }}</small>
+                                    </div>
+                                </div>
+                                <div class="route-arrow">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <div class="station">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div class="station-details">
+                                        <strong>{{ booking.to_station.name }}</strong>
+                                        <small>{{ booking.to_station.code }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h3><i class="fas fa-users"></i> Passenger Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">Number of Passengers:</span>
+                                <span class="value">{{ booking.passengers }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Total Amount:</span>
+                                <span class="value amount">₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Booking Date:</span>
+                                <span class="value">{{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}</span>
+                            </div>
+                            {% if booking.status == 'waitlisted' %}
+                                <div class="info-item">
+                                    <span class="label">Waitlist Status:</span>
+                                    <span class="value waitlist">Position in queue</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if booking.payment %}
+                        <div class="info-section">
+                            <h3><i class="fas fa-credit-card"></i> Payment Information</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="label">Payment Status:</span>
+                                    <span class="value status-{{ booking.payment.status }}">
+                                        {{ booking.payment.status.title() }}
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Payment Method:</span>
+                                    <span class="value">{{ booking.payment.payment_method.title() }}</span>
+                                </div>
+                                {% if booking.payment.transaction_id %}
+                                    <div class="info-item">
+                                        <span class="label">Transaction ID:</span>
+                                        <span class="value">{{ booking.payment.transaction_id }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if booking.payment.completed_at %}
+                                    <div class="info-item">
+                                        <span class="label">Payment Date:</span>
+                                        <span class="value">{{ booking.payment.completed_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="booking-actions">
+                    {% if booking.status == 'confirmed' %}
+                        <div class="status-message success">
+                            <i class="fas fa-check-circle"></i>
+                            Your booking is confirmed! Have a safe journey.
+                        </div>
+                    {% elif booking.status == 'waitlisted' %}
+                        <div class="status-message warning">
+                            <i class="fas fa-clock"></i>
+                            Your booking is waitlisted. You will be notified if a seat becomes available.
+                        </div>
+                    {% elif booking.status == 'pending_payment' %}
+                        <div class="status-message info">
+                            <i class="fas fa-info-circle"></i>
+                            Payment is pending. Complete payment to confirm your booking.
+                        </div>
+                        {% if current_user.is_authenticated and current_user.id == booking.user_id %}
+                            <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-credit-card"></i> Complete Payment
+                            </a>
+                        {% endif %}
+                    {% elif booking.status == 'cancelled' %}
+                        <div class="status-message error">
+                            <i class="fas fa-times-circle"></i>
+                            This booking has been cancelled.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="help-section">
+            <h3><i class="fas fa-question-circle"></i> Need Help?</h3>
+            <div class="help-grid">
+                <div class="help-card">
+                    <i class="fas fa-phone"></i>
+                    <h4>Call Support</h4>
+                    <p>1800-111-139</p>
+                    <small>24/7 Customer Support</small>
+                </div>
+                <div class="help-card">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Email Support</h4>
+                    <p>support@railserve.com</p>
+                    <small>We'll respond within 24 hours</small>
+                </div>
+                <div class="help-card">
+                    <i class="fas fa-comments"></i>
+                    <h4>Live Chat</h4>
+                    <p>Chat with us</p>
+                    <small>Available 9 AM - 9 PM</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Format PNR input to allow only numbers
+    document.getElementById('pnr').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+    
+    // Auto-format PNR display
+    document.addEventListener('DOMContentLoaded', function() {
+        const pnrElements = document.querySelectorAll('.pnr-highlight');
+        pnrElements.forEach(function(element) {
+            const pnr = element.textContent;
+            element.textContent = pnr.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+        });
+    });
+</script>
+{% endblock %}

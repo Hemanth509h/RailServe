@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Book Ticket - {{ train.name }} - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="booking-container">
+        <div class="train-info-card">
+            <h2><i class="fas fa-train"></i> {{ train.number }} - {{ train.name }}</h2>
+            <div class="train-details">
+                <div class="detail-item">
+                    <i class="fas fa-chair"></i>
+                    <span>Available Seats: {{ train.available_seats }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span>Base Fare: ₹{{ "%.2f"|format(train.fare_per_km) }}/km</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="booking-form-card">
+            <h3><i class="fas fa-ticket-alt"></i> Book Your Ticket</h3>
+            
+            <form method="POST" class="booking-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="from_station">
+                            <i class="fas fa-map-marker-alt"></i> From Station
+                        </label>
+                        <select name="from_station" id="from_station" required>
+                            <option value="">Select Station</option>
+                            {% for station in train_stations %}
+                                <option value="{{ station.id }}">
+                                    {{ station.name }} ({{ station.code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="to_station">
+                            <i class="fas fa-map-marker-alt"></i> To Station
+                        </label>
+                        <select name="to_station" id="to_station" required>
+                            <option value="">Select Station</option>
+                            {% for station in train_stations %}
+                                <option value="{{ station.id }}">
+                                    {{ station.name }} ({{ station.code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="journey_date">
+                            <i class="fas fa-calendar"></i> Journey Date
+                        </label>
+                        <input type="date" name="journey_date" id="journey_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="passengers">
+                            <i class="fas fa-users"></i> Number of Passengers
+                        </label>
+                        <select name="passengers" id="passengers" required>
+                            <option value="">Select</option>
+                            <option value="1">1 Passenger</option>
+                            <option value="2">2 Passengers</option>
+                            <option value="3">3 Passengers</option>
+                            <option value="4">4 Passengers</option>
+                            <option value="5">5 Passengers</option>
+                            <option value="6">6 Passengers</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="fare-calculator" id="fareCalculator" style="display: none;">
+                    <div class="calculator-header">
+                        <h4><i class="fas fa-calculator"></i> Fare Calculation</h4>
+                    </div>
+                    <div class="fare-details">
+                        <div class="fare-item">
+                            <span>Distance:</span>
+                            <span id="distance">-- km</span>
+                        </div>
+                        <div class="fare-item">
+                            <span>Base Fare:</span>
+                            <span id="baseFare">₹--</span>
+                        </div>
+                        <div class="fare-item">
+                            <span>Service Charges (10%):</span>
+                            <span id="serviceCharges">₹--</span>
+                        </div>
+                        <div class="fare-item total">
+                            <span><strong>Total Amount:</strong></span>
+                            <span id="totalFare"><strong>₹--</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Search
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i> Proceed to Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Set minimum date to today
+    document.getElementById('journey_date').min = new Date().toISOString().split('T')[0];
+    
+    // Form validation and fare calculation
+    const fromStation = document.getElementById('from_station');
+    const toStation = document.getElementById('to_station');
+    const passengers = document.getElementById('passengers');
+    const fareCalculator = document.getElementById('fareCalculator');
+    
+    function calculateFare() {
+        const from = fromStation.value;
+        const to = toStation.value;
+        const passengerCount = passengers.value;
+        
+        if (from && to && passengerCount && from !== to) {
+            // This is a simplified calculation - in real implementation,
+            // you would fetch the actual route data from the server
+            const baseFarePerKm = {{ train.fare_per_km }};
+            const estimatedDistance = Math.abs(parseInt(to) - parseInt(from)) * 50; // Rough estimation
+            
+            const baseFare = estimatedDistance * baseFarePerKm * parseInt(passengerCount);
+            const serviceCharges = baseFare * 0.1;
+            const totalFare = baseFare + serviceCharges;
+            
+            document.getElementById('distance').textContent = estimatedDistance + ' km';
+            document.getElementById('baseFare').textContent = '₹' + baseFare.toFixed(2);
+            document.getElementById('serviceCharges').textContent = '₹' + serviceCharges.toFixed(2);
+            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2);
+            
+            fareCalculator.style.display = 'block';
+        } else {
+            fareCalculator.style.display = 'none';
+        }
+    }
+    
+    fromStation.addEventListener('change', calculateFare);
+    toStation.addEventListener('change', calculateFare);
+    passengers.addEventListener('change', calculateFare);
+    
+    // Prevent selecting same station
+    fromStation.addEventListener('change', function() {
+        if (this.value === toStation.value) {
+            toStation.value = '';
+        }
+    });
+    
+    toStation.addEventListener('change', function() {
+        if (this.value === fromStation.value) {
+            fromStation.value = '';
+        }
+    });
+</script>
+{% endblock %}
