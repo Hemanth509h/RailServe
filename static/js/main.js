@@ -580,3 +580,17 @@ window.RailServe = {
     debounce,
     throttle
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+   icon = document.getElementById('nav-toggle-icon');
+   icon.addEventListener('click', () => {
+    menu = document.querySelector('.nav-menu')
+    if (menu.classList.contains('active')) {
+        menu.classList.remove('active');
+    } else {
+        menu.classList.add('active');
+    }
+
+        
+});
+});
