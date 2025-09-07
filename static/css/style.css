@@ -184,6 +184,7 @@ body {
     .nav-brand{
             display: flex;
     flex-direction: row;
+    gap: 90%;
     }
     
     .nav-user {
