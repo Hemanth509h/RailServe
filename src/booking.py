@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import Train, Station, Booking, TrainRoute
-from app import db
+from .models import Train, Station, Booking, TrainRoute
+from .app import db
 from datetime import datetime, date
-from utils import calculate_fare, check_seat_availability
-from queue_manager import WaitlistManager
-from route_graph import get_route_graph
+from .utils import calculate_fare, check_seat_availability
+from .queue_manager import WaitlistManager
+from .route_graph import get_route_graph
 
 booking_bp = Blueprint('booking', __name__)
 

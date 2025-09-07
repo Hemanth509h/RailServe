@@ -4,8 +4,8 @@ Database Population Script for RailServe
 Populates the database with 150 trains and comprehensive station network
 """
 
-from app import app, db
-from models import User, Train, Station, TrainRoute, Booking, Payment
+from .app import app, db
+from .models import User, Train, Station, TrainRoute, Booking, Payment
 from werkzeug.security import generate_password_hash
 from datetime import datetime, time
 import random

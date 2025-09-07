@@ -35,14 +35,14 @@ login_manager.login_message = 'Please log in to access this page.'
 
 @login_manager.user_loader
 def load_user(user_id):
-    from models import User
+    from .models import User
     return User.query.get(int(user_id))
 
 # Import and register blueprints
-from auth import auth_bp
-from admin import admin_bp
-from booking import booking_bp
-from payment import payment_bp
+from .auth import auth_bp
+from .admin import admin_bp
+from .booking import booking_bp
+from .payment import payment_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
@@ -51,11 +51,11 @@ app.register_blueprint(payment_bp, url_prefix='/payment')
 
 with app.app_context():
     # Import models to ensure tables are created
-    import models
+    from . import models
     db.create_all()
     
     # Create default admin user if not exists
-    from models import User
+    from .models import User
     from werkzeug.security import generate_password_hash
     
     if not User.query.filter_by(role='super_admin').first():

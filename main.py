@@ -1,8 +1,8 @@
-from app import app
+from src.app import app
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
-from models import Train, Station, Booking
-from utils import get_running_trains, search_trains
+from src.models import Train, Station, Booking
+from src.utils import get_running_trains, search_trains
 from datetime import datetime
 
 @app.route('/')

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from functools import wraps
-from models import User, Train, Station, Booking, Payment, TrainRoute
-from app import db
+from .models import User, Train, Station, Booking, Payment, TrainRoute
+from .app import db
 from datetime import datetime, timedelta
 import csv
 import io
