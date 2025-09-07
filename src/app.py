@@ -15,8 +15,10 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 
-# Create the app
-app = Flask(__name__)
+# Create the app with correct template and static paths
+app = Flask(__name__, 
+            template_folder='../templates',
+            static_folder='../static')
 app.secret_key = os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
