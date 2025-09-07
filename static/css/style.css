@@ -181,6 +181,10 @@ body {
         border-radius: 0.375rem;
         margin-bottom: 0.5rem;
     }
+    .nav-brand{
+            display: flex;
+    flex-direction: row;
+    }
     
     .nav-user {
         margin-top: 0.5rem;
