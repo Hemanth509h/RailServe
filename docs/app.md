@@ -1,7 +1,47 @@
 # app.py - Flask Application Core
 
 ## Overview
-The main Flask application configuration file that sets up the web application, database connections, and integrates all components of the RailServe railway reservation system.
+The main Flask application configuration file that serves as the central hub for the RailServe railway reservation system. This file initializes the Flask web application, configures database connections, sets up authentication, and orchestrates the integration of all system components.
+
+## File Location and Role
+- **Path**: `src/app.py`
+- **Purpose**: Application factory and configuration center
+- **Dependencies**: Used by `main.py` as the primary Flask app instance
+- **Connects to**: All blueprint files (`auth.py`, `admin.py`, `booking.py`, `payment.py`)
+
+## Code Structure and Implementation
+
+### Imports and Dependencies
+```python
+import os
+import logging
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from sqlalchemy.orm import DeclarativeBase
+from werkzeug.middleware.proxy_fix import ProxyFix
+```
+
+### Core Components Initialization
+
+#### Database Foundation
+```python
+class Base(DeclarativeBase):
+    pass
+
+db = SQLAlchemy(model_class=Base)
+```
+- **DeclarativeBase**: Modern SQLAlchemy 2.0 pattern for model definitions
+- **Global db instance**: Used throughout the application for database operations
+- **Connected files**: `models.py` (defines all models), all blueprint files (database operations)
+
+#### Authentication Setup
+```python
+login_manager = LoginManager()
+```
+- **Purpose**: Manages user sessions and authentication state
+- **Integration**: Links with `auth.py` blueprint and `models.py` User model
+- **User loader**: Connects to User model for session management
 
 ## Key Components
 

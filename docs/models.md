@@ -1,7 +1,33 @@
 # models.py - Database Models
 
 ## Overview
-Defines all SQLAlchemy database models for the RailServe railway reservation system, implementing a comprehensive data structure for train bookings, user management, and payment processing.
+Defines all SQLAlchemy database models for the RailServe railway reservation system, implementing a comprehensive data structure for train bookings, user management, and payment processing. This file contains all database table definitions and their relationships.
+
+## File Location and Dependencies
+- **Path**: `src/models.py`
+- **Imports from**: `src/app.py` - uses the `db` SQLAlchemy instance and `Base` declarative class
+- **Used by**: 
+  - `main.py` - imports Train, Station, Booking models
+  - `auth.py` - imports User model for authentication
+  - `admin.py` - imports all models for administrative operations
+  - `booking.py` - imports Train, Station, Booking, Waitlist models
+  - `payment.py` - imports Payment and Booking models
+  - `utils.py` - imports models for utility functions
+  - `populate_database.py` - imports all models for data population
+
+## Database Schema Architecture
+
+### Model Inheritance Structure
+```python
+from src.app import db, Base
+
+class ModelName(Base):
+    __tablename__ = 'table_name'
+    # Model definition
+```
+- **Base Class**: Inherits from `Base` defined in `app.py`
+- **SQLAlchemy Integration**: Uses `db` instance from `app.py`
+- **Table Creation**: Automatically creates tables via `app.py` initialization
 
 ## Database Models
 

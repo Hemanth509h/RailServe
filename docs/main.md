@@ -1,21 +1,56 @@
 # main.py - Application Entry Point
 
 ## Overview
-The main entry point and route handler for the RailServe application, providing core user-facing functionality including homepage, train search, and PNR enquiry services.
+The main entry point and route handler for the RailServe application, providing core user-facing functionality including homepage, train search, and PNR enquiry services. This file imports the Flask app from `src/app.py` and defines the primary public routes that users interact with.
 
-## Core Routes
+## File Location and Dependencies
+- **Path**: `main.py` (root directory)
+- **Primary Import**: `from src.app import app` - imports the configured Flask application
+- **Connects to**: 
+  - `src/app.py` - imports the main Flask app instance
+  - `src/models.py` - imports Train, Station, Booking models for data operations
+  - `src/utils.py` - imports utility functions like `get_running_trains()`, `search_trains()`
+  - `templates/` - renders HTML templates for user interface
+
+## Code Structure and Implementation
+
+### Key Imports
+```python
+from src.app import app
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import current_user, login_required
+from src.models import Train, Station, Booking
+from src.utils import get_running_trains, search_trains
+from datetime import datetime
+```
+
+### Integration with Other Files
+- **app.py**: Gets the configured Flask application instance
+- **models.py**: Uses Train, Station, Booking models for database queries
+- **utils.py**: Leverages utility functions for business logic
+- **templates/**: Renders HTML templates for user interface
+- **auth.py**: Uses Flask-Login decorators and user authentication
+
+## Core Routes and Implementation
 
 ### Homepage Route (`/`)
+```python
+@app.route('/')
+def index():
+    running_trains = get_running_trains()  # from utils.py
+    stations = Station.query.all()         # from models.py
+    return render_template('index.html', trains=running_trains, stations=stations)
+```
 - **Purpose**: Main landing page displaying available trains and search interface
+- **Data Flow**:
+  - Calls `get_running_trains()` from `utils.py` to get active trains
+  - Queries `Station` model from `models.py` to get all stations
+  - Renders `templates/index.html` with train and station data
+- **Template Connection**: Uses `templates/index.html` for the user interface
 - **Features**:
   - Live display of running trains
   - Station dropdown for search functionality
   - Quick access to booking services
-  - System status and announcements
-- **Data Sources**:
-  - Running trains from utility functions
-  - Active stations for search options
-  - Real-time train availability
 
 ### Train Search Route (`/search_trains`)
 - **Method**: POST
