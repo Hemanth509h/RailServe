@@ -581,16 +581,229 @@ window.RailServe = {
     throttle
 };
 
+// Enhanced Mobile Navigation
 document.addEventListener('DOMContentLoaded', () => {
-   icon = document.getElementById('nav-toggle-icon');
-   icon.addEventListener('click', () => {
-    menu = document.querySelector('.nav-menu')
-    if (menu.classList.contains('active')) {
-        menu.classList.remove('active');
-    } else {
-        menu.classList.add('active');
-    }
+    setupMobileNavigation();
+    setupViewportOptimization();
+});
 
+function setupMobileNavigation() {
+    const navToggle = document.getElementById('nav-toggle-icon');
+    const navMenu = document.querySelector('.nav-menu');
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    if (navToggle && navMenu) {
+        // Toggle mobile menu
+        navToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMobileMenu();
+        });
         
-});
-});
+        // Close menu when clicking on nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeMobileMenu();
+                }
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Close menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMobileMenu();
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeMobileMenu();
+            }
+        });
+    }
+}
+
+function toggleMobileMenu() {
+    const navMenu = document.querySelector('.nav-menu');
+    const navToggle = document.getElementById('nav-toggle-icon');
+    
+    if (navMenu && navToggle) {
+        navMenu.classList.toggle('active');
+        
+        // Animate hamburger icon
+        if (navMenu.classList.contains('active')) {
+            navToggle.classList.remove('fa-bars');
+            navToggle.classList.add('fa-times');
+        } else {
+            navToggle.classList.remove('fa-times');
+            navToggle.classList.add('fa-bars');
+        }
+        
+        // Prevent body scroll when menu is open
+        document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+    }
+}
+
+function closeMobileMenu() {
+    const navMenu = document.querySelector('.nav-menu');
+    const navToggle = document.getElementById('nav-toggle-icon');
+    
+    if (navMenu && navToggle) {
+        navMenu.classList.remove('active');
+        navToggle.classList.remove('fa-times');
+        navToggle.classList.add('fa-bars');
+        document.body.style.overflow = '';
+    }
+}
+
+// Viewport optimization for mobile devices
+function setupViewportOptimization() {
+    // Disable zoom on input focus for iOS
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            if (window.innerWidth <= 768) {
+                const viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                }
+            }
+        });
+        
+        input.addEventListener('blur', () => {
+            if (window.innerWidth <= 768) {
+                const viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+                }
+            }
+        });
+    });
+    
+    // Add touch-friendly styles for mobile
+    if ('ontouchstart' in window) {
+        document.body.classList.add('touch-device');
+    }
+}
+
+// Add mobile-specific utility functions
+const MobileUtils = {
+    // Check if device is mobile
+    isMobile() {
+        return window.innerWidth <= 768;
+    },
+    
+    // Check if device is tablet
+    isTablet() {
+        return window.innerWidth > 768 && window.innerWidth <= 1024;
+    },
+    
+    // Check if device is touch-enabled
+    isTouchDevice() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    },
+    
+    // Prevent default touch behavior for certain elements
+    preventTouchDefaults(selector) {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            element.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+        });
+    },
+    
+    // Add ripple effect for touch interactions
+    addRippleEffect(element) {
+        element.addEventListener('touchstart', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.touches[0].clientX - rect.left - size / 2;
+            const y = e.touches[0].clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        });
+    }
+};
+
+// Add CSS for ripple effect and touch styles
+const mobileStyles = `
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    .touch-device .btn:active,
+    .touch-device .nav-link:active,
+    .touch-device .train-card:active {
+        transform: translateY(1px);
+    }
+    
+    .touch-device .btn {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Improve touch targets */
+    @media (max-width: 768px) {
+        .btn, .nav-link, .tab-button {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Better spacing for touch */
+        .nav-menu .nav-link {
+            margin-bottom: 0.5rem;
+            padding: 1rem;
+        }
+        
+        /* Prevent text selection on touch */
+        .btn, .nav-link, .train-card {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    }
+`;
+
+// Add mobile styles to document
+const mobileStyleSheet = document.createElement('style');
+mobileStyleSheet.textContent = mobileStyles;
+document.head.appendChild(mobileStyleSheet);
+
+// Export mobile utilities
+window.RailServe.Mobile = MobileUtils;
