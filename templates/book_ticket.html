@@ -23,6 +23,7 @@
             <h3><i class="fas fa-ticket-alt"></i> Book Your Ticket</h3>
             
             <form method="POST" class="booking-form">
+                {{ csrf_token() }}
                 <div class="form-row">
                     <div class="form-group">
                         <label for="from_station">
@@ -134,7 +135,7 @@
         if (from && to && passengerCount && from !== to) {
             // This is a simplified calculation - in real implementation,
             // you would fetch the actual route data from the server
-            const baseFarePerKm = {{ train.fare_per_km }};
+            const baseFarePerKm = {{ train.fare_per_km|tojson }};
             const estimatedDistance = Math.abs(parseInt(to) - parseInt(from)) * 50; // Rough estimation
             
             const baseFare = estimatedDistance * baseFarePerKm * parseInt(passengerCount);
