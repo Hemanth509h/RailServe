@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="payment-container">
+        <div class="booking-summary-card">
+            <h2><i class="fas fa-ticket-alt"></i> Booking Summary</h2>
+            
+            <div class="summary-details">
+                <div class="train-info">
+                    <h3>{{ booking.train.number }} - {{ booking.train.name }}</h3>
+                    <div class="journey-info">
+                        <span class="station">{{ booking.from_station.name }}</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="station">{{ booking.to_station.name }}</span>
+                    </div>
+                    <p>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</p>
+                </div>
+                
+                <div class="passenger-info">
+                    <div class="info-item">
+                        <span>PNR Number:</span>
+                        <span class="pnr">{{ booking.pnr }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Passengers:</span>
+                        <span>{{ booking.passengers }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span>Status:</span>
+                        <span class="status status-{{ booking.status }}">
+                            {{ booking.status.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="amount-breakdown">
+                    <h4>Amount Details</h4>
+                    <div class="breakdown-item">
+                        <span>Base Fare:</span>
+                        <span>₹{{ "%.2f"|format(booking.total_amount / 1.1) }}</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span>Service Charges:</span>
+                        <span>₹{{ "%.2f"|format(booking.total_amount - (booking.total_amount / 1.1)) }}</span>
+                    </div>
+                    <div class="breakdown-total">
+                        <span><strong>Total Amount:</strong></span>
+                        <span><strong>₹{{ "%.2f"|format(booking.total_amount) }}</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="payment-form-card">
+            <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
+            
+            <form method="POST" action="{{ url_for('payment.process_payment', booking_id=booking.id) }}" 
+                  class="payment-form">
+                
+                <div class="payment-methods">
+                    <h3>Select Payment Method</h3>
+                    
+                    <div class="payment-option">
+                        <input type="radio" id="card" name="payment_method" value="card" required>
+                        <label for="card" class="payment-label">
+                            <i class="fas fa-credit-card"></i>
+                            <div class="payment-info">
+                                <strong>Credit/Debit Card</strong>
+                                <small>Visa, MasterCard, RuPay accepted</small>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" id="upi" name="payment_method" value="upi" required>
+                        <label for="upi" class="payment-label">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div class="payment-info">
+                                <strong>UPI Payment</strong>
+                                <small>Pay using Google Pay, PhonePe, Paytm</small>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="payment-option">
+                        <input type="radio" id="netbanking" name="payment_method" value="netbanking" required>
+                        <label for="netbanking" class="payment-label">
+                            <i class="fas fa-university"></i>
+                            <div class="payment-info">
+                                <strong>Net Banking</strong>
+                                <small>All major banks supported</small>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="card-details" id="cardDetails" style="display: none;">
+                    <h4>Card Information</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card_number">Card Number</label>
+                            <input type="text" id="card_number" name="card_number" 
+                                   placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="card_name">Cardholder Name</label>
+                            <input type="text" id="card_name" name="card_name" 
+                                   placeholder="Name as on card">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry">Expiry Date</label>
+                            <input type="text" id="expiry" name="expiry" 
+                                   placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="password" id="cvv" name="cvv" 
+                                   placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="security-info">
+                    <i class="fas fa-shield-alt"></i>
+                    <p>Your payment is secured with 256-bit SSL encryption</p>
+                </div>
+                
+                <div class="payment-actions">
+                    <a href="{{ url_for('booking.book_ticket', train_id=booking.train_id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-lock"></i> Pay ₹{{ "%.2f"|format(booking.total_amount) }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Payment method selection
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const cardDetails = document.getElementById('cardDetails');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'card') {
+                cardDetails.style.display = 'block';
+            } else {
+                cardDetails.style.display = 'none';
+            }
+        });
+    });
+    
+    // Card number formatting
+    document.getElementById('card_number').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        
+        if (formattedValue !== e.target.value) {
+            e.target.value = formattedValue;
+        }
+    });
+    
+    // Expiry date formatting
+    document.getElementById('expiry').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+    });
+    
+    // CVV numeric only
+    document.getElementById('cvv').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+</script>
+{% endblock %}

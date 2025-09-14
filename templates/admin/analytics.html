@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Admin - RailServe{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="analytics-grid">
+        <div class="analytics-card">
+            <h3><i class="fas fa-rupee-sign"></i> Revenue Trends (Last 30 Days)</h3>
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="analytics-card">
+            <h3><i class="fas fa-chart-pie"></i> Booking Distribution</h3>
+            <div class="chart-container">
+                <canvas id="bookingStatusChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="analytics-card">
+            <h3><i class="fas fa-train"></i> Popular Trains</h3>
+            <div class="chart-container">
+                <canvas id="popularTrainsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="analytics-card">
+            <h3><i class="fas fa-calendar"></i> Booking Trends</h3>
+            <div class="chart-container">
+                <canvas id="bookingTrendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="analytics-card">
+        <h3><i class="fas fa-table"></i> Detailed Metrics</h3>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="metric-content">
+                    <h4>Average Booking Value</h4>
+                    <div class="metric-value">
+                        {% set total_amount = daily_revenue|sum(attribute=1) %}
+                        {% set total_bookings = booking_trends|sum(attribute=1) %}
+                        ₹{{ "%.2f"|format((total_amount / total_bookings) if total_bookings > 0 else 0) }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="metric-content">
+                    <h4>Booking Success Rate</h4>
+                    <div class="metric-value">
+                        {% set confirmed_count = 0 %}
+                        {% set total_count = 0 %}
+                        {% for status, count in booking_stats %}
+                            {% if status == 'confirmed' %}
+                                {% set confirmed_count = count %}
+                            {% endif %}
+                            {% set total_count = total_count + count %}
+                        {% endfor %}
+                        {{ "%.1f"|format((confirmed_count / total_count * 100) if total_count > 0 else 0) }}%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="metric-content">
+                    <h4>Waitlist Conversion</h4>
+                    <div class="metric-value">
+                        {% set waitlisted_count = 0 %}
+                        {% for status, count in booking_stats %}
+                            {% if status == 'waitlisted' %}
+                                {% set waitlisted_count = count %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ "%.1f"|format((waitlisted_count / total_count * 100) if total_count > 0 else 0) }}%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="metric-content">
+                    <h4>Daily Average Bookings</h4>
+                    <div class="metric-value">
+                        {{ "%.1f"|format((booking_trends|sum(attribute=1) / booking_trends|length) if booking_trends|length > 0 else 0) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="analytics-card">
+        <h3><i class="fas fa-download"></i> Export Options</h3>
+        
+        <div class="export-options">
+            <a href="{{ url_for('admin.export_bookings') }}" class="btn btn-primary">
+                <i class="fas fa-file-csv"></i> Download Booking Report (CSV)
+            </a>
+            
+            <button onclick="exportChart('revenueChart')" class="btn btn-secondary">
+                <i class="fas fa-image"></i> Export Revenue Chart
+            </button>
+            
+            <button onclick="exportChart('popularTrainsChart')" class="btn btn-secondary">
+                <i class="fas fa-image"></i> Export Popular Trains Chart
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    // Prepare data for charts
+    const revenueData = {
+        labels: [
+            {% for date, amount in daily_revenue %}
+                '{{ date.strftime("%d %b") if date else "N/A" }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Revenue (₹)',
+            data: [
+                {% for date, amount in daily_revenue %}
+                    {{ amount or 0 }},
+                {% endfor %}
+            ],
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            tension: 0.4
+        }]
+    };
+    
+    const bookingStatusData = {
+        labels: [
+            {% for status, count in booking_stats %}
+                '{{ status.replace("_", " ").title() }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for status, count in booking_stats %}
+                    {{ count }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                '#10b981', // confirmed - green
+                '#f59e0b', // waitlisted - amber
+                '#ef4444', // cancelled - red
+                '#6b7280'  // pending_payment - gray
+            ]
+        }]
+    };
+    
+    const popularTrainsData = {
+        labels: [
+            {% for train_name, count in popular_trains %}
+                '{{ train_name[:20] }}{{ "..." if train_name|length > 20 else "" }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Bookings',
+            data: [
+                {% for train_name, count in popular_trains %}
+                    {{ count }},
+                {% endfor %}
+            ],
+            backgroundColor: '#8b5cf6'
+        }]
+    };
+    
+    const bookingTrendsData = {
+        labels: [
+            {% for date, count in booking_trends %}
+                '{{ date.strftime("%d %b") if date else "N/A" }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Bookings',
+            data: [
+                {% for date, count in booking_trends %}
+                    {{ count }},
+                {% endfor %}
+            ],
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+            tension: 0.4
+        }]
+    };
+    
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeAnalyticsCharts(revenueData, bookingStatusData, popularTrainsData, bookingTrendsData);
+    });
+    
+    function exportChart(chartId) {
+        const canvas = document.getElementById(chartId);
+        const link = document.createElement('a');
+        link.download = chartId + '-chart.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+</script>
+{% endblock %}

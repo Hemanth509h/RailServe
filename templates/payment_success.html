@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="success-container">
+        <div class="success-card">
+            <div class="success-header">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1>Payment Successful!</h1>
+                <p>Your ticket has been booked successfully</p>
+            </div>
+            
+            <div class="booking-confirmation">
+                <div class="confirmation-detail">
+                    <span class="label">PNR Number:</span>
+                    <span class="value pnr-highlight">{{ booking.pnr }}</span>
+                </div>
+                
+                <div class="confirmation-detail">
+                    <span class="label">Transaction ID:</span>
+                    <span class="value">{{ booking.payment.transaction_id }}</span>
+                </div>
+                
+                <div class="confirmation-detail">
+                    <span class="label">Amount Paid:</span>
+                    <span class="value amount">₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                </div>
+                
+                <div class="confirmation-detail">
+                    <span class="label">Booking Status:</span>
+                    <span class="value status status-{{ booking.status }}">
+                        {{ booking.status.replace('_', ' ').title() }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="journey-summary">
+                <h3><i class="fas fa-route"></i> Journey Details</h3>
+                
+                <div class="journey-info">
+                    <div class="train-info">
+                        <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                    </div>
+                    
+                    <div class="route-info">
+                        <div class="station">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="station-details">
+                                <strong>{{ booking.from_station.name }}</strong>
+                                <small>{{ booking.from_station.code }}</small>
+                            </div>
+                        </div>
+                        <div class="route-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div class="station">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="station-details">
+                                <strong>{{ booking.to_station.name }}</strong>
+                                <small>{{ booking.to_station.code }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="journey-details">
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-users"></i>
+                            <span>Passengers: {{ booking.passengers }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h3><i class="fas fa-info-circle"></i> What's Next?</h3>
+                
+                <div class="steps-list">
+                    {% if booking.status == 'confirmed' %}
+                        <div class="step-item">
+                            <i class="fas fa-check"></i>
+                            <p>Your seat is confirmed! Please carry a valid ID proof during travel.</p>
+                        </div>
+                        <div class="step-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <p>Save your PNR number for future reference and station check-ins.</p>
+                        </div>
+                    {% elif booking.status == 'waitlisted' %}
+                        <div class="step-item">
+                            <i class="fas fa-clock"></i>
+                            <p>Your booking is waitlisted. You'll be automatically confirmed if seats become available.</p>
+                        </div>
+                        <div class="step-item">
+                            <i class="fas fa-bell"></i>
+                            <p>We'll notify you immediately if your waitlist status changes.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="step-item">
+                        <i class="fas fa-envelope"></i>
+                        <p>A confirmation email has been sent to {{ current_user.email }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('pnr_enquiry') }}" class="btn btn-secondary">
+                    <i class="fas fa-search"></i> Check PNR Status
+                </a>
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-primary">
+                    <i class="fas fa-user"></i> View My Bookings
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline">
+                    <i class="fas fa-home"></i> Book Another Ticket
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-format PNR display
+    document.addEventListener('DOMContentLoaded', function() {
+        const pnrElements = document.querySelectorAll('.pnr-highlight');
+        pnrElements.forEach(function(element) {
+            const pnr = element.textContent;
+            element.textContent = pnr.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+        });
+    });
+    
+    // Show celebration animation
+    setTimeout(function() {
+        document.querySelector('.success-icon').style.transform = 'scale(1.1)';
+        setTimeout(function() {
+            document.querySelector('.success-icon').style.transform = 'scale(1)';
+        }, 200);
+    }, 500);
+</script>
+{% endblock %}

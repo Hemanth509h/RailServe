@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Failed - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="failure-container">
+        <div class="failure-card">
+            <div class="failure-header">
+                <div class="failure-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <h1>Payment Failed</h1>
+                <p>We couldn't process your payment</p>
+            </div>
+            
+            <div class="booking-details">
+                <h3><i class="fas fa-ticket-alt"></i> Booking Details</h3>
+                
+                <div class="detail-item">
+                    <span class="label">PNR Number:</span>
+                    <span class="value">{{ booking.pnr }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="label">Train:</span>
+                    <span class="value">{{ booking.train.number }} - {{ booking.train.name }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="label">Route:</span>
+                    <span class="value">{{ booking.from_station.name }} → {{ booking.to_station.name }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="label">Amount:</span>
+                    <span class="value amount">₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                </div>
+            </div>
+            
+            <div class="failure-reasons">
+                <h3><i class="fas fa-question-circle"></i> Possible Reasons</h3>
+                
+                <div class="reasons-list">
+                    <div class="reason-item">
+                        <i class="fas fa-credit-card"></i>
+                        <p>Insufficient funds in your account</p>
+                    </div>
+                    <div class="reason-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <p>Payment gateway or network issues</p>
+                    </div>
+                    <div class="reason-item">
+                        <i class="fas fa-ban"></i>
+                        <p>Transaction declined by your bank</p>
+                    </div>
+                    <div class="reason-item">
+                        <i class="fas fa-clock"></i>
+                        <p>Session timeout or expired payment page</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h3><i class="fas fa-lightbulb"></i> What to do next?</h3>
+                
+                <div class="steps-list">
+                    <div class="step-item">
+                        <span class="step-number">1</span>
+                        <p>Check your bank account balance and card details</p>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-number">2</span>
+                        <p>Try using a different payment method</p>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-number">3</span>
+                        <p>Contact your bank if the issue persists</p>
+                    </div>
+                    <div class="step-item">
+                        <span class="step-number">4</span>
+                        <p>Retry the payment or book a new ticket</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="important-note">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p><strong>Important:</strong> Your booking is still reserved for 15 minutes. Complete the payment to confirm your ticket.</p>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Retry Payment
+                </a>
+                <a href="{{ url_for('booking.book_ticket', train_id=booking.train_id) }}" class="btn btn-secondary">
+                    <i class="fas fa-ticket-alt"></i> Book New Ticket
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline">
+                    <i class="fas fa-home"></i> Go Home
+                </a>
+            </div>
+            
+            <div class="support-info">
+                <h4><i class="fas fa-headset"></i> Need Help?</h4>
+                <p>Contact our support team at <strong>1800-111-139</strong> or email <strong>support@railserve.com</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

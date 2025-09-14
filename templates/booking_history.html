@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Booking History - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="booking-history-container">
+        <div class="history-header">
+            <h1><i class="fas fa-history"></i> Booking History</h1>
+            <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Profile
+            </a>
+        </div>
+        
+        <div class="filter-section">
+            <div class="filter-tabs">
+                <button class="filter-btn active" onclick="filterBookings('all')">
+                    All Bookings
+                </button>
+                <button class="filter-btn" onclick="filterBookings('confirmed')">
+                    <i class="fas fa-check"></i> Confirmed
+                </button>
+                <button class="filter-btn" onclick="filterBookings('waitlisted')">
+                    <i class="fas fa-clock"></i> Waitlisted
+                </button>
+                <button class="filter-btn" onclick="filterBookings('cancelled')">
+                    <i class="fas fa-times"></i> Cancelled
+                </button>
+                <button class="filter-btn" onclick="filterBookings('pending_payment')">
+                    <i class="fas fa-credit-card"></i> Pending Payment
+                </button>
+            </div>
+        </div>
+        
+        {% if bookings %}
+            <div class="bookings-timeline">
+                {% for booking in bookings %}
+                    <div class="booking-item" data-status="{{ booking.status }}">
+                        <div class="booking-timeline-marker status-{{ booking.status }}">
+                            {% if booking.status == 'confirmed' %}
+                                <i class="fas fa-check"></i>
+                            {% elif booking.status == 'waitlisted' %}
+                                <i class="fas fa-clock"></i>
+                            {% elif booking.status == 'cancelled' %}
+                                <i class="fas fa-times"></i>
+                            {% else %}
+                                <i class="fas fa-credit-card"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="booking-content">
+                            <div class="booking-card">
+                                <div class="booking-header">
+                                    <div class="pnr-info">
+                                        <strong class="pnr">{{ booking.pnr }}</strong>
+                                        <span class="booking-date">
+                                            {{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}
+                                        </span>
+                                    </div>
+                                    <span class="booking-status status-{{ booking.status }}">
+                                        {{ booking.status.replace('_', ' ').title() }}
+                                    </span>
+                                </div>
+                                
+                                <div class="journey-summary">
+                                    <div class="train-info">
+                                        <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                                    </div>
+                                    
+                                    <div class="route-summary">
+                                        <div class="route-stations">
+                                            <span class="station-name">{{ booking.from_station.name }}</span>
+                                            <i class="fas fa-arrow-right route-arrow"></i>
+                                            <span class="station-name">{{ booking.to_station.name }}</span>
+                                        </div>
+                                        <div class="journey-date">
+                                            <i class="fas fa-calendar"></i>
+                                            {{ booking.journey_date.strftime('%d %b %Y') }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="booking-summary">
+                                    <div class="summary-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>{{ booking.passengers }} Passenger{{ 's' if booking.passengers > 1 else '' }}</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <i class="fas fa-rupee-sign"></i>
+                                        <span>₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                                    </div>
+                                    {% if booking.payment %}
+                                        <div class="summary-item">
+                                            <i class="fas fa-credit-card"></i>
+                                            <span>{{ booking.payment.payment_method.title() }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="booking-actions">
+                                    {% if booking.status == 'pending_payment' %}
+                                        <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-credit-card"></i> Complete Payment
+                                        </a>
+                                    {% endif %}
+                                    
+                                    {% if booking.status in ['confirmed', 'waitlisted'] %}
+                                        <a href="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                            <i class="fas fa-times"></i> Cancel Booking
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <a href="{{ url_for('pnr_enquiry') }}?pnr={{ booking.pnr }}" 
+                                       class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-info"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <h3>No bookings found</h3>
+                <p>You haven't made any train bookings yet.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search Trains
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterBookings(status) {
+        const bookings = document.querySelectorAll('.booking-item');
+        const buttons = document.querySelectorAll('.filter-btn');
+        
+        // Update active button
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Filter bookings
+        bookings.forEach(booking => {
+            const bookingStatus = booking.dataset.status;
+            
+            if (status === 'all' || bookingStatus === status) {
+                booking.style.display = 'flex';
+            } else {
+                booking.style.display = 'none';
+            }
+        });
+    }
+    
+    // Auto-format PNR numbers
+    document.addEventListener('DOMContentLoaded', function() {
+        const pnrElements = document.querySelectorAll('.pnr');
+        pnrElements.forEach(function(element) {
+            const pnr = element.textContent;
+            element.textContent = pnr.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+        });
+    });
+</script>
+{% endblock %}

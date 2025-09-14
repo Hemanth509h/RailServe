@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}RailServe - Find Your Train{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <canvas id="hero3d" class="hero-3d-canvas"></canvas>
+    <div class="hero-content">
+        <h1><i class="fas fa-train"></i> Welcome to RailServe</h1>
+        <p>Book your railway tickets with ease and comfort</p>
+        
+        <div class="search-form">
+            <form method="POST" action="{{ url_for('search_trains_route') }}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="from_station">From Station</label>
+                        <select name="from_station" id="from_station" required>
+                            <option value="">Select Station</option>
+                            {% for station in stations %}
+                                <option value="{{ station.id }}" 
+                                    {% if from_station and from_station|int == station.id %}selected{% endif %}>
+                                    {{ station.name }} ({{ station.code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="swap-btn">
+                        <button type="button" onclick="swapStations()">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="to_station">To Station</label>
+                        <select name="to_station" id="to_station" required>
+                            <option value="">Select Station</option>
+                            {% for station in stations %}
+                                <option value="{{ station.id }}"
+                                    {% if to_station and to_station|int == station.id %}selected{% endif %}>
+                                    {{ station.name }} ({{ station.code }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="journey_date">Journey Date</label>
+                        <input type="date" name="journey_date" id="journey_date" 
+                               value="{{ journey_date or '' }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search Trains
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if search_performed %}
+        <div class="search-results">
+            <h2><i class="fas fa-list"></i> Search Results</h2>
+            
+            {% if trains %}
+                <div class="trains-grid">
+                    {% for train in trains %}
+                        <div class="train-card">
+                            <div class="train-header">
+                                <h3>{{ train.number }} - {{ train.name }}</h3>
+                                <span class="train-status {% if train.available_seats > 0 %}available{% else %}waitlist{% endif %}">
+                                    {% if train.available_seats > 0 %}
+                                        <i class="fas fa-check-circle"></i> Available
+                                    {% else %}
+                                        <i class="fas fa-clock"></i> Waitlist
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="train-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-chair"></i>
+                                    <span>Available Seats: {{ train.available_seats }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-rupee-sign"></i>
+                                    <span>Base Fare: ₹{{ "%.2f"|format(train.fare_per_km) }}/km</span>
+                                </div>
+                            </div>
+                            
+                            <div class="train-actions">
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-ticket-alt"></i> Book Now
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                                        <i class="fas fa-sign-in-alt"></i> Login to Book
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-train"></i>
+                    <h3>No trains found</h3>
+                    <p>No trains available between the selected stations on {{ journey_date }}.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="running-trains">
+            <h2><i class="fas fa-train"></i> Popular Trains</h2>
+            
+            {% if trains %}
+                <div class="trains-grid">
+                    {% for train in trains[:6] %}
+                        <div class="train-card">
+                            <div class="train-header">
+                                <h3>{{ train.number }} - {{ train.name }}</h3>
+                                <span class="train-status available">
+                                    <i class="fas fa-check-circle"></i> Active
+                                </span>
+                            </div>
+                            
+                            <div class="train-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-chair"></i>
+                                    <span>Total Seats: {{ train.total_seats }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-rupee-sign"></i>
+                                    <span>Base Fare: ₹{{ "%.2f"|format(train.fare_per_km) }}/km</span>
+                                </div>
+                            </div>
+                            
+                            <div class="train-actions">
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-ticket-alt"></i> Book Ticket
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">
+                                        <i class="fas fa-sign-in-alt"></i> Login to Book
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-train"></i>
+                    <h3>No trains available</h3>
+                    <p>Please check back later.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2>Why Choose RailServe?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Secure Booking</h3>
+                <p>Your transactions are protected with advanced security measures</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-clock"></i>
+                <h3>24/7 Service</h3>
+                <p>Book tickets anytime, anywhere with our round-the-clock service</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Mobile Friendly</h3>
+                <p>Easy booking experience on all devices</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-headset"></i>
+                <h3>Customer Support</h3>
+                <p>Get help when you need it with our dedicated support team</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/three-hero.js') }}"></script>
+<script>
+    function swapStations() {
+        const fromSelect = document.getElementById('from_station');
+        const toSelect = document.getElementById('to_station');
+        
+        const fromValue = fromSelect.value;
+        const toValue = toSelect.value;
+        
+        fromSelect.value = toValue;
+        toSelect.value = fromValue;
+    }
+
+    // Set minimum date to today
+    document.getElementById('journey_date').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
