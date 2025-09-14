@@ -1,3 +1,4 @@
+import os
 from src.app import app
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
@@ -52,4 +53,6 @@ def pnr_enquiry():
     return render_template('pnr_enquiry.html', booking=booking)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Use environment variable to determine debug mode (defaults to False for security)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
