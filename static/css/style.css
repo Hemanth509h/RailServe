@@ -3,13 +3,31 @@
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-accent: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    --bg-table-header: #f8fafc;
+    --bg-table-hover: #f8fafc;
+    --bg-nav-mobile: #1e40af;
     --text-primary: #333333;
     --text-secondary: #6b7280;
     --text-inverse: #ffffff;
+    --text-table-header: #374151;
     --border-color: #e5e7eb;
+    --btn-primary: #3b82f6;
+    --btn-primary-hover: #2563eb;
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     --hero-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+    --status-confirmed-bg: #dcfce7;
+    --status-confirmed-text: #166534;
+    --status-waitlist-bg: #fef3c7;
+    --status-waitlist-text: #92400e;
+    --status-cancelled-bg: #fee2e2;
+    --status-cancelled-text: #991b1b;
+    --fare-calc-bg: #f0f9ff;
+    --fare-calc-border: #bae6fd;
+    --fare-calc-text: #0c4a6e;
+    --security-bg: #ecfdf5;
+    --security-text: #065f46;
+    --security-icon: #10b981;
 }
 
 /* Dark Theme */
@@ -17,13 +35,31 @@
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-accent: linear-gradient(135deg, #4338ca 0%, #3b82f6 100%);
+    --bg-table-header: #334155;
+    --bg-table-hover: #334155;
+    --bg-nav-mobile: #4338ca;
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
     --text-inverse: #ffffff;
+    --text-table-header: #f1f5f9;
     --border-color: #475569;
+    --btn-primary: #4338ca;
+    --btn-primary-hover: #3730a3;
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
     --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     --hero-gradient: linear-gradient(135deg, #4338ca 0%, #3b82f6 50%, #06b6d4 100%);
+    --status-confirmed-bg: #064e3b;
+    --status-confirmed-text: #a7f3d0;
+    --status-waitlist-bg: #92400e;
+    --status-waitlist-text: #fde68a;
+    --status-cancelled-bg: #7f1d1d;
+    --status-cancelled-text: #fca5a5;
+    --fare-calc-bg: #1e3a8a;
+    --fare-calc-border: #3730a3;
+    --fare-calc-text: #bfdbfe;
+    --security-bg: #064e3b;
+    --security-text: #a7f3d0;
+    --security-icon: #6ee7b7;
 }
 
 /* Reset and Base Styles */
@@ -239,7 +275,7 @@ body {
         top: 100%;
         left: 0;
         right: 0;
-        background: #1e40af;
+        background: var(--bg-nav-mobile);
         flex-direction: column;
         padding: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -740,13 +776,13 @@ body {
 }
 
 .btn-primary {
-    background: #3b82f6;
+    background: var(--btn-primary);
     color: var(--text-inverse);
     border: none;
 }
 
 .btn-primary:hover {
-    background: #2563eb;
+    background: var(--btn-primary-hover);
     transform: translateY(-1px);
 }
 
@@ -858,7 +894,7 @@ body {
 }
 
 .train-header h3 {
-    color: #1f2937;
+    color: var(--text-primary);
     font-size: 1.1rem;
     margin: 0;
 }
@@ -874,13 +910,13 @@ body {
 }
 
 .train-status.available {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed-text);
 }
 
 .train-status.waitlist {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--status-waitlist-bg);
+    color: var(--status-waitlist-text);
 }
 
 .train-details {
@@ -1161,13 +1197,13 @@ input[type="checkbox"]:checked + .checkmark {
     font-weight: 600;
 }
 
-.status-confirmed { background: #dcfce7; color: #166534; }
-.status-waitlisted { background: #fef3c7; color: #92400e; }
-.status-cancelled { background: #fee2e2; color: #991b1b; }
-.status-pending_payment { background: #e0e7ff; color: #3730a3; }
-.status-success { background: #dcfce7; color: #166534; }
-.status-failed { background: #fee2e2; color: #991b1b; }
-.status-pending { background: #fef3c7; color: #92400e; }
+.status-confirmed { background: var(--status-confirmed-bg); color: var(--status-confirmed-text); }
+.status-waitlisted { background: var(--status-waitlist-bg); color: var(--status-waitlist-text); }
+.status-cancelled { background: var(--status-cancelled-bg); color: var(--status-cancelled-text); }
+.status-pending_payment { background: var(--status-waitlist-bg); color: var(--status-waitlist-text); }
+.status-success { background: var(--status-confirmed-bg); color: var(--status-confirmed-text); }
+.status-failed { background: var(--status-cancelled-bg); color: var(--status-cancelled-text); }
+.status-pending { background: var(--status-waitlist-bg); color: var(--status-waitlist-text); }
 
 .journey-info {
     margin-bottom: 1rem;
@@ -1437,13 +1473,13 @@ input[type="checkbox"]:checked + .checkmark {
 }
 
 .admin-table th {
-    background: #f8fafc;
+    background: var(--bg-table-header);
     font-weight: 600;
-    color: #374151;
+    color: var(--text-table-header);
 }
 
 .admin-table tr:hover {
-    background: #f8fafc;
+    background: var(--bg-table-hover);
 }
 
 .admin-table .actions {

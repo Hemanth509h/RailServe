@@ -14,6 +14,10 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
 )
 
+# Suppress Werkzeug's HTTP status logging for better console output
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.setLevel(logging.WARNING)  # Only show warnings and errors, not 304/200 status codes
+
 class Base(DeclarativeBase):
     pass
 
