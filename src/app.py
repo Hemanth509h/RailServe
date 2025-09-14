@@ -44,7 +44,7 @@ if os.environ.get('FLASK_ENV') == 'production':
     app.config['PERMANENT_SESSION_LIFETIME'] = 1800  # 30 minutes
 
 # Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
