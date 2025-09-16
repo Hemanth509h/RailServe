@@ -38,21 +38,21 @@ def dashboard():
     total_bookings = Booking.query.count()
     total_revenue = db.session.query(db.func.sum(Payment.amount)).filter_by(status='success').scalar() or 0
     
-    # Quota specific stats  
-    quota_bookings = Booking.query.filter(Booking.quota != 'general').count()
-    quota_revenue = db.session.query(db.func.sum(Booking.total_amount)).filter(
-        Booking.quota != 'general'
+    # Tatkal specific stats
+    tatkal_bookings = Booking.query.filter_by(booking_type='tatkal').count()
+    tatkal_revenue = db.session.query(db.func.sum(Booking.total_amount)).filter(
+        Booking.booking_type == 'tatkal'
     ).scalar() or 0
     
     # Recent bookings with type
     recent_bookings = Booking.query.order_by(Booking.booking_date.desc()).limit(10).all()
     
-    # Booking stats by status and quota
+    # Enhanced booking stats with type breakdown
     booking_stats = db.session.query(
         Booking.status, 
-        Booking.quota,
+        Booking.booking_type,
         db.func.count(Booking.id)
-    ).group_by(Booking.status, Booking.quota).all()
+    ).group_by(Booking.status, Booking.booking_type).all()
     
     # Quick actions needed
     pending_payments = Booking.query.filter_by(status='pending_payment').count()
@@ -97,7 +97,7 @@ def add_train():
         return redirect(url_for('admin.trains'))
     
     # Validate Tatkal seats don't exceed total seats
-    if tatkal_seats is not None and total_seats is not None and tatkal_seats > total_seats:
+    if tatkal_seats and total_seats and tatkal_seats > total_seats:
         flash('Tatkal seats cannot exceed total seats', 'error')
         return redirect(url_for('admin.trains'))
     

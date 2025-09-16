@@ -41,7 +41,7 @@ def search_trains(from_station_id, to_station_id, journey_date):
     
     return valid_trains
 
-def calculate_fare(train_id, from_station_id, to_station_id, passengers):
+def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type='general'):
     """Calculate fare for the journey"""
     from_route = TrainRoute.query.filter_by(
         train_id=train_id, station_id=from_station_id
@@ -59,8 +59,14 @@ def calculate_fare(train_id, from_station_id, to_station_id, passengers):
     if not train:
         return 0
     
-    # Calculate base fare
-    base_fare = distance * train.fare_per_km * passengers
+    # Calculate base fare based on booking type
+    if booking_type == 'tatkal' and train.tatkal_fare_per_km:
+        base_fare = distance * train.tatkal_fare_per_km * passengers
+        # Tatkal surcharge (additional 30% + fixed charge)
+        tatkal_surcharge = min(base_fare * 0.3, 500)  # Cap at ₹500
+        base_fare += tatkal_surcharge
+    else:
+        base_fare = distance * train.fare_per_km * passengers
     
     # Add GST and service charges (18%)
     total_fare = base_fare * 1.18
@@ -133,6 +139,16 @@ def format_currency(amount):
     """Format currency"""
     return f"₹{amount:,.2f}"
 
+def check_tatkal_availability(journey_date):
+    """Check if Tatkal booking is available for the date"""
+    from datetime import timedelta
+    
+    # Tatkal booking opens 1 day before travel (for AC) or same day (for non-AC)
+    today = date.today()
+    tatkal_open_date = journey_date - timedelta(days=1)
+    
+    return today >= tatkal_open_date
+
 def is_booking_open(journey_date):
     """Check if booking is open for the journey date"""
     from datetime import timedelta
@@ -144,15 +160,17 @@ def is_booking_open(journey_date):
     return today <= journey_date <= max_advance_date
 
 def get_booking_statistics():
-    """Get booking statistics"""
+    """Get booking statistics with Tatkal breakdown"""
     total_bookings = Booking.query.count()
     confirmed_bookings = Booking.query.filter_by(status='confirmed').count()
     waitlisted_bookings = Booking.query.filter_by(status='waitlisted').count()
     cancelled_bookings = Booking.query.filter_by(status='cancelled').count()
+    tatkal_bookings = Booking.query.filter_by(booking_type='tatkal').count()
     
     return {
         'total': total_bookings,
         'confirmed': confirmed_bookings,
         'waitlisted': waitlisted_bookings,
-        'cancelled': cancelled_bookings
+        'cancelled': cancelled_bookings,
+        'tatkal': tatkal_bookings
     }

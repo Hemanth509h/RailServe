@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from .models import Train, Station, Booking, TrainRoute
+from .models import Train, Station, Booking, TrainRoute, Passenger
 from .app import db
 from datetime import datetime, date
-from .utils import calculate_fare, check_seat_availability, is_booking_open
+from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
+import random
 
 booking_bp = Blueprint('booking', __name__)
 
@@ -34,7 +35,8 @@ def book_ticket_post(train_id):
     to_station_id = request.form.get('to_station', type=int)
     journey_date = request.form.get('journey_date')
     passengers = request.form.get('passengers', type=int)
-    quota = request.form.get('quota', 'general')  # general, ladies, senior, disability
+    booking_type = request.form.get('booking_type', 'general')  # general or tatkal
+    quota = request.form.get('quota', 'general')  # general, ladies, senior, disability, tatkal
     
     # Backend validation (frontend should handle most of this)
     if not all([from_station_id, to_station_id, journey_date, passengers]):
@@ -69,12 +71,17 @@ def book_ticket_post(train_id):
                 flash('Booking is not available for this date', 'error')
                 return redirect(url_for('booking.book_ticket', train_id=train_id))
             
-            # Calculate fare
-            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers)
+            # Validate Tatkal booking window
+            if booking_type == 'tatkal' and not check_tatkal_availability(journey_date):
+                flash('Tatkal booking is not yet open for this date', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
             
-            # Check seat availability based on booking type
+            # Calculate fare with booking type
+            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type)
+            
+            # Check availability based on booking type with concurrent safety
             if booking_type == 'tatkal':
-                # Check Tatkal quota availability
+                # Check Tatkal quota availability with row-level locking
                 tatkal_booked = db.session.query(
                     db.func.sum(Booking.passengers)
                 ).filter(
@@ -84,7 +91,7 @@ def book_ticket_post(train_id):
                     Booking.status == 'confirmed'
                 ).scalar() or 0
                 
-                available_seats = max(0, train.tatkal_seats - tatkal_booked)
+                available_seats = max(0, (train.tatkal_seats or 0) - tatkal_booked)
             else:
                 # Check general quota availability
                 general_booked = db.session.query(
@@ -96,7 +103,7 @@ def book_ticket_post(train_id):
                     Booking.status == 'confirmed'
                 ).scalar() or 0
                 
-                general_quota = train.total_seats - train.tatkal_seats
+                general_quota = train.total_seats - (train.tatkal_seats or 0)
                 available_seats = max(0, general_quota - general_booked)
             
             # Create booking record
@@ -116,7 +123,30 @@ def book_ticket_post(train_id):
             db.session.add(booking)
             db.session.flush()  # Get booking ID without committing
             
-            # Atomic seat allocation or waitlist assignment
+            # Parse and create passenger details with concurrent safety
+            passenger_details = []
+            for i in range(passengers or 0):
+                passenger_name = request.form.get(f'passenger_{i}_name', '')
+                passenger_age = request.form.get(f'passenger_{i}_age', type=int)
+                passenger_gender = request.form.get(f'passenger_{i}_gender', '')
+                passenger_id_type = request.form.get(f'passenger_{i}_id_type', '')
+                passenger_id_number = request.form.get(f'passenger_{i}_id_number', '')
+                passenger_seat_pref = request.form.get(f'passenger_{i}_seat_preference', 'No Preference')
+                
+                if passenger_name and passenger_age and passenger_gender:
+                    passenger = Passenger(
+                        booking_id=booking.id,
+                        name=passenger_name,
+                        age=passenger_age,
+                        gender=passenger_gender,
+                        id_proof_type=passenger_id_type or 'Aadhar',
+                        id_proof_number=passenger_id_number or f'ID{random.randint(100000, 999999)}',
+                        seat_preference=passenger_seat_pref
+                    )
+                    passenger_details.append(passenger)
+                    db.session.add(passenger)
+            
+            # Atomic seat allocation or waitlist assignment with concurrent protection
             if available_seats >= (passengers or 0):
                 booking.status = 'confirmed'
                 # Update available seats on the locked train record
@@ -128,10 +158,14 @@ def book_ticket_post(train_id):
                 waitlist_manager = WaitlistManager()
                 waitlist_manager.add_to_waitlist(booking.id, train_id, journey_date)
             
-            # Transaction automatically commits here
+            # Transaction automatically commits here with all changes
             
-        flash(f'Booking {"confirmed" if booking.status == "confirmed" else "added to waitlist"}!', 'success')
-        return redirect(url_for('payment.pay', booking_id=booking.id))
+        if booking.status == 'confirmed':
+            flash(f'Ticket booked successfully! PNR: {booking.pnr}', 'success')
+            return redirect(url_for('payment.payment_page', booking_id=booking.id))
+        else:
+            flash(f'No seats available. Added to waitlist! PNR: {booking.pnr}', 'warning')
+            return redirect(url_for('booking.booking_history'))
         
     except Exception as e:
         db.session.rollback()

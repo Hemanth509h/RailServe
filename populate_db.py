@@ -137,7 +137,7 @@ def populate_database():
         howrah_station = Station.query.filter_by(code='HWH').first()
         train_12001 = Train.query.filter_by(number='12001').first()
         
-        if all([delhi_station, agra_station, lucknow_station, howrah_station, train_12001]):
+        if all([station is not None for station in [delhi_station, agra_station, lucknow_station, howrah_station]]) and train_12001 is not None:
             routes = [
                 {'station': delhi_station, 'sequence': 1, 'departure_time': time(6, 0), 'distance': 0},
                 {'station': agra_station, 'sequence': 2, 'arrival_time': time(8, 30), 'departure_time': time(8, 35), 'distance': 200},
