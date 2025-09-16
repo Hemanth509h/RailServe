@@ -77,19 +77,8 @@
                     </div>
                 </div>
                 
-                <!-- Booking Type and Quota Selection -->
+                <!-- Quota Selection -->
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="booking_type">
-                            <i class="fas fa-ticket-alt"></i> Booking Type
-                        </label>
-                        <select name="booking_type" id="booking_type" required>
-                            <option value="general">General Booking</option>
-                            <option value="tatkal">Tatkal Booking (Premium)</option>
-                        </select>
-                        <small class="form-help">Tatkal: Premium fare, 1 day advance booking</small>
-                    </div>
-                    
                     <div class="form-group">
                         <label for="quota">
                             <i class="fas fa-users-cog"></i> Quota
@@ -98,8 +87,17 @@
                             <option value="general">General</option>
                             <option value="ladies">Ladies</option>
                             <option value="senior">Senior Citizen</option>
-                            <option value="tatkal">Tatkal</option>
+                            <option value="disability">Person with Disability</option>
                         </select>
+                    </div>
+                </div>
+                
+                <!-- Passenger Details Section -->
+                <div class="passenger-section" id="passengerSection" style="display: none;">
+                    <h4><i class="fas fa-user-friends"></i> Passenger Details</h4>
+                    <p class="section-help">Please provide details for all passengers as per government ID proof</p>
+                    <div id="passengerContainer">
+                        <!-- Passenger details will be dynamically added here -->
                     </div>
                 </div>
                 
@@ -117,7 +115,7 @@
                             <span id="baseFare">₹--</span>
                         </div>
                         <div class="fare-item">
-                            <span>Service Charges (10%):</span>
+                            <span>GST & Service Charges (18%):</span>
                             <span id="serviceCharges">₹--</span>
                         </div>
                         <div class="fare-item total">
@@ -127,26 +125,7 @@
                     </div>
                 </div>
                 
-                <!-- Fare Calculator -->
-                <div id="fareCalculator" class="fare-calculator" style="display: none;">
-                    <h4><i class="fas fa-calculator"></i> Fare Breakdown</h4>
-                    <div class="fare-details">
-                        <div class="fare-item">
-                            <span>Distance:</span>
-                            <span id="distance">0 km</span>
-                        </div>
-                        <div class="fare-item">
-                            <span>Base Fare:</span>
-                            <span id="baseFare">₹0.00</span>
-                        </div>
-                        <div class="fare-item">
-                            <span>Service Charges:</span>
-                            <span id="serviceCharges">₹0.00</span>
-                        </div>
-                        <div class="fare-item total">
-                            <span>Total Fare:</span>
-                            <span id="totalFare">₹0.00</span>
-                        </div>
+                <!-- Duplicate fare calculator removed -->
                     </div>
                 </div>
                 
