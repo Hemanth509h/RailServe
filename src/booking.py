@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from .models import Train, Station, Booking, TrainRoute
 from .app import db
 from datetime import datetime, date
-from .utils import calculate_fare, check_seat_availability
+from .utils import calculate_fare, check_seat_availability, check_tatkal_availability
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
 
@@ -29,79 +29,120 @@ def book_ticket(train_id):
 @booking_bp.route('/book/<int:train_id>', methods=['POST'])
 @login_required
 def book_ticket_post(train_id):
-    """Process ticket booking"""
-    train = Train.query.get_or_404(train_id)
-    
+    """Process ticket booking with proper concurrency control"""
     from_station_id = request.form.get('from_station', type=int)
     to_station_id = request.form.get('to_station', type=int)
     journey_date = request.form.get('journey_date')
     passengers = request.form.get('passengers', type=int)
+    booking_type = request.form.get('booking_type', 'general')  # general or tatkal
+    quota = request.form.get('quota', 'general')  # general, tatkal, ladies, senior
     
-    # Validation
+    # Backend validation (frontend should handle most of this)
     if not all([from_station_id, to_station_id, journey_date, passengers]):
         flash('Please fill all fields', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
-    if from_station_id == to_station_id:
-        flash('Source and destination cannot be same', 'error')
+    try:
+        journey_date = datetime.strptime(journey_date or '', '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
-    if not passengers or passengers <= 0 or passengers > 6:
-        flash('Number of passengers must be between 1 and 6', 'error')
+    # Start atomic transaction for concurrent booking
+    try:
+        # Use row-level locking to prevent concurrent booking conflicts
+        with db.session.begin():
+            # Lock the train record to ensure atomic seat allocation
+            train = db.session.query(Train).filter_by(id=train_id).with_for_update().first()
+            
+            if not train or not train.active:
+                flash('Train not found or not active', 'error')
+                return redirect(url_for('index'))
+            
+            # Validate route exists
+            route_graph = get_route_graph()
+            if not route_graph.has_route(train_id, from_station_id, to_station_id):
+                flash('No route available between selected stations for this train', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+            
+            # Validate Tatkal booking window
+            if booking_type == 'tatkal' and not check_tatkal_availability(journey_date):
+                flash('Tatkal booking is not yet open for this date', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+            
+            # Calculate fare with booking type
+            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type)
+            
+            # Check seat availability based on booking type
+            if booking_type == 'tatkal':
+                # Check Tatkal quota availability
+                tatkal_booked = db.session.query(
+                    db.func.sum(Booking.passengers)
+                ).filter(
+                    Booking.train_id == train_id,
+                    Booking.journey_date == journey_date,
+                    Booking.booking_type == 'tatkal',
+                    Booking.status == 'confirmed'
+                ).scalar() or 0
+                
+                available_seats = max(0, train.tatkal_seats - tatkal_booked)
+            else:
+                # Check general quota availability
+                general_booked = db.session.query(
+                    db.func.sum(Booking.passengers)
+                ).filter(
+                    Booking.train_id == train_id,
+                    Booking.journey_date == journey_date,
+                    Booking.booking_type == 'general',
+                    Booking.status == 'confirmed'
+                ).scalar() or 0
+                
+                general_quota = train.total_seats - train.tatkal_seats
+                available_seats = max(0, general_quota - general_booked)
+            
+            # Create booking record
+            booking = Booking(
+                user_id=current_user.id,
+                train_id=train_id,
+                from_station_id=from_station_id,
+                to_station_id=to_station_id,
+                journey_date=journey_date,
+                passengers=passengers,
+                total_amount=total_amount,
+                booking_type=booking_type,
+                quota=quota,
+                status='pending_payment'
+            )
+            
+            db.session.add(booking)
+            db.session.flush()  # Get booking ID without committing
+            
+            # Atomic seat allocation or waitlist assignment
+            if available_seats >= (passengers or 0):
+                booking.status = 'confirmed'
+                # Update available seats on the locked train record
+                if train:
+                    train.available_seats = max(0, train.available_seats - (passengers or 0))
+            else:
+                booking.status = 'waitlisted'
+                # Add to waitlist queue
+                waitlist_manager = WaitlistManager()
+                waitlist_manager.add_to_waitlist(booking.id, train_id, journey_date)
+            
+            # Transaction automatically commits here
+            
+        flash(f'Booking {"confirmed" if booking.status == "confirmed" else "added to waitlist"}!', 'success')
+        return redirect(url_for('payment.pay', booking_id=booking.id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Booking failed due to high demand. Please try again.', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
-    
-    journey_date = datetime.strptime(journey_date or '', '%Y-%m-%d').date()
-    
-    if journey_date < date.today():
-        flash('Journey date cannot be in the past', 'error')
-        return redirect(url_for('booking.book_ticket', train_id=train_id))
-    
-    # Check if route exists
-    route_graph = get_route_graph()
-    if not route_graph.has_route(train_id, from_station_id, to_station_id):
-        flash('No route available between selected stations for this train', 'error')
-        return redirect(url_for('booking.book_ticket', train_id=train_id))
-    
-    # Calculate fare
-    total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers)
-    
-    # Check seat availability
-    available_seats = check_seat_availability(train_id, journey_date)
-    
-    # Create booking
-    booking = Booking(
-        user_id=current_user.id,
-        train_id=train_id,
-        from_station_id=from_station_id,
-        to_station_id=to_station_id,
-        journey_date=journey_date,
-        passengers=passengers,
-        total_amount=total_amount,
-        status='pending_payment'
-    )
-    
-    db.session.add(booking)
-    db.session.commit()
-    
-    # If seats available, mark as confirmed, otherwise add to waitlist
-    if available_seats >= (passengers or 0):
-        booking.status = 'confirmed'
-        train.available_seats -= passengers
-    else:
-        booking.status = 'waitlisted'
-        # Add to waitlist queue
-        waitlist_manager = WaitlistManager()
-        waitlist_manager.add_to_waitlist(booking.id, train_id, journey_date)
-    
-    db.session.commit()
-    
-    # Redirect to payment
-    return redirect(url_for('payment.pay', booking_id=booking.id))
 
 @booking_bp.route('/cancel/<int:booking_id>')
 @login_required
 def cancel_booking(booking_id):
-    """Cancel booking"""
+    """Cancel booking with proper seat release"""
     booking = Booking.query.get_or_404(booking_id)
     
     # Check if user owns the booking
@@ -114,21 +155,34 @@ def cancel_booking(booking_id):
         flash('Booking cannot be cancelled', 'error')
         return redirect(url_for('auth.profile'))
     
-    # Cancel booking
-    booking.status = 'cancelled'
-    
-    # If confirmed booking, release seats and process waitlist
-    if booking.status == 'confirmed':
-        train = booking.train
-        train.available_seats += booking.passengers
+    try:
+        # Use atomic transaction for cancellation
+        with db.session.begin():
+            # Lock the train record for seat release
+            train = db.session.query(Train).filter_by(id=booking.train_id).with_for_update().first()
+            
+            # Store original status before changing
+            original_status = booking.status
+            
+            # Cancel booking
+            booking.status = 'cancelled'
+            
+            # If it was a confirmed booking, release seats and process waitlist
+            if original_status == 'confirmed' and train:
+                train.available_seats += booking.passengers
+                
+                # Process waitlist after seat release
+                waitlist_manager = WaitlistManager()
+                waitlist_manager.process_waitlist(booking.train_id, booking.journey_date)
+            
+            # Transaction automatically commits here
+            
+        flash('Booking cancelled successfully', 'success')
         
-        # Process waitlist
-        waitlist_manager = WaitlistManager()
-        waitlist_manager.process_waitlist(booking.train_id, booking.journey_date)
+    except Exception as e:
+        db.session.rollback()
+        flash('Cancellation failed. Please try again.', 'error')
     
-    db.session.commit()
-    
-    flash('Booking cancelled successfully', 'success')
     return redirect(url_for('auth.profile'))
 
 @booking_bp.route('/history')

@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RailServe App"
+args = "RailServe Flask App"
 
 [[workflows.workflow]]
-name = "RailServe App"
+name = "RailServe Flask App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv run python main.py"
+args = "bash start_production.sh"
 waitForPort = 5000
 
 [workflows.workflow.metadata]

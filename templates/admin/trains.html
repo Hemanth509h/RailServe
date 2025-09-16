@@ -15,7 +15,6 @@
         <h3><i class="fas fa-plus"></i> Add New Train</h3>
         
         <form method="POST" action="{{ url_for('admin.add_train') }}" class="admin-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-row">
                 <div class="form-group">
                     <label for="number">Train Number</label>
@@ -38,6 +37,19 @@
                 </div>
             </div>
             
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="tatkal_seats">Tatkal Quota Seats</label>
+                    <input type="number" id="tatkal_seats" name="tatkal_seats" min="0" placeholder="0">
+                    <small>Number of seats reserved for Tatkal booking</small>
+                </div>
+                <div class="form-group">
+                    <label for="tatkal_fare_per_km">Tatkal Fare per KM (₹)</label>
+                    <input type="number" id="tatkal_fare_per_km" name="tatkal_fare_per_km" step="0.01" min="0" placeholder="Auto-calculated">
+                    <small>Leave empty for auto-calculation (1.5x normal fare)</small>
+                </div>
+            </div>
+            
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add Train
             </button>
@@ -55,8 +67,10 @@
                             <th>Train Number</th>
                             <th>Train Name</th>
                             <th>Total Seats</th>
-                            <th>Available Seats</th>
+                            <th>Tatkal Quota</th>
+                            <th>Available</th>
                             <th>Fare/KM</th>
+                            <th>Tatkal Fare/KM</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -68,11 +82,23 @@
                                 <td>{{ train.name }}</td>
                                 <td>{{ train.total_seats }}</td>
                                 <td>
+                                    <span class="tatkal-quota">
+                                        {{ train.tatkal_seats or 0 }}
+                                    </span>
+                                </td>
+                                <td>
                                     <span class="seat-count {% if train.available_seats > 50 %}high{% elif train.available_seats > 20 %}medium{% else %}low{% endif %}">
                                         {{ train.available_seats }}
                                     </span>
                                 </td>
                                 <td>₹{{ "%.2f"|format(train.fare_per_km) }}</td>
+                                <td>
+                                    {% if train.tatkal_fare_per_km %}
+                                        ₹{{ "%.2f"|format(train.tatkal_fare_per_km) }}
+                                    {% else %}
+                                        <em>Not set</em>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <span class="status-badge {% if train.active %}status-active{% else %}status-inactive{% endif %}">
                                         {{ 'Active' if train.active else 'Inactive' }}

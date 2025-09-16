@@ -2725,3 +2725,57 @@ a:focus {
     background: var(--bg-primary) !important;
     color: #3b82f6 !important;
 }
+
+/* Additional dark theme fixes for visibility issues */
+[data-theme="dark"] * {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-secondary,
+[data-theme="dark"] small,
+[data-theme="dark"] .form-group small {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] select::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] option {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .nav-link,
+[data-theme="dark"] .nav-brand a,
+[data-theme="dark"] .nav-user {
+    color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .btn {
+    color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] .btn-secondary {
+    background: var(--text-secondary) !important;
+    color: var(--text-inverse) !important;
+}
+
+[data-theme="dark"] table,
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert {
+    color: inherit !important;
+}
+
+[data-theme="dark"] .hero-content h1,
+[data-theme="dark"] .hero-content p {
+    color: var(--text-inverse) !important;
+}

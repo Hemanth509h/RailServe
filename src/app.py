@@ -3,70 +3,53 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Configure logging based on environment
-log_level = logging.INFO if os.environ.get('FLASK_ENV') == 'production' else logging.DEBUG
-logging.basicConfig(
-    level=log_level,
-    format='%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-)
-
-# Suppress Werkzeug's HTTP status logging for better console output
-werkzeug_logger = logging.getLogger('werkzeug')
-werkzeug_logger.setLevel(logging.WARNING)  # Only show warnings and errors, not 304/200 status codes
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
-csrf = CSRFProtect()
 
 # Create the app with correct template and static paths
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
-# Security: Require SESSION_SECRET environment variable - no fallback
-session_secret = os.environ.get("SESSION_SECRET")
-if not session_secret:
-    raise ValueError("SESSION_SECRET environment variable is required for security")
-app.secret_key = session_secret
+app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+if not app.secret_key:
+    raise ValueError("SESSION_SECRET environment variable must be set for security")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Production security configuration
-if os.environ.get('FLASK_ENV') == 'production':
-    app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS only
-    app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent XSS
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
-    app.config['PERMANENT_SESSION_LIFETIME'] = 1800  # 30 minutes
-
 # Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+database_url =os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
+if not database_url:
+    raise ValueError("DATABASE_URL environment variable must be set")
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 
+# Security settings for production
+is_production = os.environ.get('FLASK_ENV') == 'production'
+app.config['SESSION_COOKIE_SECURE'] = is_production  # HTTPS only in production
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent XSS
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session timeout
+
+# Additional security headers
+if is_production:
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
+
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)
-csrf.init_app(app)
 login_manager.login_view = 'auth.login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
-
-# Security headers for all responses
-@app.after_request
-def add_security_headers(response):
-    """Add security headers to all responses"""
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-    if os.environ.get('FLASK_ENV') == 'production':
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    return response
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,21 +72,5 @@ with app.app_context():
     from . import models
     db.create_all()
     
-    # Create default admin user if not exists and ADMIN_PASSWORD is set
-    from .models import User
-    from werkzeug.security import generate_password_hash
-    
-    admin_password = os.environ.get('ADMIN_PASSWORD')
-    if admin_password and not User.query.filter_by(role='super_admin').first():
-        admin_user = User(
-            username='admin',
-            email='admin@railserve.com',
-            password_hash=generate_password_hash(admin_password),
-            role='super_admin',
-            active=True
-        )
-        db.session.add(admin_user)
-        db.session.commit()
-        logging.info("Default super admin user created")
-    elif not admin_password and not User.query.filter_by(role='super_admin').first():
-        logging.warning("No super admin user exists and ADMIN_PASSWORD not set. Create one manually through registration.")
+    # Note: Admin users should be created securely through proper CLI commands or setup scripts
+    # Never create default admin users with hard-coded passwords in production

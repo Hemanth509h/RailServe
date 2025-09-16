@@ -23,7 +23,6 @@
             <h3><i class="fas fa-ticket-alt"></i> Book Your Ticket</h3>
             
             <form method="POST" class="booking-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="from_station">
@@ -78,6 +77,32 @@
                     </div>
                 </div>
                 
+                <!-- Booking Type and Quota Selection -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="booking_type">
+                            <i class="fas fa-ticket-alt"></i> Booking Type
+                        </label>
+                        <select name="booking_type" id="booking_type" required>
+                            <option value="general">General Booking</option>
+                            <option value="tatkal">Tatkal Booking (Premium)</option>
+                        </select>
+                        <small class="form-help">Tatkal: Premium fare, 1 day advance booking</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="quota">
+                            <i class="fas fa-users-cog"></i> Quota
+                        </label>
+                        <select name="quota" id="quota" required>
+                            <option value="general">General</option>
+                            <option value="ladies">Ladies</option>
+                            <option value="senior">Senior Citizen</option>
+                            <option value="tatkal">Tatkal</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="fare-calculator" id="fareCalculator" style="display: none;">
                     <div class="calculator-header">
                         <h4><i class="fas fa-calculator"></i> Fare Calculation</h4>
@@ -102,11 +127,34 @@
                     </div>
                 </div>
                 
+                <!-- Fare Calculator -->
+                <div id="fareCalculator" class="fare-calculator" style="display: none;">
+                    <h4><i class="fas fa-calculator"></i> Fare Breakdown</h4>
+                    <div class="fare-details">
+                        <div class="fare-item">
+                            <span>Distance:</span>
+                            <span id="distance">0 km</span>
+                        </div>
+                        <div class="fare-item">
+                            <span>Base Fare:</span>
+                            <span id="baseFare">₹0.00</span>
+                        </div>
+                        <div class="fare-item">
+                            <span>Service Charges:</span>
+                            <span id="serviceCharges">₹0.00</span>
+                        </div>
+                        <div class="fare-item total">
+                            <span>Total Fare:</span>
+                            <span id="totalFare">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="form-actions">
                     <a href="{{ url_for('index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Search
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
                         <i class="fas fa-arrow-right"></i> Proceed to Payment
                     </button>
                 </div>
@@ -125,27 +173,101 @@
     const fromStation = document.getElementById('from_station');
     const toStation = document.getElementById('to_station');
     const passengers = document.getElementById('passengers');
+    const journeyDate = document.getElementById('journey_date');
     const fareCalculator = document.getElementById('fareCalculator');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.querySelector('.booking-form');
+    
+    // Get fare per km from server
+    const baseFarePerKm = parseFloat('{{ train.fare_per_km }}');
+    
+    // Frontend validation function
+    function validateForm() {
+        const errors = [];
+        
+        if (!fromStation.value) {
+            errors.push('Please select departure station');
+        }
+        
+        if (!toStation.value) {
+            errors.push('Please select destination station');
+        }
+        
+        if (fromStation.value === toStation.value && fromStation.value) {
+            errors.push('Departure and destination cannot be same');
+        }
+        
+        if (!journeyDate.value) {
+            errors.push('Please select journey date');
+        } else {
+            const selectedDate = new Date(journeyDate.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                errors.push('Journey date cannot be in the past');
+            }
+        }
+        
+        if (!passengers.value) {
+            errors.push('Please select number of passengers');
+        } else {
+            const passengerCount = parseInt(passengers.value);
+            if (passengerCount < 1 || passengerCount > 6) {
+                errors.push('Number of passengers must be between 1 and 6');
+            }
+        }
+        
+        return errors;
+    }
+    
+    // Real-time validation feedback
+    function showValidationFeedback() {
+        const errors = validateForm();
+        
+        // Remove existing error messages
+        document.querySelectorAll('.validation-error').forEach(el => el.remove());
+        
+        // Enable/disable submit button
+        submitBtn.disabled = errors.length > 0;
+        
+        if (errors.length > 0) {
+            submitBtn.style.opacity = '0.6';
+            submitBtn.title = errors.join(', ');
+        } else {
+            submitBtn.style.opacity = '1';
+            submitBtn.title = '';
+            calculateFare();
+        }
+    }
     
     function calculateFare() {
         const from = fromStation.value;
         const to = toStation.value;
         const passengerCount = passengers.value;
+        const bookingType = document.getElementById('booking_type').value;
         
         if (from && to && passengerCount && from !== to) {
-            // This is a simplified calculation - in real implementation,
-            // you would fetch the actual route data from the server
-            const baseFarePerKm = {{ train.fare_per_km|tojson }};
-            const estimatedDistance = Math.abs(parseInt(to) - parseInt(from)) * 50; // Rough estimation
+            // Simplified distance calculation based on station sequence
+            const fromIndex = Array.from(fromStation.options).findIndex(opt => opt.value === from);
+            const toIndex = Array.from(toStation.options).findIndex(opt => opt.value === to);
+            const estimatedDistance = Math.abs(toIndex - fromIndex) * 75; // ~75km between stations
             
-            const baseFare = estimatedDistance * baseFarePerKm * parseInt(passengerCount);
+            let baseFare = estimatedDistance * baseFarePerKm * parseInt(passengerCount);
+            
+            // Apply Tatkal surcharge if selected
+            if (bookingType === 'tatkal') {
+                const tatkalMultiplier = 1.5; // 50% premium
+                const tatkalSurcharge = Math.min(baseFare * 0.3, 500); // Max ₹500 surcharge
+                baseFare = baseFare * tatkalMultiplier + tatkalSurcharge;
+            }
+            
             const serviceCharges = baseFare * 0.1;
             const totalFare = baseFare + serviceCharges;
             
             document.getElementById('distance').textContent = estimatedDistance + ' km';
             document.getElementById('baseFare').textContent = '₹' + baseFare.toFixed(2);
             document.getElementById('serviceCharges').textContent = '₹' + serviceCharges.toFixed(2);
-            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2);
+            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2) + (bookingType === 'tatkal' ? ' (Tatkal)' : '');
             
             fareCalculator.style.display = 'block';
         } else {
@@ -153,21 +275,65 @@
         }
     }
     
-    fromStation.addEventListener('change', calculateFare);
-    toStation.addEventListener('change', calculateFare);
-    passengers.addEventListener('change', calculateFare);
+    // Event listeners for real-time validation
+    const bookingType = document.getElementById('booking_type');
+    const quota = document.getElementById('quota');
+    
+    [fromStation, toStation, passengers, journeyDate, bookingType, quota].forEach(element => {
+        element.addEventListener('change', showValidationFeedback);
+        element.addEventListener('blur', showValidationFeedback);
+    });
+    
+    // Sync booking type with quota
+    bookingType.addEventListener('change', function() {
+        if (this.value === 'tatkal') {
+            quota.value = 'tatkal';
+        } else if (quota.value === 'tatkal') {
+            quota.value = 'general';
+        }
+        calculateFare();
+    });
+    
+    quota.addEventListener('change', function() {
+        if (this.value === 'tatkal') {
+            bookingType.value = 'tatkal';
+        } else if (bookingType.value === 'tatkal' && this.value !== 'tatkal') {
+            bookingType.value = 'general';
+        }
+        calculateFare();
+    });
     
     // Prevent selecting same station
     fromStation.addEventListener('change', function() {
-        if (this.value === toStation.value) {
+        if (this.value === toStation.value && this.value) {
             toStation.value = '';
+            showValidationFeedback();
         }
     });
     
     toStation.addEventListener('change', function() {
-        if (this.value === fromStation.value) {
+        if (this.value === fromStation.value && this.value) {
             fromStation.value = '';
+            showValidationFeedback();
         }
     });
+    
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        const errors = validateForm();
+        
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert('Please fix the following errors:\n' + errors.join('\n'));
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+    
+    // Initial validation check
+    showValidationFeedback();
 </script>
 {% endblock %}

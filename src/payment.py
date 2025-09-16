@@ -60,13 +60,12 @@ def process_payment(booking_id):
     
     db.session.add(payment)
     
-    # Update booking status if waitlisted
-    if booking.status == 'pending_payment':
-        if booking.status == 'waitlisted':
-            # Keep as waitlisted but mark payment as completed
-            pass
-        else:
-            booking.status = 'confirmed'
+    # Update booking status based on current state
+    if booking.status == 'waitlisted':
+        # Keep as waitlisted but mark payment as completed
+        pass
+    elif booking.status == 'pending_payment':
+        booking.status = 'confirmed'
     
     db.session.commit()
     
