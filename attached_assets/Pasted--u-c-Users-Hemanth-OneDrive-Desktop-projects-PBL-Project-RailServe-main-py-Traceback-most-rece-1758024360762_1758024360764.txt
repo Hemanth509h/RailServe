@@ -1,0 +1,161 @@
+ -u "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py"
+Traceback (most recent call last):
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py", line 2, in <module>
+    from src.app import app
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\app.py", line 20, in <module>
+    Config.validate_config()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\config.py", line 39, in validate_config
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Missing required environment variables: SESSION_SECRET, DATABASE_URL. Please check your .env file or environment configuration.
+(base) PS C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe> python -u "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py"
+Traceback (most recent call last):
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py", line 2, in <module>
+    from src.app import app
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\app.py", line 20, in <module>
+    Config.validate_config()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\config.py", line 39, in validate_config
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Missing required environment variables: SESSION_SECRET, DATABASE_URL. Please check your .env file or environment configuration.
+(base) PS C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe> python -u "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py"
+ * Serving Flask app 'src.app'
+ * Debug mode: off
+INFO:werkzeug:WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.4:5000
+INFO:werkzeug:Press CTRL+C to quit
+ERROR:src.app:Exception on / [GET]
+Traceback (most recent call last):
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedColumn: column train.tatkal_seats does not exist
+LINE 1: ..., train.available_seats AS train_available_seats, train.tatk...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "train.total_seats".
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\anaconda\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "E:\anaconda\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "E:\anaconda\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "E:\anaconda\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py", line 12, in index
+    running_trains = get_running_trains()
+  File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\utils.py", line 8, in get_running_trains
+    return Train.query.filter_by(active=True).all()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column train.tatkal_seats does not exist
+LINE 1: ..., train.available_seats AS train_available_seats, train.tatk...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "train.total_seats".
+
+[SQL: SELECT train.id AS train_id, train.number AS train_number, train.name AS train_name, train.total_seats AS train_total_seats, train.available_seats AS train_available_seats, train.tatkal_seats AS train_tatkal_seats, train.fare_per_km AS train_fare_per_km, train.tatkal_fare_per_km AS train_tatkal_fare_per_km, train.active AS train_active, train.created_at AS train_created_at    
+FROM train
+WHERE train.active = true]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+INFO:werkzeug:127.0.0.1 - - [16/Sep/2025 17:30:05] "GET / HTTP/1.1" 500 -    
+INFO:werkzeug:127.0.0.1 - - [16/Sep/2025 17:30:05] "GET /favicon.ico HTTP/1.1" 404 -

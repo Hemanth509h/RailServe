@@ -56,9 +56,7 @@ class Train(db.Model):
     name = db.Column(db.String(100), nullable=False)
     total_seats = db.Column(db.Integer, nullable=False)
     available_seats = db.Column(db.Integer, nullable=False)
-    tatkal_seats = db.Column(db.Integer, default=0)  # Tatkal quota seats
     fare_per_km = db.Column(db.Float, nullable=False)
-    tatkal_fare_per_km = db.Column(db.Float)  # Premium Tatkal fare
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -95,8 +93,7 @@ class Booking(db.Model):
     journey_date = db.Column(db.Date, nullable=False)
     passengers = db.Column(db.Integer, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    booking_type = db.Column(db.String(10), default='general')  # general, tatkal
-    quota = db.Column(db.String(20), default='general')  # general, tatkal, ladies, senior
+    quota = db.Column(db.String(20), default='general')  # general, ladies, senior, disability
     status = db.Column(db.String(20), default='pending_payment')  # confirmed, waitlisted, cancelled, pending_payment
     booking_date = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -108,6 +105,21 @@ class Booking(db.Model):
     to_station = db.relationship('Station', foreign_keys=[to_station_id])
     payment = db.relationship('Payment', backref='booking', uselist=False)
     waitlist = db.relationship('Waitlist', backref='booking', uselist=False)
+    passengers_details = db.relationship('Passenger', backref='booking', lazy=True)
+
+class Passenger(db.Model):
+    """Passenger details for bookings"""
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
+    gender = db.Column(db.String(10), nullable=False)  # Male, Female, Other
+    id_proof_type = db.Column(db.String(20), nullable=False)  # Aadhar, PAN, Passport, etc.
+    id_proof_number = db.Column(db.String(50), nullable=False)
+    seat_preference = db.Column(db.String(20), default='No Preference')  # Lower, Middle, Upper, Window, Aisle
+    
+    def __init__(self, **kwargs):
+        super(Passenger, self).__init__(**kwargs)
 
 class Payment(db.Model):
     """Payment information"""

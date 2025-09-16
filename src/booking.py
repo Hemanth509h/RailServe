@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from .models import Train, Station, Booking, TrainRoute
 from .app import db
 from datetime import datetime, date
-from .utils import calculate_fare, check_seat_availability, check_tatkal_availability
+from .utils import calculate_fare, check_seat_availability, is_booking_open
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
 
@@ -34,8 +34,7 @@ def book_ticket_post(train_id):
     to_station_id = request.form.get('to_station', type=int)
     journey_date = request.form.get('journey_date')
     passengers = request.form.get('passengers', type=int)
-    booking_type = request.form.get('booking_type', 'general')  # general or tatkal
-    quota = request.form.get('quota', 'general')  # general, tatkal, ladies, senior
+    quota = request.form.get('quota', 'general')  # general, ladies, senior, disability
     
     # Backend validation (frontend should handle most of this)
     if not all([from_station_id, to_station_id, journey_date, passengers]):
@@ -65,13 +64,13 @@ def book_ticket_post(train_id):
                 flash('No route available between selected stations for this train', 'error')
                 return redirect(url_for('booking.book_ticket', train_id=train_id))
             
-            # Validate Tatkal booking window
-            if booking_type == 'tatkal' and not check_tatkal_availability(journey_date):
-                flash('Tatkal booking is not yet open for this date', 'error')
+            # Validate booking window
+            if not is_booking_open(journey_date):
+                flash('Booking is not available for this date', 'error')
                 return redirect(url_for('booking.book_ticket', train_id=train_id))
             
-            # Calculate fare with booking type
-            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type)
+            # Calculate fare
+            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers)
             
             # Check seat availability based on booking type
             if booking_type == 'tatkal':
