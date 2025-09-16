@@ -41,8 +41,8 @@ def search_trains(from_station_id, to_station_id, journey_date):
     
     return valid_trains
 
-def calculate_fare(train_id, from_station_id, to_station_id, passengers):
-    """Calculate fare for the journey"""
+def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type='general'):
+    """Calculate fare for the journey with Tatkal premium"""
     from_route = TrainRoute.query.filter_by(
         train_id=train_id, station_id=from_station_id
     ).first()
@@ -59,7 +59,14 @@ def calculate_fare(train_id, from_station_id, to_station_id, passengers):
     if not train:
         return 0
     
-    base_fare = distance * train.fare_per_km * passengers
+    # Calculate base fare based on booking type
+    if booking_type == 'tatkal' and train.tatkal_fare_per_km:
+        base_fare = distance * train.tatkal_fare_per_km * passengers
+        # Tatkal surcharge (additional 30% + fixed charge)
+        tatkal_surcharge = min(base_fare * 0.3, 500)  # Cap at ₹500
+        base_fare += tatkal_surcharge
+    else:
+        base_fare = distance * train.fare_per_km * passengers
     
     # Add service charges (10%)
     total_fare = base_fare * 1.1
@@ -67,18 +74,18 @@ def calculate_fare(train_id, from_station_id, to_station_id, passengers):
     return round(total_fare, 2)
 
 def check_seat_availability(train_id, journey_date):
-    """Check available seats for a train on given date"""
+    """Check available seats for a train on given date (only confirmed bookings)"""
     train = Train.query.get(train_id)
     if not train:
         return 0
     
-    # Count confirmed bookings for the date
+    # Count only confirmed bookings for the date (not waitlisted)
     booked_passengers = db.session.query(
         db.func.sum(Booking.passengers)
     ).filter(
         Booking.train_id == train_id,
         Booking.journey_date == journey_date,
-        Booking.status.in_(['confirmed', 'waitlisted'])
+        Booking.status == 'confirmed'  # Only count confirmed bookings
     ).scalar() or 0
     
     return max(0, train.total_seats - booked_passengers)
@@ -132,16 +139,28 @@ def format_currency(amount):
     """Format currency"""
     return f"₹{amount:,.2f}"
 
+def check_tatkal_availability(journey_date):
+    """Check if Tatkal booking is available for the date"""
+    from datetime import timedelta
+    
+    # Tatkal booking opens 1 day before travel (for AC) or same day (for non-AC)
+    today = date.today()
+    tatkal_open_date = journey_date - timedelta(days=1)
+    
+    return today >= tatkal_open_date
+
 def get_booking_statistics():
-    """Get booking statistics"""
+    """Get booking statistics with Tatkal breakdown"""
     total_bookings = Booking.query.count()
     confirmed_bookings = Booking.query.filter_by(status='confirmed').count()
     waitlisted_bookings = Booking.query.filter_by(status='waitlisted').count()
     cancelled_bookings = Booking.query.filter_by(status='cancelled').count()
+    tatkal_bookings = Booking.query.filter_by(booking_type='tatkal').count()
     
     return {
         'total': total_bookings,
         'confirmed': confirmed_bookings,
         'waitlisted': waitlisted_bookings,
-        'cancelled': cancelled_bookings
+        'cancelled': cancelled_bookings,
+        'tatkal': tatkal_bookings
     }

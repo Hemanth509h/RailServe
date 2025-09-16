@@ -32,28 +32,43 @@ def super_admin_required(f):
 @admin_bp.route('/')
 @admin_required
 def dashboard():
-    """Admin dashboard with analytics"""
+    """Enhanced admin dashboard with Tatkal insights"""
     total_users = User.query.count()
     total_trains = Train.query.count()
     total_bookings = Booking.query.count()
     total_revenue = db.session.query(db.func.sum(Payment.amount)).filter_by(status='success').scalar() or 0
     
-    # Recent bookings
+    # Tatkal specific stats
+    tatkal_bookings = Booking.query.filter_by(booking_type='tatkal').count()
+    tatkal_revenue = db.session.query(db.func.sum(Booking.total_amount)).filter(
+        Booking.booking_type == 'tatkal'
+    ).scalar() or 0
+    
+    # Recent bookings with type
     recent_bookings = Booking.query.order_by(Booking.booking_date.desc()).limit(10).all()
     
-    # Booking status distribution
+    # Enhanced booking stats with type breakdown
     booking_stats = db.session.query(
         Booking.status, 
+        Booking.booking_type,
         db.func.count(Booking.id)
-    ).group_by(Booking.status).all()
+    ).group_by(Booking.status, Booking.booking_type).all()
+    
+    # Quick actions needed
+    pending_payments = Booking.query.filter_by(status='pending_payment').count()
+    waitlist_count = Booking.query.filter_by(status='waitlisted').count()
     
     return render_template('admin/dashboard.html', 
                          total_users=total_users,
                          total_trains=total_trains,
                          total_bookings=total_bookings,
                          total_revenue=total_revenue,
+                         tatkal_bookings=tatkal_bookings,
+                         tatkal_revenue=tatkal_revenue,
                          recent_bookings=recent_bookings,
-                         booking_stats=booking_stats)
+                         booking_stats=booking_stats,
+                         pending_payments=pending_payments,
+                         waitlist_count=waitlist_count)
 
 @admin_bp.route('/trains')
 @admin_required
@@ -65,11 +80,13 @@ def trains():
 @admin_bp.route('/trains/add', methods=['POST'])
 @admin_required
 def add_train():
-    """Add new train"""
+    """Add new train with Tatkal configuration"""
     number = request.form.get('number')
     name = request.form.get('name')
     total_seats = request.form.get('total_seats', type=int)
     fare_per_km = request.form.get('fare_per_km', type=float)
+    tatkal_seats = request.form.get('tatkal_seats', type=int) or 0
+    tatkal_fare_per_km = request.form.get('tatkal_fare_per_km', type=float)
     
     if not all([number, name, total_seats, fare_per_km]):
         flash('Please fill all fields', 'error')
@@ -79,18 +96,25 @@ def add_train():
         flash('Train number already exists', 'error')
         return redirect(url_for('admin.trains'))
     
+    # Validate Tatkal seats don't exceed total seats
+    if tatkal_seats and tatkal_seats > total_seats:
+        flash('Tatkal seats cannot exceed total seats', 'error')
+        return redirect(url_for('admin.trains'))
+    
     train = Train(
         number=number,
         name=name,
         total_seats=total_seats,
         available_seats=total_seats,
-        fare_per_km=fare_per_km
+        fare_per_km=fare_per_km,
+        tatkal_seats=tatkal_seats,
+        tatkal_fare_per_km=tatkal_fare_per_km or (fare_per_km * 1.5 if fare_per_km else None)
     )
     
     db.session.add(train)
     db.session.commit()
     
-    flash('Train added successfully', 'success')
+    flash('Train added successfully with Tatkal configuration', 'success')
     return redirect(url_for('admin.trains'))
 
 @admin_bp.route('/trains/<int:train_id>/toggle')
@@ -204,9 +228,10 @@ def promote_user(user_id):
 @admin_bp.route('/analytics')
 @admin_required
 def analytics():
-    """Analytics dashboard"""
-    # Revenue data for last 30 days
+    """Enhanced analytics dashboard with Tatkal insights"""
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    
+    # Revenue data for last 30 days
     daily_revenue = db.session.query(
         db.func.date(Payment.completed_at),
         db.func.sum(Payment.amount)
@@ -221,16 +246,54 @@ def analytics():
         db.func.count(Booking.id)
     ).join(Booking).group_by(Train.name).order_by(db.func.count(Booking.id).desc()).limit(10).all()
     
-    # Booking trends
-    booking_trends = db.session.query(
+    # Booking trends by type
+    general_bookings = db.session.query(
         db.func.date(Booking.booking_date),
         db.func.count(Booking.id)
-    ).filter(Booking.booking_date >= thirty_days_ago).group_by(db.func.date(Booking.booking_date)).all()
+    ).filter(
+        Booking.booking_date >= thirty_days_ago,
+        Booking.booking_type == 'general'
+    ).group_by(db.func.date(Booking.booking_date)).all()
+    
+    tatkal_bookings = db.session.query(
+        db.func.date(Booking.booking_date),
+        db.func.count(Booking.id)
+    ).filter(
+        Booking.booking_date >= thirty_days_ago,
+        Booking.booking_type == 'tatkal'
+    ).group_by(db.func.date(Booking.booking_date)).all()
+    
+    # Tatkal vs General revenue comparison
+    tatkal_revenue = db.session.query(
+        db.func.sum(Booking.total_amount)
+    ).filter(
+        Booking.booking_type == 'tatkal',
+        Booking.booking_date >= thirty_days_ago
+    ).scalar() or 0
+    
+    general_revenue = db.session.query(
+        db.func.sum(Booking.total_amount)
+    ).filter(
+        Booking.booking_type == 'general',
+        Booking.booking_date >= thirty_days_ago
+    ).scalar() or 0
+    
+    # Peak booking hours
+    peak_hours = db.session.query(
+        db.func.extract('hour', Booking.booking_date),
+        db.func.count(Booking.id)
+    ).filter(
+        Booking.booking_date >= thirty_days_ago
+    ).group_by(db.func.extract('hour', Booking.booking_date)).order_by(db.func.count(Booking.id).desc()).limit(5).all()
     
     return render_template('admin/analytics.html',
                          daily_revenue=daily_revenue,
                          popular_trains=popular_trains,
-                         booking_trends=booking_trends)
+                         general_bookings=general_bookings,
+                         tatkal_bookings=tatkal_bookings,
+                         tatkal_revenue=tatkal_revenue,
+                         general_revenue=general_revenue,
+                         peak_hours=peak_hours)
 
 @admin_bp.route('/reports/bookings.csv')
 @admin_required
@@ -262,3 +325,92 @@ def export_bookings():
     response.headers['Content-type'] = 'text/csv'
     
     return response
+
+@admin_bp.route('/bookings')
+@admin_required
+def bookings():
+    """Manage all bookings with filtering"""
+    page = request.args.get('page', 1, type=int)
+    status_filter = request.args.get('status', '')
+    booking_type_filter = request.args.get('booking_type', '')
+    
+    query = Booking.query
+    
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    if booking_type_filter:
+        query = query.filter_by(booking_type=booking_type_filter)
+    
+    bookings = query.order_by(Booking.booking_date.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    return render_template('admin/bookings.html', bookings=bookings,
+                         status_filter=status_filter,
+                         booking_type_filter=booking_type_filter)
+
+@admin_bp.route('/bookings/<int:booking_id>/update', methods=['POST'])
+@admin_required
+def update_booking_status(booking_id):
+    """Update booking status (admin override)"""
+    booking = Booking.query.get_or_404(booking_id)
+    new_status = request.form.get('status')
+    
+    if new_status not in ['confirmed', 'waitlisted', 'cancelled']:
+        flash('Invalid status', 'error')
+        return redirect(url_for('admin.bookings'))
+    
+    old_status = booking.status
+    booking.status = new_status
+    
+    # Handle seat allocation changes
+    if old_status == 'confirmed' and new_status in ['cancelled', 'waitlisted']:
+        # Release seats
+        train = booking.train
+        train.available_seats += booking.passengers
+    elif old_status in ['cancelled', 'waitlisted'] and new_status == 'confirmed':
+        # Allocate seats
+        train = booking.train
+        train.available_seats = max(0, train.available_seats - booking.passengers)
+    
+    db.session.commit()
+    
+    flash(f'Booking {booking.pnr} status updated to {new_status}', 'success')
+    return redirect(url_for('admin.bookings'))
+
+@admin_bp.route('/real-time')
+@admin_required
+def real_time_monitor():
+    """Real-time monitoring dashboard"""
+    # Recent activity (last hour)
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    
+    recent_bookings = Booking.query.filter(
+        Booking.booking_date >= one_hour_ago
+    ).order_by(Booking.booking_date.desc()).limit(10).all()
+    
+    recent_payments = Payment.query.filter(
+        Payment.created_at >= one_hour_ago
+    ).order_by(Payment.created_at.desc()).limit(10).all()
+    
+    # Current system stats
+    active_users = User.query.filter_by(active=True).count()
+    pending_bookings = Booking.query.filter_by(status='pending_payment').count()
+    waitlisted_bookings = Booking.query.filter_by(status='waitlisted').count()
+    
+    # High-demand trains (most bookings today)
+    today = datetime.utcnow().date()
+    high_demand_trains = db.session.query(
+        Train.name,
+        db.func.count(Booking.id)
+    ).join(Booking).filter(
+        db.func.date(Booking.booking_date) == today
+    ).group_by(Train.name).order_by(db.func.count(Booking.id).desc()).limit(5).all()
+    
+    return render_template('admin/real_time.html',
+                         recent_bookings=recent_bookings,
+                         recent_payments=recent_payments,
+                         active_users=active_users,
+                         pending_bookings=pending_bookings,
+                         waitlisted_bookings=waitlisted_bookings,
+                         high_demand_trains=high_demand_trains)

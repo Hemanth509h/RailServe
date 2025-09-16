@@ -56,7 +56,9 @@ class Train(db.Model):
     name = db.Column(db.String(100), nullable=False)
     total_seats = db.Column(db.Integer, nullable=False)
     available_seats = db.Column(db.Integer, nullable=False)
+    tatkal_seats = db.Column(db.Integer, default=0)  # Tatkal quota seats
     fare_per_km = db.Column(db.Float, nullable=False)
+    tatkal_fare_per_km = db.Column(db.Float)  # Premium Tatkal fare
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -93,6 +95,8 @@ class Booking(db.Model):
     journey_date = db.Column(db.Date, nullable=False)
     passengers = db.Column(db.Integer, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
+    booking_type = db.Column(db.String(10), default='general')  # general, tatkal
+    quota = db.Column(db.String(20), default='general')  # general, tatkal, ladies, senior
     status = db.Column(db.String(20), default='pending_payment')  # confirmed, waitlisted, cancelled, pending_payment
     booking_date = db.Column(db.DateTime, default=datetime.utcnow)
     
