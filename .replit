@@ -16,10 +16,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RailServe Web App"
+args = "Flask Web App"
 
 [[workflows.workflow]]
-name = "RailServe Web App"
+name = "Flask Web App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
