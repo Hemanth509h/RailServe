@@ -12,6 +12,7 @@
         
         <div class="enquiry-form-card">
             <form method="POST" class="pnr-form">
+                {{ csrf_token() }}
                 <div class="form-group">
                     <label for="pnr">
                         <i class="fas fa-ticket-alt"></i> Enter PNR Number

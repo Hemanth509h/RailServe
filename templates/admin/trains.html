@@ -15,6 +15,7 @@
         <h3><i class="fas fa-plus"></i> Add New Train</h3>
         
         <form method="POST" action="{{ url_for('admin.add_train') }}" class="admin-form">
+            {{ csrf_token() }}
             <div class="form-row">
                 <div class="form-group">
                     <label for="number">Train Number</label>
