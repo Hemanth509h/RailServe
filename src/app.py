@@ -19,13 +19,13 @@ login_manager = LoginManager()
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
-app.secret_key = os.environ.get("SESSION_SECRET")
+app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 if not app.secret_key:
     raise ValueError("SESSION_SECRET environment variable must be set for security")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Configure the database
-database_url = os.environ.get("DATABASE_URL")
+database_url =os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
 if not database_url:
     raise ValueError("DATABASE_URL environment variable must be set")
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
