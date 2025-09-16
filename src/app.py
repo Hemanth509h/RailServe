@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
-from .config import Config
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -16,24 +15,25 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 
-# Validate configuration before creating app
-Config.validate_config()
-
 # Create the app with correct template and static paths
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
 
 # Load configuration
-app.config['SECRET_KEY'] = Config.SECRET_KEY
-app.config['SQLALCHEMY_DATABASE_URI'] = Config.DATABASE_URL
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = Config.SQLALCHEMY_ENGINE_OPTIONS
+app.config['SECRET_KEY'] = os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
 
 # Security settings
-app.config['SESSION_COOKIE_SECURE'] = Config.SESSION_COOKIE_SECURE
-app.config['SESSION_COOKIE_HTTPONLY'] = Config.SESSION_COOKIE_HTTPONLY
-app.config['SESSION_COOKIE_SAMESITE'] = Config.SESSION_COOKIE_SAMESITE
-app.config['PERMANENT_SESSION_LIFETIME'] = Config.PERMANENT_SESSION_LIFETIME
+flask_env = os.environ.get("FLASK_ENV", "production")
+app.config['SESSION_COOKIE_SECURE'] = flask_env == "production"
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 
 # CSRF Protection removed as requested
 
@@ -41,7 +41,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = Config.PERMANENT_SESSION_LIFETIME
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Additional security headers for production
-if Config.FLASK_ENV == 'production':
+if flask_env == 'production':
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
 
 # Initialize extensions

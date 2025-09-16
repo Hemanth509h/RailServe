@@ -97,7 +97,7 @@ def add_train():
         return redirect(url_for('admin.trains'))
     
     # Validate Tatkal seats don't exceed total seats
-    if tatkal_seats and tatkal_seats > total_seats:
+    if tatkal_seats is not None and total_seats is not None and tatkal_seats > total_seats:
         flash('Tatkal seats cannot exceed total seats', 'error')
         return redirect(url_for('admin.trains'))
     
