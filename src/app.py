@@ -3,8 +3,10 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from .config import Config
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -14,40 +16,42 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
+csrf = CSRFProtect()
+
+# Validate configuration before creating app
+Config.validate_config()
 
 # Create the app with correct template and static paths
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
-app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
-if not app.secret_key:
-    raise ValueError("SESSION_SECRET environment variable must be set for security")
+
+# Load configuration
+app.config['SECRET_KEY'] = Config.SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = Config.DATABASE_URL
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = Config.SQLALCHEMY_ENGINE_OPTIONS
+
+# Security settings
+app.config['SESSION_COOKIE_SECURE'] = Config.SESSION_COOKIE_SECURE
+app.config['SESSION_COOKIE_HTTPONLY'] = Config.SESSION_COOKIE_HTTPONLY
+app.config['SESSION_COOKIE_SAMESITE'] = Config.SESSION_COOKIE_SAMESITE
+app.config['PERMANENT_SESSION_LIFETIME'] = Config.PERMANENT_SESSION_LIFETIME
+
+# CSRF Protection
+app.config['WTF_CSRF_ENABLED'] = Config.WTF_CSRF_ENABLED
+app.config['WTF_CSRF_TIME_LIMIT'] = Config.WTF_CSRF_TIME_LIMIT
+
+# Proxy support for production
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Configure the database
-database_url =os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
-if not database_url:
-    raise ValueError("DATABASE_URL environment variable must be set")
-app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
-
-# Security settings for production
-is_production = os.environ.get('FLASK_ENV') == 'production'
-app.config['SESSION_COOKIE_SECURE'] = is_production  # HTTPS only in production
-app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent XSS
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session timeout
-
-# Additional security headers
-if is_production:
+# Additional security headers for production
+if Config.FLASK_ENV == 'production':
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
 
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)
+csrf.init_app(app)
 login_manager.login_view = 'auth.login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
 
