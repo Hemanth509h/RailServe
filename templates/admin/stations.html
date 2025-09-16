@@ -15,7 +15,6 @@
         <h3><i class="fas fa-plus"></i> Add New Station</h3>
         
         <form method="POST" action="{{ url_for('admin.add_station') }}" class="admin-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-row">
                 <div class="form-group">
                     <label for="name">Station Name</label>

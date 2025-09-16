@@ -23,9 +23,7 @@ class Config:
         "pool_pre_ping": True,
     }
     
-    # CSRF Protection
-    WTF_CSRF_ENABLED: bool = True
-    WTF_CSRF_TIME_LIMIT: int = 3600  # 1 hour
+    # CSRF Protection removed as requested
     
     @classmethod
     def validate_config(cls) -> None:
