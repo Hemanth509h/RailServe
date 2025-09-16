@@ -9,7 +9,6 @@ class Config:
     
     # Optional environment variables with sensible defaults
     FLASK_ENV: str = os.environ.get("FLASK_ENV", "production")
-    GUNICORN_WORKERS: int = int(os.environ.get("GUNICORN_WORKERS", "4"))
     
     # Security settings
     SESSION_COOKIE_SECURE: bool = FLASK_ENV == "production"
