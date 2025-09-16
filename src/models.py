@@ -121,6 +121,9 @@ class Payment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
     
+    # CRITICAL: Database-level constraint to prevent duplicate payments
+    __table_args__ = (db.UniqueConstraint('booking_id', 'status', name='uq_booking_payment_success'),)
+    
     def __init__(self, **kwargs):
         super(Payment, self).__init__(**kwargs)
 

@@ -59,6 +59,7 @@
             
             <form method="POST" action="{{ url_for('payment.process_payment', booking_id=booking.id) }}" 
                   class="payment-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 
                 <div class="payment-methods">
                     <h3>Select Payment Method</h3>

@@ -22,16 +22,22 @@ def login():
         
         user = User.query.filter_by(username=username).first()
         
+        # SECURITY FIX: Prevent user enumeration by using same message for all failures
+        login_successful = False
         if user and user.active and check_password_hash(user.password_hash, password):
+            login_successful = True
+        
+        if login_successful:
             login_user(user, remember=bool(request.form.get('remember')))
             next_page = request.args.get('next')
             
             # Redirect admin users to admin dashboard
-            if user.is_admin():
+            if user and user.is_admin():
                 return redirect(next_page) if next_page else redirect(url_for('admin.dashboard'))
             
             return redirect(next_page) if next_page else redirect(url_for('index'))
         else:
+            # Generic error message prevents username enumeration
             flash('Invalid username or password', 'error')
     
     return render_template('login.html')
