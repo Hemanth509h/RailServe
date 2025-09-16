@@ -215,7 +215,8 @@ def populate_train_routes(trains, stations):
             elif seq == len(valid_stations) - 1:
                 # Last station - only arrival
                 hours_travel = total_distance // 50  # Approximate speed 50 km/h
-                arrival_hour = (departure_time.hour + hours_travel) % 24
+                base_hour = 6 if departure_time is None else departure_time.hour
+                arrival_hour = (base_hour + hours_travel) % 24
                 arrival_time = time(arrival_hour, random.randint(0, 59))
                 departure_time = None
             else:
