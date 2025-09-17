@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Quota Management - RailServe Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-balance-scale"></i> Train Ticket Allotment & Quota Management</h1>
+        <p>Manage seat quotas, Tatkal allocation, and ticket distribution across all trains</p>
+    </div>
+    
+    <div class="quota-controls">
+        <div class="control-card">
+            <h3><i class="fas fa-filter"></i> Filter Trains</h3>
+            <div class="filter-form">
+                <input type="text" id="trainFilter" placeholder="Search by train number or name..." class="form-control">
+                <select id="quotaFilter" class="form-control">
+                    <option value="">All Quota Types</option>
+                    <option value="high-tatkal">High Tatkal (>20%)</option>
+                    <option value="low-tatkal">Low Tatkal (<10%)</option>
+                    <option value="no-tatkal">No Tatkal</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="quota-grid">
+        {% for train in trains %}
+        <div class="quota-card" data-train="{{ train.number }}" data-name="{{ train.name }}">
+            <div class="quota-header">
+                <h4>{{ train.number }} - {{ train.name }}</h4>
+                <div class="status-badge {{ 'active' if train.active else 'inactive' }}">
+                    {{ 'Active' if train.active else 'Inactive' }}
+                </div>
+            </div>
+            
+            <div class="quota-info">
+                <div class="quota-row">
+                    <span class="label">Total Seats:</span>
+                    <span class="value">{{ train.total_seats }}</span>
+                </div>
+                <div class="quota-row">
+                    <span class="label">Tatkal Seats:</span>
+                    <span class="value">{{ train.tatkal_seats or 0 }}</span>
+                    <span class="percentage">({{ "%.1f"|format(((train.tatkal_seats or 0) / train.total_seats * 100) if train.total_seats else 0) }}%)</span>
+                </div>
+                <div class="quota-row">
+                    <span class="label">General Quota:</span>
+                    <span class="value">{{ train.total_seats - (train.tatkal_seats or 0) }}</span>
+                    <span class="percentage">({{ "%.1f"|format(((train.total_seats - (train.tatkal_seats or 0)) / train.total_seats * 100) if train.total_seats else 0) }}%)</span>
+                </div>
+                <div class="quota-row">
+                    <span class="label">Tatkal Fare/km:</span>
+                    <span class="value">₹{{ "%.2f"|format(train.tatkal_fare_per_km or 0) }}</span>
+                </div>
+            </div>
+            
+            <form method="POST" action="{{ url_for('admin.update_quota', train_id=train.id) }}" class="quota-form">
+                <div class="form-row">
+                    <label>Total Seats:</label>
+                    <input type="number" name="total_seats" value="{{ train.total_seats }}" min="50" max="2000" required>
+                </div>
+                <div class="form-row">
+                    <label>Tatkal Seats:</label>
+                    <input type="number" name="tatkal_seats" value="{{ train.tatkal_seats or 0 }}" min="0" max="{{ train.total_seats }}">
+                </div>
+                <div class="form-row">
+                    <label>Tatkal Fare/km:</label>
+                    <input type="number" name="tatkal_fare_per_km" value="{{ train.tatkal_fare_per_km or 0 }}" step="0.01" min="0">
+                </div>
+                <button type="submit" class="btn-update">
+                    <i class="fas fa-save"></i> Update Quota
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+// Filter functionality
+document.getElementById('trainFilter').addEventListener('input', filterTrains);
+document.getElementById('quotaFilter').addEventListener('change', filterTrains);
+
+function filterTrains() {
+    const searchTerm = document.getElementById('trainFilter').value.toLowerCase();
+    const quotaFilter = document.getElementById('quotaFilter').value;
+    const cards = document.querySelectorAll('.quota-card');
+    
+    cards.forEach(card => {
+        const trainNumber = card.dataset.train.toLowerCase();
+        const trainName = card.dataset.name.toLowerCase();
+        const matchesSearch = trainNumber.includes(searchTerm) || trainName.includes(searchTerm);
+        
+        // Get quota percentage
+        const totalSeats = parseInt(card.querySelector('.quota-info .value').textContent);
+        const tatkalSeats = parseInt(card.querySelectorAll('.quota-info .value')[1].textContent);
+        const tatkalPercentage = (tatkalSeats / totalSeats) * 100;
+        
+        let matchesQuota = true;
+        if (quotaFilter === 'high-tatkal') matchesQuota = tatkalPercentage > 20;
+        else if (quotaFilter === 'low-tatkal') matchesQuota = tatkalPercentage < 10;
+        else if (quotaFilter === 'no-tatkal') matchesQuota = tatkalSeats === 0;
+        
+        card.style.display = (matchesSearch && matchesQuota) ? 'block' : 'none';
+    });
+}
+</script>
+
+<style>
+.quota-controls {
+    margin-bottom: 2rem;
+}
+
+.control-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-form {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.filter-form input,
+.filter-form select {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.quota-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.quota-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.quota-header {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quota-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-badge.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.status-badge.inactive {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.quota-info {
+    padding: 1rem;
+}
+
+.quota-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.quota-row .label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.quota-row .value {
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.quota-row .percentage {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.quota-form {
+    padding: 1rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.form-row label {
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-row input {
+    width: 120px;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    text-align: right;
+}
+
+.btn-update {
+    width: 100%;
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-update:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}

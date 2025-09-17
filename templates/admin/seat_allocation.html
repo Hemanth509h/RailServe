@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Seat Allocation Monitor - RailServe Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-chair"></i> Real-time Seat Allocation Monitor</h1>
+        <p>Monitor current seat availability and allocation across all trains for {{ selected_date.strftime('%d %B %Y') }}</p>
+    </div>
+    
+    <div class="allocation-controls">
+        <div class="control-card">
+            <h3><i class="fas fa-calendar"></i> Select Date</h3>
+            <form method="GET" class="date-form">
+                <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()">
+                <button type="button" onclick="location.reload()" class="btn-refresh">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="allocation-summary">
+        <div class="summary-card">
+            <h4>Overall Statistics</h4>
+            <div class="summary-stats">
+                {% set total_seats = seat_allocation|sum(attribute='total_seats') %}
+                {% set total_general_booked = seat_allocation|sum(attribute='general_booked') %}
+                {% set total_tatkal_booked = seat_allocation|sum(attribute='tatkal_booked') %}
+                {% set total_booked = total_general_booked + total_tatkal_booked %}
+                {% set total_available = total_seats - total_booked %}
+                
+                <div class="stat-item">
+                    <span class="label">Total Trains:</span>
+                    <span class="value">{{ seat_allocation|length }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Total Seats:</span>
+                    <span class="value">{{ total_seats }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Seats Booked:</span>
+                    <span class="value">{{ total_booked }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Available Seats:</span>
+                    <span class="value">{{ total_available }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Overall Utilization:</span>
+                    <span class="value">{{ "%.1f"|format((total_booked / total_seats * 100) if total_seats else 0) }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="allocation-grid">
+        {% for train in seat_allocation %}
+        {% set general_quota = train.total_seats - (train.tatkal_seats or 0) %}
+        {% set general_available = general_quota - train.general_booked %}
+        {% set tatkal_available = (train.tatkal_seats or 0) - train.tatkal_booked %}
+        {% set total_available = general_available + tatkal_available %}
+        {% set utilization = ((train.general_booked + train.tatkal_booked) / train.total_seats * 100) if train.total_seats else 0 %}
+        
+        <div class="allocation-card {{ 'high-demand' if utilization > 90 else 'medium-demand' if utilization > 70 else 'low-demand' }}">
+            <div class="allocation-header">
+                <h4>{{ train.number }} - {{ train.name[:30] }}</h4>
+                <div class="utilization-badge">{{ "%.0f"|format(utilization) }}%</div>
+            </div>
+            
+            <div class="allocation-details">
+                <div class="quota-section">
+                    <h5><i class="fas fa-users"></i> General Quota</h5>
+                    <div class="quota-bar">
+                        <div class="quota-fill general" 
+                             style="width: {{ (train.general_booked / general_quota * 100) if general_quota else 0 }}%">
+                        </div>
+                        <div class="quota-text">
+                            {{ train.general_booked }} / {{ general_quota }}
+                        </div>
+                    </div>
+                    <div class="quota-info">
+                        <span class="available">Available: {{ general_available }}</span>
+                        <span class="booked">Booked: {{ train.general_booked }}</span>
+                    </div>
+                </div>
+                
+                {% if train.tatkal_seats %}
+                <div class="quota-section">
+                    <h5><i class="fas fa-bolt"></i> Tatkal Quota</h5>
+                    <div class="quota-bar">
+                        <div class="quota-fill tatkal" 
+                             style="width: {{ (train.tatkal_booked / train.tatkal_seats * 100) if train.tatkal_seats else 0 }}%">
+                        </div>
+                        <div class="quota-text">
+                            {{ train.tatkal_booked }} / {{ train.tatkal_seats }}
+                        </div>
+                    </div>
+                    <div class="quota-info">
+                        <span class="available">Available: {{ tatkal_available }}</span>
+                        <span class="booked">Booked: {{ train.tatkal_booked }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="allocation-actions">
+                    <a href="{{ url_for('admin.view_train_route', train_id=train.number) }}" class="btn-action">
+                        <i class="fas fa-route"></i> View Route
+                    </a>
+                    <a href="{{ url_for('admin.quota_management') }}#train-{{ train.number }}" class="btn-action">
+                        <i class="fas fa-cog"></i> Manage Quota
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.allocation-controls {
+    margin-bottom: 2rem;
+}
+
+.control-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.date-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.date-form input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn-refresh {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.allocation-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.summary-card h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.stat-item .label {
+    font-weight: 500;
+}
+
+.stat-item .value {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.allocation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.allocation-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border-left: 4px solid;
+}
+
+.allocation-card.high-demand {
+    border-left-color: #ef4444;
+}
+
+.allocation-card.medium-demand {
+    border-left-color: #f59e0b;
+}
+
+.allocation-card.low-demand {
+    border-left-color: #22c55e;
+}
+
+.allocation-header {
+    background: #f9fafb;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.allocation-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.utilization-badge {
+    background: #3b82f6;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.allocation-details {
+    padding: 1.5rem;
+}
+
+.quota-section {
+    margin-bottom: 1.5rem;
+}
+
+.quota-section h5 {
+    margin: 0 0 0.75rem 0;
+    color: #374151;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quota-bar {
+    position: relative;
+    background: #e5e7eb;
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.quota-fill {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.3s ease;
+}
+
+.quota-fill.general {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+.quota-fill.tatkal {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.quota-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.quota-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.quota-info .available {
+    color: #059669;
+    font-weight: 500;
+}
+
+.quota-info .booked {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.allocation-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-action:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .allocation-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Auto-refresh every 30 seconds
+setTimeout(() => {
+    location.reload();
+}, 30000);
+
+// Add loading indicator for actions
+document.querySelectorAll('.btn-action').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+    });
+});
+</script>
+{% endblock %}

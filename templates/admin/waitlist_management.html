@@ -1,0 +1,487 @@
+{% extends "base.html" %}
+
+{% block title %}Waitlist Management - RailServe Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-list-ol"></i> Waitlist Management</h1>
+        <p>Monitor and manage passenger waitlists across all trains</p>
+    </div>
+    
+    <div class="waitlist-summary">
+        <div class="summary-stats">
+            <div class="stat-card waitlist-total">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ recent_waitlist|length }}</h3>
+                    <p>Total Waitlisted Passengers</p>
+                </div>
+            </div>
+            
+            <div class="stat-card waitlist-trains">
+                <div class="stat-icon">
+                    <i class="fas fa-train"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ waitlist_stats|length }}</h3>
+                    <p>Trains with Waitlists</p>
+                </div>
+            </div>
+            
+            <div class="stat-card waitlist-revenue">
+                <div class="stat-icon">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>₹{{ "%.0f"|format(recent_waitlist|sum(attribute='total_amount') or 0) }}</h3>
+                    <p>Waitlisted Booking Value</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="waitlist-grid">
+        <div class="waitlist-card">
+            <h3><i class="fas fa-chart-bar"></i> Waitlist Statistics by Train</h3>
+            <div class="waitlist-table-container">
+                <table class="waitlist-table">
+                    <thead>
+                        <tr>
+                            <th>Train</th>
+                            <th>Waitlist Count</th>
+                            <th>Position Range</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in waitlist_stats %}
+                        <tr>
+                            <td>
+                                <div class="train-info">
+                                    <strong>{{ stat.number }}</strong>
+                                    <small>{{ stat.name[:25] }}...</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="waitlist-count">{{ stat.waitlist_count }}</span>
+                            </td>
+                            <td>
+                                <span class="position-range">
+                                    {{ stat.min_position }} - {{ stat.max_position }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-action btn-process" onclick="processWaitlist('{{ stat.number }}')">
+                                        <i class="fas fa-play"></i> Process
+                                    </button>
+                                    <button class="btn-action btn-view" onclick="viewDetails('{{ stat.number }}')">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="waitlist-card">
+            <h3><i class="fas fa-history"></i> Recent Waitlist Activity</h3>
+            <div class="recent-activity">
+                {% for booking in recent_waitlist[:15] %}
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <strong>PNR: {{ booking.pnr }}</strong>
+                        <span class="activity-time">{{ booking.booking_date.strftime('%d/%m %H:%M') }}</span>
+                    </div>
+                    <div class="activity-details">
+                        <div class="train-route">
+                            <span class="train">{{ booking.train.number }} - {{ booking.train.name[:20] }}</span>
+                            <span class="route">{{ booking.from_station.name }} → {{ booking.to_station.name }}</span>
+                        </div>
+                        <div class="passenger-info">
+                            <span class="passengers">{{ booking.passengers }} passengers</span>
+                            <span class="amount">₹{{ "%.0f"|format(booking.total_amount) }}</span>
+                        </div>
+                        <div class="waitlist-actions">
+                            <button class="btn-sm btn-confirm" onclick="confirmBooking('{{ booking.id }}')">
+                                <i class="fas fa-check"></i> Confirm
+                            </button>
+                            <button class="btn-sm btn-cancel" onclick="cancelBooking('{{ booking.id }}')">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="waitlist-insights">
+        <div class="insight-card">
+            <h3><i class="fas fa-lightbulb"></i> Waitlist Management Tips</h3>
+            <div class="tips-list">
+                <div class="tip-item">
+                    <i class="fas fa-info-circle text-info"></i>
+                    <div>
+                        <strong>Process Regularly:</strong>
+                        <p>Process waitlists every few hours to accommodate cancellations</p>
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <div>
+                        <strong>High Demand Trains:</strong>
+                        <p>Monitor trains with long waitlists for potential quota adjustments</p>
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <i class="fas fa-users text-success"></i>
+                    <div>
+                        <strong>Customer Communication:</strong>
+                        <p>Keep passengers informed about their waitlist status and position</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.waitlist-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card.waitlist-total {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-card.waitlist-trains {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.stat-card.waitlist-revenue {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.waitlist-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.waitlist-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.waitlist-card h3 {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    margin: 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.waitlist-table-container {
+    overflow-x: auto;
+}
+
+.waitlist-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.waitlist-table th,
+.waitlist-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.waitlist-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+.train-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.train-info strong {
+    color: #1f2937;
+}
+
+.train-info small {
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+.waitlist-count {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.position-range {
+    color: #374151;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.2s;
+}
+
+.btn-process {
+    background: #10b981;
+    color: white;
+}
+
+.btn-process:hover {
+    background: #059669;
+}
+
+.btn-view {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #1d4ed8;
+}
+
+.recent-activity {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.activity-item {
+    background: #f9fafb;
+    border-left: 4px solid #f59e0b;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.activity-header strong {
+    color: #1f2937;
+}
+
+.activity-time {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.train-route {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.train {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.route {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.passenger-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.passengers {
+    color: #374151;
+    font-weight: 500;
+}
+
+.amount {
+    color: #059669;
+    font-weight: 600;
+}
+
+.waitlist-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.3rem 0.6rem;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s;
+}
+
+.btn-confirm {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #16a34a;
+}
+
+.btn-cancel {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #dc2626;
+}
+
+.waitlist-insights {
+    margin-top: 2rem;
+}
+
+.insight-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.insight-card h3 {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    margin: 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.tips-list {
+    padding: 1.5rem;
+}
+
+.tip-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.tip-item:last-child {
+    margin-bottom: 0;
+}
+
+.tip-item i {
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.tip-item strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.tip-item p {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.text-info { color: #3b82f6; }
+.text-warning { color: #f59e0b; }
+.text-success { color: #22c55e; }
+
+@media (max-width: 768px) {
+    .waitlist-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+function processWaitlist(trainNumber) {
+    if (confirm(`Process waitlist for train ${trainNumber}? This will confirm pending bookings if seats become available.`)) {
+        // Add processing logic here
+        alert(`Processing waitlist for train ${trainNumber}...`);
+    }
+}
+
+function viewDetails(trainNumber) {
+    // Navigate to detailed view
+    window.location.href = `/admin/trains/${trainNumber}/waitlist-details`;
+}
+
+function confirmBooking(bookingId) {
+    if (confirm('Confirm this waitlisted booking?')) {
+        // Add confirmation logic here
+        alert(`Confirming booking ${bookingId}...`);
+    }
+}
+
+function cancelBooking(bookingId) {
+    if (confirm('Cancel this waitlisted booking?')) {
+        // Add cancellation logic here
+        alert(`Cancelling booking ${bookingId}...`);
+    }
+}
+</script>
+{% endblock %}

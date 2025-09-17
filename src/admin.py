@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from functools import wraps
 from .models import User, Train, Station, Booking, Payment, TrainRoute
+from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta
 import csv
@@ -414,3 +415,272 @@ def real_time_monitor():
                          pending_bookings=pending_bookings,
                          waitlisted_bookings=waitlisted_bookings,
                          high_demand_trains=high_demand_trains)
+
+# Real Railway Management Features
+
+@admin_bp.route('/quota-management')
+@admin_required
+def quota_management():
+    """Train ticket allotment and quota management"""
+    trains = Train.query.all()
+    return render_template('admin/quota_management.html', trains=trains)
+
+@admin_bp.route('/quota-management/<int:train_id>', methods=['POST'])
+@admin_required
+def update_quota(train_id):
+    """Update train quota allocation"""
+    train = Train.query.get_or_404(train_id)
+    
+    total_seats = request.form.get('total_seats', type=int)
+    tatkal_seats = request.form.get('tatkal_seats', type=int)
+    tatkal_fare_per_km = request.form.get('tatkal_fare_per_km', type=float)
+    
+    if tatkal_seats and total_seats and tatkal_seats > total_seats:
+        flash('Tatkal seats cannot exceed total seats', 'error')
+        return redirect(url_for('admin.quota_management'))
+    
+    train.total_seats = total_seats
+    train.available_seats = total_seats
+    train.tatkal_seats = tatkal_seats
+    train.tatkal_fare_per_km = tatkal_fare_per_km
+    
+    db.session.commit()
+    flash(f'Quota updated for train {train.number}', 'success')
+    return redirect(url_for('admin.quota_management'))
+
+@admin_bp.route('/tatkal-management')
+@admin_required
+def tatkal_management():
+    """Tatkal booking management and monitoring"""
+    # Get trains with tatkal bookings
+    trains_with_tatkal = db.session.query(
+        Train.number,
+        Train.name,
+        Train.tatkal_seats,
+        db.func.count(Booking.id).label('tatkal_bookings'),
+        db.func.sum(Booking.total_amount).label('tatkal_revenue')
+    ).join(Booking).filter(
+        Booking.booking_type == 'tatkal'
+    ).group_by(Train.id, Train.number, Train.name, Train.tatkal_seats).all()
+    
+    # Recent tatkal bookings
+    recent_tatkal = Booking.query.filter_by(booking_type='tatkal').order_by(
+        Booking.booking_date.desc()
+    ).limit(20).all()
+    
+    return render_template('admin/tatkal_management.html',
+                         trains_with_tatkal=trains_with_tatkal,
+                         recent_tatkal=recent_tatkal)
+
+@admin_bp.route('/route-management')
+@admin_required
+def route_management():
+    """Train route and scheduling management"""
+    trains = Train.query.all()
+    stations = Station.query.filter_by(active=True).all()
+    return render_template('admin/route_management.html', trains=trains, stations=stations)
+
+@admin_bp.route('/route-management/<int:train_id>')
+@admin_required
+def view_train_route(train_id):
+    """View and edit specific train route"""
+    train = Train.query.get_or_404(train_id)
+    routes = TrainRoute.query.filter_by(train_id=train_id).order_by(TrainRoute.sequence).all()
+    stations = Station.query.filter_by(active=True).all()
+    
+    return render_template('admin/train_route_details.html',
+                         train=train, routes=routes, stations=stations)
+
+@admin_bp.route('/route-management/<int:train_id>/add-station', methods=['POST'])
+@admin_required
+def add_station_to_route(train_id):
+    """Add station to train route"""
+    train = Train.query.get_or_404(train_id)
+    
+    station_id = request.form.get('station_id', type=int)
+    sequence = request.form.get('sequence', type=int)
+    arrival_time = request.form.get('arrival_time')
+    departure_time = request.form.get('departure_time')
+    distance = request.form.get('distance', type=float)
+    
+    # Convert time strings to time objects
+    arrival_time_obj = None
+    departure_time_obj = None
+    
+    if arrival_time:
+        arrival_time_obj = datetime.strptime(arrival_time, '%H:%M').time()
+    if departure_time:
+        departure_time_obj = datetime.strptime(departure_time, '%H:%M').time()
+    
+    route = TrainRoute(
+        train_id=train_id,
+        station_id=station_id,
+        sequence=sequence,
+        arrival_time=arrival_time_obj,
+        departure_time=departure_time_obj,
+        distance_from_start=distance
+    )
+    
+    db.session.add(route)
+    db.session.commit()
+    
+    flash('Station added to route successfully', 'success')
+    return redirect(url_for('admin.view_train_route', train_id=train_id))
+
+@admin_bp.route('/seat-allocation')
+@admin_required
+def seat_allocation():
+    """Real-time seat allocation monitoring"""
+    # Get current seat allocation by train for today
+    today = datetime.utcnow().date()
+    
+    seat_allocation = db.session.query(
+        Train.number,
+        Train.name,
+        Train.total_seats,
+        Train.tatkal_seats,
+        db.func.coalesce(db.func.sum(
+            db.case(
+                (Booking.booking_type == 'general', Booking.passengers),
+                else_=0
+            )
+        ), 0).label('general_booked'),
+        db.func.coalesce(db.func.sum(
+            db.case(
+                (Booking.booking_type == 'tatkal', Booking.passengers),
+                else_=0
+            )
+        ), 0).label('tatkal_booked')
+    ).outerjoin(Booking, and_(
+        Train.id == Booking.train_id,
+        Booking.journey_date == today,
+        Booking.status == 'confirmed'
+    )).group_by(Train.id, Train.number, Train.name, Train.total_seats, Train.tatkal_seats).all()
+    
+    return render_template('admin/seat_allocation.html',
+                         seat_allocation=seat_allocation,
+                         selected_date=today)
+
+@admin_bp.route('/waitlist-management')
+@admin_required
+def waitlist_management():
+    """Waitlist monitoring and management"""
+    from .models import Waitlist
+    
+    # Get current waitlist statistics
+    waitlist_stats = db.session.query(
+        Train.number,
+        Train.name,
+        db.func.count(Booking.id).label('waitlist_count'),
+        db.func.min(Waitlist.position).label('min_position'),
+        db.func.max(Waitlist.position).label('max_position')
+    ).join(Booking).join(Waitlist).filter(
+        Booking.status == 'waitlisted'
+    ).group_by(Train.id, Train.number, Train.name).all()
+    
+    # Recent waitlist activities
+    recent_waitlist = Booking.query.filter_by(status='waitlisted').order_by(
+        Booking.booking_date.desc()
+    ).limit(50).all()
+    
+    return render_template('admin/waitlist_management.html',
+                         waitlist_stats=waitlist_stats,
+                         recent_waitlist=recent_waitlist)
+
+@admin_bp.route('/fare-management')
+@admin_required
+def fare_management():
+    """Fare structure and pricing management"""
+    trains = Train.query.all()
+    return render_template('admin/fare_management.html', trains=trains)
+
+@admin_bp.route('/fare-management/<int:train_id>', methods=['POST'])
+@admin_required
+def update_fare(train_id):
+    """Update train fare structure"""
+    train = Train.query.get_or_404(train_id)
+    
+    fare_per_km = request.form.get('fare_per_km', type=float)
+    tatkal_fare_per_km = request.form.get('tatkal_fare_per_km', type=float)
+    
+    train.fare_per_km = fare_per_km
+    train.tatkal_fare_per_km = tatkal_fare_per_km
+    
+    db.session.commit()
+    flash(f'Fare updated for train {train.number}', 'success')
+    return redirect(url_for('admin.fare_management'))
+
+@admin_bp.route('/emergency-quota')
+@admin_required
+def emergency_quota():
+    """Emergency quota management"""
+    trains = Train.query.all()
+    return render_template('admin/emergency_quota.html', trains=trains)
+
+@admin_bp.route('/emergency-quota/<int:train_id>/release', methods=['POST'])
+@admin_required
+def release_emergency_seats(train_id):
+    """Release emergency quota seats"""
+    train = Train.query.get_or_404(train_id)
+    seats_to_release = request.form.get('seats', type=int)
+    
+    if seats_to_release and seats_to_release > 0:
+        # Add seats to available quota
+        train.available_seats += seats_to_release
+        db.session.commit()
+        
+        flash(f'Released {seats_to_release} emergency seats for train {train.number}', 'success')
+    
+    return redirect(url_for('admin.emergency_quota'))
+
+@admin_bp.route('/booking-reports')
+@admin_required
+def booking_reports():
+    """Comprehensive booking reports and analytics"""
+    # Date range from request or default to last 30 days
+    end_date = datetime.utcnow().date()
+    start_date = end_date - timedelta(days=30)
+    
+    date_filter = request.args.get('date_range', '30')
+    if date_filter == '7':
+        start_date = end_date - timedelta(days=7)
+    elif date_filter == '90':
+        start_date = end_date - timedelta(days=90)
+    
+    # Booking statistics
+    booking_stats = db.session.query(
+        db.func.date(Booking.booking_date).label('date'),
+        Booking.status,
+        Booking.booking_type,
+        db.func.count(Booking.id).label('count'),
+        db.func.sum(Booking.total_amount).label('revenue')
+    ).filter(
+        Booking.booking_date >= start_date,
+        Booking.booking_date <= end_date
+    ).group_by(
+        db.func.date(Booking.booking_date),
+        Booking.status,
+        Booking.booking_type
+    ).all()
+    
+    # Popular routes
+    from sqlalchemy.orm import aliased
+    Station2 = aliased(Station)
+    popular_routes = db.session.query(
+        Station.name.label('from_station'),
+        Station2.name.label('to_station'),
+        db.func.count(Booking.id).label('bookings')
+    ).join(Station, Booking.from_station_id == Station.id
+    ).join(Station2, Booking.to_station_id == Station2.id
+    ).filter(
+        Booking.booking_date >= start_date
+    ).group_by(
+        Station.name, Station2.name
+    ).order_by(db.func.count(Booking.id).desc()).limit(10).all()
+    
+    return render_template('admin/booking_reports.html',
+                         booking_stats=booking_stats,
+                         popular_routes=popular_routes,
+                         date_filter=date_filter,
+                         start_date=start_date,
+                         end_date=end_date)

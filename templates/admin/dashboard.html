@@ -95,45 +95,120 @@
     </div>
     
     <div class="quick-actions">
-        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+        <h3><i class="fas fa-bolt"></i> Railway Management System</h3>
         <div class="actions-grid">
-            <a href="{{ url_for('admin.trains') }}" class="action-card">
+            <!-- Core Train Management -->
+            <a href="{{ url_for('admin.trains') }}" class="action-card core">
                 <i class="fas fa-train"></i>
                 <h4>Manage Trains</h4>
                 <p>Add, edit, or remove trains</p>
             </a>
             
-            <a href="{{ url_for('admin.stations') }}" class="action-card">
+            <a href="{{ url_for('admin.stations') }}" class="action-card core">
                 <i class="fas fa-map-marker-alt"></i>
                 <h4>Manage Stations</h4>
                 <p>Add or update railway stations</p>
             </a>
             
+            <!-- Railway Operations -->
+            <a href="{{ url_for('admin.quota_management') }}" class="action-card operations">
+                <i class="fas fa-balance-scale"></i>
+                <h4>Quota Management</h4>
+                <p>Train ticket allotment & seat quotas</p>
+            </a>
+            
+            <a href="{{ url_for('admin.tatkal_management') }}" class="action-card operations">
+                <i class="fas fa-bolt"></i>
+                <h4>Tatkal Management</h4>
+                <p>Tatkal booking monitoring & control</p>
+            </a>
+            
+            <a href="{{ url_for('admin.seat_allocation') }}" class="action-card operations">
+                <i class="fas fa-chair"></i>
+                <h4>Seat Allocation</h4>
+                <p>Real-time seat availability monitor</p>
+            </a>
+            
+            <a href="{{ url_for('admin.waitlist_management') }}" class="action-card operations">
+                <i class="fas fa-list-ol"></i>
+                <h4>Waitlist Management</h4>
+                <p>Monitor & process passenger waitlists</p>
+            </a>
+            
+            <a href="{{ url_for('admin.route_management') }}" class="action-card operations">
+                <i class="fas fa-route"></i>
+                <h4>Route Management</h4>
+                <p>Train routes & scheduling</p>
+            </a>
+            
+            <a href="{{ url_for('admin.fare_management') }}" class="action-card operations">
+                <i class="fas fa-rupee-sign"></i>
+                <h4>Fare Management</h4>
+                <p>Pricing & fare structure control</p>
+            </a>
+            
+            <!-- Emergency & Reports -->
+            <a href="{{ url_for('admin.emergency_quota') }}" class="action-card emergency">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>Emergency Quota</h4>
+                <p>Emergency seat release & allocation</p>
+            </a>
+            
+            <a href="{{ url_for('admin.booking_reports') }}" class="action-card reports">
+                <i class="fas fa-chart-pie"></i>
+                <h4>Booking Reports</h4>
+                <p>Comprehensive booking analytics</p>
+            </a>
+            
+            <a href="{{ url_for('admin.analytics') }}" class="action-card reports">
+                <i class="fas fa-chart-line"></i>
+                <h4>System Analytics</h4>
+                <p>Revenue trends & performance</p>
+            </a>
+            
+            <!-- Admin Functions -->
             {% if current_user.is_super_admin() %}
-                <a href="{{ url_for('admin.users') }}" class="action-card">
+                <a href="{{ url_for('admin.users') }}" class="action-card admin">
                     <i class="fas fa-users-cog"></i>
                     <h4>Manage Users</h4>
-                    <p>User management and permissions</p>
+                    <p>User management & permissions</p>
                 </a>
             {% endif %}
             
-            <a href="{{ url_for('admin.analytics') }}" class="action-card">
-                <i class="fas fa-chart-line"></i>
-                <h4>Analytics</h4>
-                <p>View detailed reports and trends</p>
-            </a>
-            
-            <a href="{{ url_for('admin.export_bookings') }}" class="action-card">
+            <a href="{{ url_for('admin.export_bookings') }}" class="action-card admin">
                 <i class="fas fa-download"></i>
                 <h4>Export Data</h4>
-                <p>Download booking reports</p>
+                <p>Download system reports</p>
             </a>
             
-            <a href="{{ url_for('index') }}" class="action-card">
+            <a href="{{ url_for('index') }}" class="action-card admin">
                 <i class="fas fa-eye"></i>
-                <h4>View Site</h4>
-                <p>See the public website</p>
+                <h4>View Public Site</h4>
+                <p>See customer booking interface</p>
             </a>
+        </div>
+    </div>
+    
+    <!-- System Status Indicators -->
+    <div class="system-status">
+        <h3><i class="fas fa-heartbeat"></i> System Status</h3>
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="status-indicator active"></div>
+                <span>Booking System: Active</span>
+            </div>
+            <div class="status-item">
+                <div class="status-indicator active"></div>
+                <span>Tatkal Booking: Enabled</span>
+            </div>
+            <div class="status-item">
+                <div class="status-indicator {{ 'warning' if pending_payments > 10 else 'active' }}"></div>
+                <span>Payment Processing: {{ 'Busy' if pending_payments > 10 else 'Normal' }}</span>
+            </div>
+            <div class="status-item">
+                <div class="status-indicator {{ 'warning' if waitlist_count > 50 else 'active' }}"></div>
+                <span>Waitlist System: {{ 'High Load' if waitlist_count > 50 else 'Normal' }}</span>
+            </div>
         </div>
     </div>
 </div>

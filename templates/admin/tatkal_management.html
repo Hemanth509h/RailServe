@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Tatkal Management - RailServe Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-bolt"></i> Tatkal Booking Management</h1>
+        <p>Monitor and manage Tatkal bookings, revenue, and real-time statistics</p>
+    </div>
+    
+    <div class="tatkal-stats">
+        <div class="stat-card tatkal-primary">
+            <div class="stat-icon">
+                <i class="fas fa-zap"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ trains_with_tatkal|length }}</h3>
+                <p>Trains with Tatkal Bookings</p>
+            </div>
+        </div>
+        
+        <div class="stat-card tatkal-success">
+            <div class="stat-icon">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>₹{{ "%.0f"|format(trains_with_tatkal|sum(attribute='tatkal_revenue') or 0) }}</h3>
+                <p>Total Tatkal Revenue</p>
+            </div>
+        </div>
+        
+        <div class="stat-card tatkal-warning">
+            <div class="stat-icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ trains_with_tatkal|sum(attribute='tatkal_bookings') or 0 }}</h3>
+                <p>Total Tatkal Bookings</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tatkal-grid">
+        <div class="tatkal-card">
+            <h3><i class="fas fa-chart-bar"></i> Tatkal Performance by Train</h3>
+            <div class="tatkal-table-container">
+                <table class="tatkal-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Tatkal Quota</th>
+                            <th>Bookings</th>
+                            <th>Utilization</th>
+                            <th>Revenue</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for train in trains_with_tatkal %}
+                        <tr>
+                            <td><strong>{{ train.number }}</strong></td>
+                            <td>{{ train.name[:30] }}...</td>
+                            <td>{{ train.tatkal_seats }}</td>
+                            <td>{{ train.tatkal_bookings }}</td>
+                            <td>
+                                {% set utilization = (train.tatkal_bookings / train.tatkal_seats * 100) if train.tatkal_seats else 0 %}
+                                <div class="utilization-bar">
+                                    <div class="utilization-fill" style="width: {{ utilization }}%; background: {{ '#22c55e' if utilization > 80 else '#f59e0b' if utilization > 50 else '#ef4444' }}"></div>
+                                    <span class="utilization-text">{{ "%.1f"|format(utilization) }}%</span>
+                                </div>
+                            </td>
+                            <td>₹{{ "%.0f"|format(train.tatkal_revenue or 0) }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.view_train_route', train_id=train.number) }}" class="btn-action">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="tatkal-card">
+            <h3><i class="fas fa-clock"></i> Recent Tatkal Bookings</h3>
+            <div class="recent-bookings">
+                {% for booking in recent_tatkal %}
+                <div class="booking-item tatkal-booking">
+                    <div class="booking-header">
+                        <strong>PNR: {{ booking.pnr }}</strong>
+                        <span class="booking-time">{{ booking.booking_date.strftime('%d/%m %H:%M') }}</span>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-info">
+                            <span class="train-info">{{ booking.train.number }} - {{ booking.train.name[:25] }}</span>
+                            <span class="route-info">{{ booking.from_station.name }} → {{ booking.to_station.name }}</span>
+                        </div>
+                        <div class="booking-meta">
+                            <span class="passengers">{{ booking.passengers }} pax</span>
+                            <span class="amount">₹{{ "%.0f"|format(booking.total_amount) }}</span>
+                            <span class="status-badge status-{{ booking.status }}">{{ booking.status.title() }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="tatkal-insights">
+        <div class="insight-card">
+            <h3><i class="fas fa-lightbulb"></i> Tatkal Insights & Recommendations</h3>
+            <div class="insights-list">
+                <div class="insight-item">
+                    <i class="fas fa-trend-up text-success"></i>
+                    <div>
+                        <strong>High Demand Routes:</strong>
+                        <p>Consider increasing Tatkal quota for trains with >90% utilization</p>
+                    </div>
+                </div>
+                <div class="insight-item">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <div>
+                        <strong>Underutilized Quotas:</strong>
+                        <p>Review Tatkal allocation for trains with <30% utilization</p>
+                    </div>
+                </div>
+                <div class="insight-item">
+                    <i class="fas fa-clock text-info"></i>
+                    <div>
+                        <strong>Peak Booking Times:</strong>
+                        <p>Most Tatkal bookings occur between 10:00-12:00 AM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tatkal-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card.tatkal-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.stat-card.tatkal-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-card.tatkal-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.tatkal-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.tatkal-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.tatkal-card h3 {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    margin: 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.tatkal-table-container {
+    overflow-x: auto;
+}
+
+.tatkal-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tatkal-table th,
+.tatkal-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tatkal-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+.utilization-bar {
+    position: relative;
+    background: #e5e7eb;
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    min-width: 80px;
+}
+
+.utilization-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.utilization-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-action:hover {
+    background: #1d4ed8;
+}
+
+.recent-bookings {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.booking-item.tatkal-booking {
+    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+    border-left: 4px solid #f59e0b;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.booking-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.booking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.train-info {
+    font-weight: 600;
+    color: #92400e;
+}
+
+.route-info {
+    font-size: 0.9rem;
+    color: #78350f;
+}
+
+.booking-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.passengers, .amount {
+    font-weight: 500;
+    color: #92400e;
+}
+
+.tatkal-insights {
+    margin-top: 2rem;
+}
+
+.insight-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.insight-card h3 {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    margin: 0;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+.insights-list {
+    padding: 1.5rem;
+}
+
+.insight-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.insight-item:last-child {
+    margin-bottom: 0;
+}
+
+.insight-item i {
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+}
+
+.insight-item strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.insight-item p {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.text-success { color: #22c55e; }
+.text-warning { color: #f59e0b; }
+.text-info { color: #3b82f6; }
+
+@media (max-width: 768px) {
+    .tatkal-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tatkal-stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
