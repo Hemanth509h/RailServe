@@ -1,4 +1,4 @@
-modules = ["python-3.11", "web", "nodejs-20"]
+modules = ["python-3.11", "web", "nodejs-20", "postgresql-16"]
 [agent]
 expertMode = true
 
@@ -22,13 +22,13 @@ args = "Flask Web App"
 name = "Flask Web App"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
 waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[ports]]
 localPort = 5000
