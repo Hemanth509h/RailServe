@@ -22,7 +22,7 @@ app = Flask(__name__,
 
 # Load configuration
 app.config['SECRET_KEY'] = os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,

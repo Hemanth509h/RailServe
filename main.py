@@ -54,6 +54,5 @@ def pnr_enquiry():
 
 
 if __name__ == '__main__':
-    # Development server settings
-    debug_mode = os.getenv('FLASK_ENV') == 'development'
-    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
+    # Development server settingspopulate_db.py
+    app.run(host='0.0.0.0', port=5000, debug=True)
