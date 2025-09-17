@@ -55,9 +55,14 @@
         <div class="admin-card">
             <h3><i class="fas fa-chart-pie"></i> Booking Statistics</h3>
             <div class="booking-stats">
-                {% for status, count in booking_stats %}
+                {% for status, booking_type, count in booking_stats %}
                     <div class="stat-item">
-                        <span class="status-badge status-{{ status }}">{{ status.replace('_', ' ').title() }}</span>
+                        <span class="status-badge status-{{ status }}">
+                            {{ status.replace('_', ' ').title() }}
+                            {% if booking_type and booking_type != 'general' %}
+                                ({{ booking_type.title() }})
+                            {% endif %}
+                        </span>
                         <span class="stat-count">{{ count }}</span>
                     </div>
                 {% endfor %}

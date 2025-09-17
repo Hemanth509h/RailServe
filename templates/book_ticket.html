@@ -206,6 +206,28 @@
             if (passengerCount < 1 || passengerCount > 6) {
                 errors.push('Number of passengers must be between 1 and 6');
             }
+            
+            // Validate passenger details if forms are generated
+            const passengerForms = document.querySelectorAll('.passenger-form');
+            if (passengerForms.length > 0) {
+                for (let i = 0; i < passengerCount; i++) {
+                    const nameField = document.getElementById(`passenger_${i}_name`);
+                    const ageField = document.getElementById(`passenger_${i}_age`);
+                    const genderField = document.getElementById(`passenger_${i}_gender`);
+                    
+                    if (!nameField || !nameField.value.trim()) {
+                        errors.push(`Please enter name for Passenger ${i + 1}`);
+                    }
+                    
+                    if (!ageField || !ageField.value || ageField.value < 1) {
+                        errors.push(`Please enter valid age for Passenger ${i + 1}`);
+                    }
+                    
+                    if (!genderField || !genderField.value) {
+                        errors.push(`Please select gender for Passenger ${i + 1}`);
+                    }
+                }
+            }
         }
         
         return errors;
@@ -266,6 +288,129 @@
         }
     }
     
+    // Dynamic passenger details generation
+    function generatePassengerForms() {
+        const passengerCount = parseInt(passengers.value) || 0;
+        const passengerContainer = document.getElementById('passengerContainer');
+        const passengerSection = document.getElementById('passengerSection');
+        
+        if (passengerCount > 0) {
+            passengerSection.style.display = 'block';
+            passengerContainer.innerHTML = '';
+            
+            for (let i = 0; i < passengerCount; i++) {
+                const passengerForm = createPassengerForm(i + 1, i);
+                passengerContainer.appendChild(passengerForm);
+            }
+        } else {
+            passengerSection.style.display = 'none';
+            passengerContainer.innerHTML = '';
+        }
+    }
+    
+    function createPassengerForm(number, index) {
+        const passengerDiv = document.createElement('div');
+        passengerDiv.className = 'passenger-form';
+        passengerDiv.innerHTML = `
+            <div class="passenger-header">
+                <h5><i class="fas fa-user"></i> Passenger ${number}</h5>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="passenger_${index}_name">
+                        <i class="fas fa-user"></i> Full Name *
+                    </label>
+                    <input type="text" 
+                           name="passenger_${index}_name" 
+                           id="passenger_${index}_name" 
+                           placeholder="As per government ID" 
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="passenger_${index}_age">
+                        <i class="fas fa-calendar-alt"></i> Age *
+                    </label>
+                    <input type="number" 
+                           name="passenger_${index}_age" 
+                           id="passenger_${index}_age" 
+                           min="1" 
+                           max="120" 
+                           placeholder="Age" 
+                           required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="passenger_${index}_gender">
+                        <i class="fas fa-venus-mars"></i> Gender *
+                    </label>
+                    <select name="passenger_${index}_gender" 
+                            id="passenger_${index}_gender" 
+                            required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="passenger_${index}_id_type">
+                        <i class="fas fa-id-card"></i> ID Proof Type
+                    </label>
+                    <select name="passenger_${index}_id_type" 
+                            id="passenger_${index}_id_type">
+                        <option value="Aadhar">Aadhar Card</option>
+                        <option value="PAN">PAN Card</option>
+                        <option value="Passport">Passport</option>
+                        <option value="Voter ID">Voter ID</option>
+                        <option value="Driving License">Driving License</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="passenger_${index}_id_number">
+                        <i class="fas fa-hashtag"></i> ID Proof Number
+                    </label>
+                    <input type="text" 
+                           name="passenger_${index}_id_number" 
+                           id="passenger_${index}_id_number" 
+                           placeholder="ID Number (optional)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="passenger_${index}_seat_preference">
+                        <i class="fas fa-chair"></i> Seat Preference
+                    </label>
+                    <select name="passenger_${index}_seat_preference" 
+                            id="passenger_${index}_seat_preference">
+                        <option value="No Preference">No Preference</option>
+                        <option value="Lower">Lower Berth</option>
+                        <option value="Middle">Middle Berth</option>
+                        <option value="Upper">Upper Berth</option>
+                        <option value="Window">Window Seat</option>
+                        <option value="Aisle">Aisle Seat</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        
+        // Add styling
+        passengerDiv.style.cssText = `
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        `;
+        
+        return passengerDiv;
+    }
+    
     // Event listeners for real-time validation
     const bookingType = document.getElementById('booking_type');
     const quota = document.getElementById('quota');
@@ -273,6 +418,12 @@
     [fromStation, toStation, passengers, journeyDate, bookingType, quota].forEach(element => {
         element.addEventListener('change', showValidationFeedback);
         element.addEventListener('blur', showValidationFeedback);
+    });
+    
+    // Generate passenger forms when passenger count changes
+    passengers.addEventListener('change', function() {
+        generatePassengerForms();
+        showValidationFeedback();
     });
     
     // Sync booking type with quota

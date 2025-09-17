@@ -38,9 +38,39 @@ def book_ticket_post(train_id):
     booking_type = request.form.get('booking_type', 'general')  # general or tatkal
     quota = request.form.get('quota', 'general')  # general, ladies, senior, disability, tatkal
     
+    # Synchronize quota and booking_type - if quota is tatkal, force booking_type to tatkal
+    if quota == 'tatkal':
+        booking_type = 'tatkal'
+    elif booking_type == 'tatkal':
+        # If booking_type is tatkal but quota is not, force quota to tatkal
+        quota = 'tatkal'
+    
     # Backend validation (frontend should handle most of this)
     if not all([from_station_id, to_station_id, journey_date, passengers]):
         flash('Please fill all fields', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # Validate passenger count
+    if not passengers or passengers < 1 or passengers > 6:
+        flash('Passenger count must be between 1 and 6', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # Validate passenger details are provided
+    missing_details = []
+    for i in range(passengers):
+        passenger_name = request.form.get(f'passenger_{i}_name', '').strip()
+        passenger_age = request.form.get(f'passenger_{i}_age', type=int)
+        passenger_gender = request.form.get(f'passenger_{i}_gender', '').strip()
+        
+        if not passenger_name:
+            missing_details.append(f'Passenger {i+1} name')
+        if not passenger_age or passenger_age < 1 or passenger_age > 120:
+            missing_details.append(f'Passenger {i+1} valid age (1-120)')
+        if not passenger_gender:
+            missing_details.append(f'Passenger {i+1} gender')
+    
+    if missing_details:
+        flash(f'Missing required details: {", ".join(missing_details)}', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
     try:
@@ -149,9 +179,7 @@ def book_ticket_post(train_id):
             # Atomic seat allocation or waitlist assignment with concurrent protection
             if available_seats >= (passengers or 0):
                 booking.status = 'confirmed'
-                # Update available seats on the locked train record
-                if train:
-                    train.available_seats = max(0, train.available_seats - (passengers or 0))
+                # Note: Do not modify train.available_seats as it's global - availability is calculated per-date
             else:
                 booking.status = 'waitlisted'
                 # Add to waitlist queue
@@ -200,11 +228,9 @@ def cancel_booking(booking_id):
             # Cancel booking
             booking.status = 'cancelled'
             
-            # If it was a confirmed booking, release seats and process waitlist
-            if original_status == 'confirmed' and train:
-                train.available_seats += booking.passengers
-                
-                # Process waitlist after seat release
+            # If it was a confirmed booking, process waitlist (no need to modify global seats)
+            if original_status == 'confirmed':
+                # Process waitlist after cancellation - availability will be calculated dynamically
                 waitlist_manager = WaitlistManager()
                 waitlist_manager.process_waitlist(booking.train_id, booking.journey_date)
             
