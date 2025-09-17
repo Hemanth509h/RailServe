@@ -77,8 +77,24 @@
                     </div>
                 </div>
                 
-                <!-- Booking Type and Quota Selection -->
+                <!-- Coach Class Selection -->
                 <div class="form-row">
+                    <div class="form-group">
+                        <label for="coach_class">
+                            <i class="fas fa-train"></i> Coach Class
+                        </label>
+                        <select name="coach_class" id="coach_class" required>
+                            <option value="">Select Coach Class</option>
+                            <option value="AC1">AC 1st Class (1A) - ₹5.0x base fare</option>
+                            <option value="AC2">AC 2 Tier (2A) - ₹3.0x base fare</option>
+                            <option value="AC3">AC 3 Tier (3A) - ₹2.0x base fare</option>
+                            <option value="SL">Sleeper (SL) - ₹1.0x base fare</option>
+                            <option value="2S">Second Sitting (2S) - ₹0.6x base fare</option>
+                            <option value="CC">Chair Car (CC) - ₹1.2x base fare</option>
+                        </select>
+                        <small class="form-help">Choose your preferred travel class</small>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="booking_type">
                             <i class="fas fa-bolt"></i> Booking Type
@@ -89,7 +105,10 @@
                         </select>
                         <small class="form-help">Tatkal: Premium fare, 1 day advance booking</small>
                     </div>
-                    
+                </div>
+                
+                <!-- Quota Selection -->
+                <div class="form-row">
                     <div class="form-group">
                         <label for="quota">
                             <i class="fas fa-users-cog"></i> Quota
@@ -101,6 +120,21 @@
                             <option value="disability">Person with Disability</option>
                             <option value="tatkal">Tatkal</option>
                         </select>
+                    </div>
+                    
+                    <div class="form-group" id="tatkalWarning" style="display: none;">
+                        <div class="tatkal-notice">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <strong>Tatkal Booking Notice:</strong>
+                                <ul>
+                                    <li>Booking opens 1 day before journey (10 AM for AC, 11 AM for Non-AC)</li>
+                                    <li>Premium charges apply (up to ₹400 extra)</li>
+                                    <li>No refund on cancellation</li>
+                                    <li>ID proof mandatory at travel</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -146,7 +180,10 @@
                         <i class="fas fa-arrow-left"></i> Back to Search
                     </a>
                     <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <i class="fas fa-arrow-right"></i> Proceed to Payment
+                        <i class="fas fa-arrow-right"></i> <span id="submitText">Proceed to Payment</span>
+                    </button>
+                    <button type="button" class="btn btn-warning" id="tatkalBtn" style="display: none;" onclick="proceedToTatkal()">
+                        <i class="fas fa-bolt"></i> Continue to Tatkal Booking
                     </button>
                 </div>
             </form>
@@ -258,19 +295,32 @@
         const to = toStation.value;
         const passengerCount = passengers.value;
         const bookingType = document.getElementById('booking_type').value;
+        const selectedCoachClass = coachClass.value;
         
-        if (from && to && passengerCount && from !== to) {
+        if (from && to && passengerCount && selectedCoachClass && from !== to) {
             // Simplified distance calculation based on station sequence
             const fromIndex = Array.from(fromStation.options).findIndex(opt => opt.value === from);
             const toIndex = Array.from(toStation.options).findIndex(opt => opt.value === to);
             const estimatedDistance = Math.abs(toIndex - fromIndex) * 75; // ~75km between stations
             
-            let baseFare = estimatedDistance * baseFarePerKm * parseInt(passengerCount);
+            // Coach class multipliers
+            const coachMultipliers = {
+                'AC1': 5.0,
+                'AC2': 3.0, 
+                'AC3': 2.0,
+                'SL': 1.0,
+                '2S': 0.6,
+                'CC': 1.2
+            };
+            
+            let baseFare = estimatedDistance * baseFarePerKm * parseInt(passengerCount) * (coachMultipliers[selectedCoachClass] || 1.0);
             
             // Apply Tatkal surcharge if selected
+            let tatkalSurcharge = 0;
             if (bookingType === 'tatkal') {
-                const tatkalMultiplier = 1.5; // 50% premium
-                const tatkalSurcharge = Math.min(baseFare * 0.3, 500); // Max ₹500 surcharge
+                const tatkalMultiplier = 1.3; // 30% premium
+                const maxSurcharge = ['AC1', 'AC2', 'AC3', 'CC'].includes(selectedCoachClass) ? 400 : 200;
+                tatkalSurcharge = Math.min(baseFare * 0.2, maxSurcharge);
                 baseFare = baseFare * tatkalMultiplier + tatkalSurcharge;
             }
             
@@ -280,7 +330,7 @@
             document.getElementById('distance').textContent = estimatedDistance + ' km';
             document.getElementById('baseFare').textContent = '₹' + baseFare.toFixed(2);
             document.getElementById('serviceCharges').textContent = '₹' + serviceCharges.toFixed(2);
-            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2) + (bookingType === 'tatkal' ? ' (Tatkal)' : '');
+            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2) + (bookingType === 'tatkal' ? ' (Tatkal)' : '') + ' - ' + selectedCoachClass;
             
             fareCalculator.style.display = 'block';
         } else {
@@ -414,8 +464,12 @@
     // Event listeners for real-time validation
     const bookingType = document.getElementById('booking_type');
     const quota = document.getElementById('quota');
+    const coachClass = document.getElementById('coach_class');
+    const tatkalWarning = document.getElementById('tatkalWarning');
+    const tatkalBtn = document.getElementById('tatkalBtn');
+    const submitBtn = document.getElementById('submitBtn');
     
-    [fromStation, toStation, passengers, journeyDate, bookingType, quota].forEach(element => {
+    [fromStation, toStation, passengers, journeyDate, bookingType, quota, coachClass].forEach(element => {
         element.addEventListener('change', showValidationFeedback);
         element.addEventListener('blur', showValidationFeedback);
     });
@@ -426,6 +480,23 @@
         showValidationFeedback();
     });
     
+    // Handle Tatkal booking flow and warnings
+    function handleTatkalSelection() {
+        const isTatkal = bookingType.value === 'tatkal' || quota.value === 'tatkal';
+        
+        if (isTatkal) {
+            tatkalWarning.style.display = 'block';
+            tatkalBtn.style.display = 'inline-block';
+            submitBtn.style.display = 'none';
+            document.getElementById('submitText').textContent = 'Continue to Tatkal Booking';
+        } else {
+            tatkalWarning.style.display = 'none';
+            tatkalBtn.style.display = 'none';
+            submitBtn.style.display = 'inline-block';
+            document.getElementById('submitText').textContent = 'Proceed to Payment';
+        }
+    }
+    
     // Sync booking type with quota
     bookingType.addEventListener('change', function() {
         if (this.value === 'tatkal') {
@@ -433,6 +504,7 @@
         } else if (quota.value === 'tatkal') {
             quota.value = 'general';
         }
+        handleTatkalSelection();
         calculateFare();
     });
     
@@ -442,8 +514,45 @@
         } else if (bookingType.value === 'tatkal' && this.value !== 'tatkal') {
             bookingType.value = 'general';
         }
+        handleTatkalSelection();
         calculateFare();
     });
+    
+    // Coach class change handler
+    coachClass.addEventListener('change', function() {
+        calculateFare();
+    });
+    
+    // Function to proceed to Tatkal booking
+    function proceedToTatkal() {
+        const errors = validateForm();
+        
+        if (errors.length > 0) {
+            alert('Please fix the following errors:\n' + errors.join('\n'));
+            return;
+        }
+        
+        // Create a form to submit to Tatkal booking page
+        const tatkalForm = document.createElement('form');
+        tatkalForm.method = 'POST';
+        tatkalForm.action = '{{ url_for("booking.tatkal_booking", train_id=train.id) }}';
+        
+        // Copy all form data
+        const formData = new FormData(form);
+        for (let [key, value] of formData.entries()) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            tatkalForm.appendChild(input);
+        }
+        
+        document.body.appendChild(tatkalForm);
+        tatkalForm.submit();
+    }
+    
+    // Make function globally available
+    window.proceedToTatkal = proceedToTatkal;
     
     // Prevent selecting same station
     fromStation.addEventListener('change', function() {

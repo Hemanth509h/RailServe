@@ -37,6 +37,7 @@ def book_ticket_post(train_id):
     passengers = request.form.get('passengers', type=int)
     booking_type = request.form.get('booking_type', 'general')  # general or tatkal
     quota = request.form.get('quota', 'general')  # general, ladies, senior, disability, tatkal
+    coach_class = request.form.get('coach_class', 'SL')  # AC1, AC2, AC3, SL, 2S, CC
     
     # Synchronize quota and booking_type - if quota is tatkal, force booking_type to tatkal
     if quota == 'tatkal':
@@ -46,8 +47,14 @@ def book_ticket_post(train_id):
         quota = 'tatkal'
     
     # Backend validation (frontend should handle most of this)
-    if not all([from_station_id, to_station_id, journey_date, passengers]):
-        flash('Please fill all fields', 'error')
+    if not all([from_station_id, to_station_id, journey_date, passengers, coach_class]):
+        flash('Please fill all fields including coach class', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # Validate coach class
+    valid_classes = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC']
+    if coach_class not in valid_classes:
+        flash('Invalid coach class selected', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
     # Validate passenger count
@@ -106,8 +113,8 @@ def book_ticket_post(train_id):
                 flash('Tatkal booking is not yet open for this date', 'error')
                 return redirect(url_for('booking.book_ticket', train_id=train_id))
             
-            # Calculate fare with booking type
-            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type)
+            # Calculate fare with booking type and coach class
+            total_amount = calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type, coach_class)
             
             # Check availability based on booking type with concurrent safety
             if booking_type == 'tatkal':
@@ -147,6 +154,7 @@ def book_ticket_post(train_id):
                 total_amount=total_amount,
                 booking_type=booking_type,
                 quota=quota,
+                coach_class=coach_class,
                 status='pending_payment'
             )
             
@@ -171,7 +179,8 @@ def book_ticket_post(train_id):
                         gender=passenger_gender,
                         id_proof_type=passenger_id_type or 'Aadhar',
                         id_proof_number=passenger_id_number or f'ID{random.randint(100000, 999999)}',
-                        seat_preference=passenger_seat_pref
+                        seat_preference=passenger_seat_pref,
+                        coach_class=coach_class
                     )
                     passenger_details.append(passenger)
                     db.session.add(passenger)
@@ -190,7 +199,7 @@ def book_ticket_post(train_id):
             
         if booking.status == 'confirmed':
             flash(f'Ticket booked successfully! PNR: {booking.pnr}', 'success')
-            return redirect(url_for('payment.payment_page', booking_id=booking.id))
+            return redirect(url_for('payment.pay', booking_id=booking.id))
         else:
             flash(f'No seats available. Added to waitlist! PNR: {booking.pnr}', 'warning')
             return redirect(url_for('booking.booking_history'))
@@ -252,3 +261,26 @@ def booking_history():
         Booking.booking_date.desc()
     ).all()
     return render_template('booking_history.html', bookings=bookings)
+
+@booking_bp.route('/tatkal/<int:train_id>', methods=['GET', 'POST'])
+@login_required
+def tatkal_booking(train_id):
+    """Dedicated Tatkal booking page with enhanced features"""
+    train = Train.query.get_or_404(train_id)
+    
+    if request.method == 'GET':
+        # Show Tatkal booking page
+        stations = Station.query.filter_by(active=True).all()
+        train_stations = db.session.query(Station).join(TrainRoute).filter(
+            TrainRoute.train_id == train_id
+        ).order_by(TrainRoute.sequence).all()
+        
+        return render_template('tatkal_booking.html', 
+                             train=train, 
+                             stations=stations,
+                             train_stations=train_stations)
+    
+    # Handle POST - process Tatkal booking with all data from previous form
+    # All form validation and processing logic is the same as regular booking
+    # but with enhanced Tatkal-specific checks and UI
+    return book_ticket_post(train_id)  # Reuse existing logic

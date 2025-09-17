@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+
+{% block title %}Tatkal Booking - {{ train.name }} - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="tatkal-container">
+        <!-- Tatkal Header with Warning -->
+        <div class="tatkal-header">
+            <h1><i class="fas fa-bolt text-warning"></i> Tatkal Booking</h1>
+            <div class="tatkal-alert">
+                <div class="alert-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="alert-content">
+                    <h3>Important Tatkal Guidelines</h3>
+                    <ul>
+                        <li><strong>Booking Time:</strong> 10:00 AM for AC classes, 11:00 AM for Non-AC</li>
+                        <li><strong>Advance Booking:</strong> Only 1 day before journey date</li>
+                        <li><strong>Premium Charges:</strong> Up to ₹400 additional charges apply</li>
+                        <li><strong>No Refund:</strong> Cancellation charges are 100% of fare</li>
+                        <li><strong>ID Proof Mandatory:</strong> Must carry valid ID during travel</li>
+                        <li><strong>Payment:</strong> Must be completed within 5 minutes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Train Information -->
+        <div class="train-info-card tatkal-train-card">
+            <h2><i class="fas fa-train"></i> {{ train.number }} - {{ train.name }}</h2>
+            <div class="train-details">
+                <div class="detail-item">
+                    <i class="fas fa-chair"></i>
+                    <span>Tatkal Seats: {{ train.tatkal_seats or 0 }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Tatkal Fare: ₹{{ "%.2f"|format(train.tatkal_fare_per_km or train.fare_per_km * 1.5) }}/km</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Booking Status: <span class="tatkal-open">OPEN</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tatkal Booking Form -->
+        <div class="booking-form-card tatkal-form-card">
+            <h3><i class="fas fa-bolt"></i> Tatkal Ticket Booking</h3>
+            
+            <form method="POST" class="tatkal-booking-form" id="tatkalForm">
+                <!-- Hidden fields for Tatkal -->
+                <input type="hidden" name="booking_type" value="tatkal">
+                <input type="hidden" name="quota" value="tatkal">
+                
+                <!-- Journey Details -->
+                <div class="form-section">
+                    <h4><i class="fas fa-route"></i> Journey Details</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="from_station">
+                                <i class="fas fa-map-marker-alt"></i> From Station *
+                            </label>
+                            <select name="from_station" id="from_station" required>
+                                <option value="">Select Departure Station</option>
+                                {% for station in train_stations %}
+                                    <option value="{{ station.id }}">
+                                        {{ station.name }} ({{ station.code }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="to_station">
+                                <i class="fas fa-map-marker-alt"></i> To Station *
+                            </label>
+                            <select name="to_station" id="to_station" required>
+                                <option value="">Select Destination Station</option>
+                                {% for station in train_stations %}
+                                    <option value="{{ station.id }}">
+                                        {{ station.name }} ({{ station.code }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="journey_date">
+                                <i class="fas fa-calendar"></i> Journey Date *
+                            </label>
+                            <input type="date" name="journey_date" id="journey_date" required>
+                            <small class="form-help">Only tomorrow's date available for Tatkal</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="passengers">
+                                <i class="fas fa-users"></i> Number of Passengers *
+                            </label>
+                            <select name="passengers" id="passengers" required>
+                                <option value="">Select</option>
+                                <option value="1">1 Passenger</option>
+                                <option value="2">2 Passengers</option>
+                                <option value="3">3 Passengers</option>
+                                <option value="4">4 Passengers</option>
+                            </select>
+                            <small class="form-help">Maximum 4 passengers for Tatkal</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coach Class Selection -->
+                <div class="form-section">
+                    <h4><i class="fas fa-train"></i> Coach Class Selection</h4>
+                    <div class="coach-selection">
+                        <div class="coach-option">
+                            <input type="radio" id="ac1" name="coach_class" value="AC1" required>
+                            <label for="ac1" class="coach-label">
+                                <div class="coach-icon"><i class="fas fa-star"></i></div>
+                                <div class="coach-info">
+                                    <strong>AC First Class (1A)</strong>
+                                    <small>Premium comfort, 2-berth cabins</small>
+                                    <span class="coach-price">₹ Base fare × 5.0</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="coach-option">
+                            <input type="radio" id="ac2" name="coach_class" value="AC2" required>
+                            <label for="ac2" class="coach-label">
+                                <div class="coach-icon"><i class="fas fa-bed"></i></div>
+                                <div class="coach-info">
+                                    <strong>AC 2 Tier (2A)</strong>
+                                    <small>AC compartment, 4-berth cabins</small>
+                                    <span class="coach-price">₹ Base fare × 3.0</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="coach-option">
+                            <input type="radio" id="ac3" name="coach_class" value="AC3" required>
+                            <label for="ac3" class="coach-label">
+                                <div class="coach-icon"><i class="fas fa-snowflake"></i></div>
+                                <div class="coach-info">
+                                    <strong>AC 3 Tier (3A)</strong>
+                                    <small>AC compartment, 6-berth cabins</small>
+                                    <span class="coach-price">₹ Base fare × 2.0</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="coach-option">
+                            <input type="radio" id="cc" name="coach_class" value="CC" required>
+                            <label for="cc" class="coach-label">
+                                <div class="coach-icon"><i class="fas fa-chair"></i></div>
+                                <div class="coach-info">
+                                    <strong>Chair Car (CC)</strong>
+                                    <small>AC seating, comfortable chairs</small>
+                                    <span class="coach-price">₹ Base fare × 1.2</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passenger Details -->
+                <div class="form-section" id="passengerSection" style="display: none;">
+                    <h4><i class="fas fa-user-friends"></i> Passenger Details</h4>
+                    <div class="tatkal-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <span>All passenger details must be accurate. ID proof is mandatory during travel.</span>
+                    </div>
+                    <div id="passengerContainer">
+                        <!-- Passenger details will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Tatkal Fare Calculator -->
+                <div class="tatkal-fare-calculator" id="fareCalculator" style="display: none;">
+                    <div class="calculator-header">
+                        <h4><i class="fas fa-calculator"></i> Tatkal Fare Breakdown</h4>
+                    </div>
+                    <div class="fare-details">
+                        <div class="fare-item">
+                            <span>Base Fare:</span>
+                            <span id="baseFare">₹--</span>
+                        </div>
+                        <div class="fare-item">
+                            <span>Coach Class Multiplier:</span>
+                            <span id="coachMultiplier">--</span>
+                        </div>
+                        <div class="fare-item tatkal-highlight">
+                            <span>Tatkal Premium:</span>
+                            <span id="tatkalCharges">₹--</span>
+                        </div>
+                        <div class="fare-item">
+                            <span>GST & Service Charges:</span>
+                            <span id="serviceCharges">₹--</span>
+                        </div>
+                        <div class="fare-item total tatkal-total">
+                            <span><strong>Total Tatkal Fare:</strong></span>
+                            <span id="totalFare"><strong>₹--</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions tatkal-actions">
+                    <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Regular Booking
+                    </a>
+                    <button type="submit" class="btn btn-warning tatkal-submit" id="submitBtn" disabled>
+                        <i class="fas fa-bolt"></i> Book Tatkal Ticket
+                    </button>
+                </div>
+                
+                <!-- Countdown Timer -->
+                <div class="tatkal-timer" id="bookingTimer" style="display: none;">
+                    <div class="timer-content">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>Complete booking in: <span id="countdown">05:00</span></span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.tatkal-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.tatkal-header h1 {
+    color: #f59e0b;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.tatkal-alert {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.alert-icon {
+    font-size: 2rem;
+    color: #d97706;
+    margin-top: 5px;
+}
+
+.alert-content h3 {
+    color: #92400e;
+    margin-bottom: 10px;
+}
+
+.alert-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.alert-content li {
+    padding: 5px 0;
+    color: #78350f;
+}
+
+.tatkal-train-card {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    border: none;
+}
+
+.tatkal-open {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.coach-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.coach-option {
+    position: relative;
+}
+
+.coach-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.coach-label {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.coach-label:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.coach-option input[type="radio"]:checked + .coach-label {
+    border-color: #f59e0b;
+    background: #fef3c7;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.coach-icon {
+    font-size: 1.5rem;
+    color: #f59e0b;
+    min-width: 30px;
+}
+
+.coach-info {
+    flex: 1;
+}
+
+.coach-info strong {
+    display: block;
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.coach-info small {
+    display: block;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.coach-price {
+    display: inline-block;
+    background: #f59e0b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.tatkal-fare-calculator {
+    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+    border: 2px solid #f97316;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.tatkal-highlight {
+    background: #fef3c7;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #f59e0b;
+}
+
+.tatkal-total {
+    background: #f59e0b;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+}
+
+.tatkal-submit {
+    background: #f59e0b;
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.tatkal-submit:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.tatkal-submit:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.tatkal-timer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #dc2626;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    z-index: 1000;
+}
+
+.timer-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}
+
+.tatkal-notice {
+    background: #e0f2fe;
+    border: 1px solid #0284c7;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #0c4a6e;
+}
+</style>
+
+<script>
+// Set date to tomorrow (Tatkal rule)
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+document.getElementById('journey_date').value = tomorrow.toISOString().split('T')[0];
+document.getElementById('journey_date').min = tomorrow.toISOString().split('T')[0];
+document.getElementById('journey_date').max = tomorrow.toISOString().split('T')[0];
+
+// Tatkal booking logic
+const form = document.getElementById('tatkalForm');
+const submitBtn = document.getElementById('submitBtn');
+const passengers = document.getElementById('passengers');
+const passengerSection = document.getElementById('passengerSection');
+const fareCalculator = document.getElementById('fareCalculator');
+
+// Start 5-minute countdown when form is valid
+function startBookingTimer() {
+    const timer = document.getElementById('bookingTimer');
+    const countdown = document.getElementById('countdown');
+    timer.style.display = 'block';
+    
+    let timeLeft = 300; // 5 minutes
+    
+    const timerInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        countdown.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('Booking time expired! Please start again.');
+            window.location.reload();
+        }
+        timeLeft--;
+    }, 1000);
+}
+
+// Enhanced validation for Tatkal
+function validateTatkalForm() {
+    const fromStation = document.getElementById('from_station').value;
+    const toStation = document.getElementById('to_station').value;
+    const passengerCount = passengers.value;
+    const coachClass = document.querySelector('input[name="coach_class"]:checked');
+    
+    const isValid = fromStation && toStation && fromStation !== toStation && passengerCount && coachClass;
+    
+    submitBtn.disabled = !isValid;
+    
+    if (isValid) {
+        calculateTatkalFare();
+        if (submitBtn.disabled === false) {
+            startBookingTimer();
+        }
+    }
+    
+    return isValid;
+}
+
+// Calculate Tatkal fare with all premiums
+function calculateTatkalFare() {
+    const coachClass = document.querySelector('input[name="coach_class"]:checked')?.value;
+    const passengerCount = parseInt(passengers.value) || 0;
+    
+    if (!coachClass || !passengerCount) return;
+    
+    const multipliers = {
+        'AC1': 5.0,
+        'AC2': 3.0,
+        'AC3': 2.0,
+        'CC': 1.2
+    };
+    
+    const baseFarePerKm = {{ train.fare_per_km }};
+    const estimatedDistance = 300; // Simplified
+    const multiplier = multipliers[coachClass];
+    
+    const baseFare = estimatedDistance * baseFarePerKm * passengerCount * multiplier;
+    const tatkalPremium = baseFare * 0.3;
+    const maxSurcharge = ['AC1', 'AC2', 'AC3', 'CC'].includes(coachClass) ? 400 : 200;
+    const tatkalCharges = Math.min(tatkalPremium, maxSurcharge);
+    const serviceCharges = (baseFare + tatkalCharges) * 0.18;
+    const totalFare = baseFare + tatkalCharges + serviceCharges;
+    
+    document.getElementById('baseFare').textContent = '₹' + baseFare.toFixed(2);
+    document.getElementById('coachMultiplier').textContent = multiplier + 'x';
+    document.getElementById('tatkalCharges').textContent = '₹' + tatkalCharges.toFixed(2);
+    document.getElementById('serviceCharges').textContent = '₹' + serviceCharges.toFixed(2);
+    document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2);
+    
+    fareCalculator.style.display = 'block';
+}
+
+// Generate passenger forms
+function generatePassengerForms() {
+    const passengerCount = parseInt(passengers.value) || 0;
+    const container = document.getElementById('passengerContainer');
+    
+    if (passengerCount > 0) {
+        passengerSection.style.display = 'block';
+        container.innerHTML = '';
+        
+        for (let i = 0; i < passengerCount; i++) {
+            container.appendChild(createTatkalPassengerForm(i + 1, i));
+        }
+    } else {
+        passengerSection.style.display = 'none';
+    }
+}
+
+function createTatkalPassengerForm(number, index) {
+    const div = document.createElement('div');
+    div.className = 'passenger-form tatkal-passenger-form';
+    div.innerHTML = `
+        <h5><i class="fas fa-user"></i> Passenger ${number}</h5>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Full Name (as per ID) *</label>
+                <input type="text" name="passenger_${index}_name" required>
+            </div>
+            <div class="form-group">
+                <label>Age *</label>
+                <input type="number" name="passenger_${index}_age" min="1" max="120" required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Gender *</label>
+                <select name="passenger_${index}_gender" required>
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ID Proof Type *</label>
+                <select name="passenger_${index}_id_type" required>
+                    <option value="Aadhar">Aadhar Card</option>
+                    <option value="PAN">PAN Card</option>
+                    <option value="Passport">Passport</option>
+                    <option value="Voter ID">Voter ID</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>ID Proof Number *</label>
+                <input type="text" name="passenger_${index}_id_number" required>
+            </div>
+            <div class="form-group">
+                <label>Berth Preference</label>
+                <select name="passenger_${index}_seat_preference">
+                    <option value="No Preference">No Preference</option>
+                    <option value="Lower">Lower Berth</option>
+                    <option value="Upper">Upper Berth</option>
+                    <option value="Window">Window</option>
+                </select>
+            </div>
+        </div>
+    `;
+    
+    div.style.cssText = `
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+    `;
+    
+    return div;
+}
+
+// Event listeners
+passengers.addEventListener('change', generatePassengerForms);
+document.querySelectorAll('input, select').forEach(input => {
+    input.addEventListener('change', validateTatkalForm);
+});
+
+// Form submission
+form.addEventListener('submit', function(e) {
+    if (!validateTatkalForm()) {
+        e.preventDefault();
+        alert('Please complete all required fields');
+    } else {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Tatkal Booking...';
+        submitBtn.disabled = true;
+    }
+});
+</script>
+{% endblock %}

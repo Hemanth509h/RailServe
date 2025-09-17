@@ -41,8 +41,8 @@ def search_trains(from_station_id, to_station_id, journey_date):
     
     return valid_trains
 
-def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type='general'):
-    """Calculate fare for the journey"""
+def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type='general', coach_class='SL'):
+    """Calculate fare for the journey with coach class multipliers"""
     from_route = TrainRoute.query.filter_by(
         train_id=train_id, station_id=from_station_id
     ).first()
@@ -59,14 +59,28 @@ def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking
     if not train:
         return 0
     
-    # Calculate base fare based on booking type
+    # Coach class multipliers for fare calculation
+    coach_multipliers = {
+        'AC1': 5.0,  # AC First Class
+        'AC2': 3.0,  # AC 2 Tier
+        'AC3': 2.0,  # AC 3 Tier
+        'SL': 1.0,   # Sleeper Class
+        '2S': 0.6,   # Second Sitting
+        'CC': 1.2    # Chair Car
+    }
+    
+    coach_multiplier = coach_multipliers.get(coach_class, 1.0)
+    
+    # Calculate base fare based on booking type and coach class
     if booking_type == 'tatkal' and train.tatkal_fare_per_km:
-        base_fare = distance * train.tatkal_fare_per_km * passengers
-        # Tatkal surcharge (additional 30% + fixed charge)
-        tatkal_surcharge = min(base_fare * 0.3, 500)  # Cap at ₹500
+        base_fare = distance * train.tatkal_fare_per_km * passengers * coach_multiplier
+        # Tatkal surcharge based on coach class
+        ac_classes = ['AC1', 'AC2', 'AC3', 'CC']
+        max_surcharge = 400 if coach_class in ac_classes else 200
+        tatkal_surcharge = min(base_fare * 0.3, max_surcharge)
         base_fare += tatkal_surcharge
     else:
-        base_fare = distance * train.fare_per_km * passengers
+        base_fare = distance * train.fare_per_km * passengers * coach_multiplier
     
     # Add GST and service charges (18%)
     total_fare = base_fare * 1.18

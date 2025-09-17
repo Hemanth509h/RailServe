@@ -97,6 +97,7 @@ class Booking(db.Model):
     total_amount = db.Column(db.Float, nullable=False)
     booking_type = db.Column(db.String(10), default='general')  # general, tatkal
     quota = db.Column(db.String(20), default='general')  # general, ladies, senior, disability, tatkal
+    coach_class = db.Column(db.String(10), default='SL')  # AC1, AC2, AC3, SL, 2S, CC
     status = db.Column(db.String(20), default='pending_payment')  # confirmed, waitlisted, cancelled, pending_payment
     booking_date = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -120,6 +121,7 @@ class Passenger(db.Model):
     id_proof_type = db.Column(db.String(20), nullable=False)  # Aadhar, PAN, Passport, etc.
     id_proof_number = db.Column(db.String(50), nullable=False)
     seat_preference = db.Column(db.String(20), default='No Preference')  # Lower, Middle, Upper, Window, Aisle
+    coach_class = db.Column(db.String(10), default='SL')  # AC1, AC2, AC3, SL, 2S, CC
     
     def __init__(self, **kwargs):
         super(Passenger, self).__init__(**kwargs)
