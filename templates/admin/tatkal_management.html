@@ -73,7 +73,7 @@
                             </td>
                             <td>₹{{ "%.0f"|format(train.tatkal_revenue or 0) }}</td>
                             <td>
-                                <a href="{{ url_for('admin.view_train_route', train_id=train.number) }}" class="btn-action">
+                                <a href="{{ url_for('admin.view_train_route', train_id=train.id) }}" class="btn-action">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </td>

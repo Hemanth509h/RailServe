@@ -90,7 +90,16 @@ def add_train():
     tatkal_fare_per_km = request.form.get('tatkal_fare_per_km', type=float)
     
     if not all([number, name, total_seats, fare_per_km]):
-        flash('Please fill all fields', 'error')
+        flash('Please fill all required fields', 'error')
+        return redirect(url_for('admin.trains'))
+    
+    # Additional validation
+    if total_seats < 50 or total_seats > 2000:
+        flash('Total seats must be between 50 and 2000', 'error')
+        return redirect(url_for('admin.trains'))
+    
+    if fare_per_km < 0.5 or fare_per_km > 50.0:
+        flash('Fare per km must be between ₹0.50 and ₹50.00', 'error')
         return redirect(url_for('admin.trains'))
     
     if Train.query.filter_by(number=number).first():
@@ -439,9 +448,22 @@ def update_quota(train_id):
         flash('Tatkal seats cannot exceed total seats', 'error')
         return redirect(url_for('admin.quota_management'))
     
+    # Enhanced server-side validation for quota updates
+    if not total_seats or total_seats < 50 or total_seats > 2000:
+        flash('Total seats must be between 50 and 2000', 'error')
+        return redirect(url_for('admin.quota_management'))
+    
+    if tatkal_seats and (tatkal_seats < 0 or tatkal_seats > total_seats):
+        flash('Tatkal seats must be between 0 and total seats', 'error')
+        return redirect(url_for('admin.quota_management'))
+    
+    if tatkal_fare_per_km and (tatkal_fare_per_km < 0.5 or tatkal_fare_per_km > 100.0):
+        flash('Tatkal fare per km must be between ₹0.50 and ₹100.00', 'error')
+        return redirect(url_for('admin.quota_management'))
+    
     train.total_seats = total_seats
     train.available_seats = total_seats
-    train.tatkal_seats = tatkal_seats
+    train.tatkal_seats = tatkal_seats or 0
     train.tatkal_fare_per_km = tatkal_fare_per_km
     
     db.session.commit()
@@ -454,6 +476,7 @@ def tatkal_management():
     """Tatkal booking management and monitoring"""
     # Get trains with tatkal bookings
     trains_with_tatkal = db.session.query(
+        Train.id,
         Train.number,
         Train.name,
         Train.tatkal_seats,
@@ -531,10 +554,19 @@ def add_station_to_route(train_id):
 @admin_required
 def seat_allocation():
     """Real-time seat allocation monitoring"""
-    # Get current seat allocation by train for today
-    today = datetime.utcnow().date()
+    # Get date from request parameter or default to today
+    date_param = request.args.get('date')
+    try:
+        if date_param:
+            selected_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        else:
+            selected_date = datetime.utcnow().date()
+    except ValueError:
+        flash('Invalid date format', 'error')
+        selected_date = datetime.utcnow().date()
     
     seat_allocation = db.session.query(
+        Train.id,
         Train.number,
         Train.name,
         Train.total_seats,
@@ -553,13 +585,13 @@ def seat_allocation():
         ), 0).label('tatkal_booked')
     ).outerjoin(Booking, and_(
         Train.id == Booking.train_id,
-        Booking.journey_date == today,
+        Booking.journey_date == selected_date,
         Booking.status == 'confirmed'
     )).group_by(Train.id, Train.number, Train.name, Train.total_seats, Train.tatkal_seats).all()
     
     return render_template('admin/seat_allocation.html',
                          seat_allocation=seat_allocation,
-                         selected_date=today)
+                         selected_date=selected_date)
 
 @admin_bp.route('/waitlist-management')
 @admin_required

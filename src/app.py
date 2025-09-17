@@ -3,6 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -35,7 +36,8 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600
 
-# CSRF Protection removed as requested
+# Initialize CSRF Protection
+csrf = CSRFProtect()
 
 # Proxy support for production
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -47,6 +49,7 @@ if flask_env == 'production':
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)
+csrf.init_app(app)
 login_manager.login_view = 'auth.login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
 

@@ -13,7 +13,7 @@
         <div class="control-card">
             <h3><i class="fas fa-calendar"></i> Select Date</h3>
             <form method="GET" class="date-form">
-                <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()">
+                <input type="date" name="date" value="{{ selected_date.strftime('%Y-%m-%d') if selected_date else '' }}" onchange="this.form.submit()">
                 <button type="button" onclick="location.reload()" class="btn-refresh">
                     <i class="fas fa-sync-alt"></i> Refresh
                 </button>
@@ -105,7 +105,7 @@
                 {% endif %}
                 
                 <div class="allocation-actions">
-                    <a href="{{ url_for('admin.view_train_route', train_id=train.number) }}" class="btn-action">
+                    <a href="{{ url_for('admin.view_train_route', train_id=train.id) }}" class="btn-action">
                         <i class="fas fa-route"></i> View Route
                     </a>
                     <a href="{{ url_for('admin.quota_management') }}#train-{{ train.number }}" class="btn-action">
