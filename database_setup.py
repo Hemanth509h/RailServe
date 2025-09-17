@@ -433,7 +433,14 @@ class RailwayDatabaseSetup:
                     logger.info("ℹ️  Admin user already exists")
                     return True
                 
-                password_hash = generate_password_hash("admin123")
+                # Require admin password from environment for security
+                admin_password = os.environ.get('ADMIN_INITIAL_PASSWORD')
+                if not admin_password:
+                    logger.error("❌ ADMIN_INITIAL_PASSWORD environment variable is required for security")
+                    logger.info("Set ADMIN_INITIAL_PASSWORD before running this script")
+                    return False
+                
+                password_hash = generate_password_hash(admin_password)
                 
                 session.execute(text("""
                     INSERT INTO \"user\" (username, email, password_hash, role, active, created_at) 
@@ -444,7 +451,7 @@ class RailwayDatabaseSetup:
                 })
                 
                 session.commit()
-                logger.info("✅ Admin user created successfully: admin / admin123")
+                logger.info("✅ Admin user created successfully with username: admin")
                 return True
                 
         except Exception as e:
