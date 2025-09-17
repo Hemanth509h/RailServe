@@ -54,5 +54,5 @@ def pnr_enquiry():
 
 
 if __name__ == '__main__':
-    # Development server settingspopulate_db.py
+    # Development server settings
     app.run(host='0.0.0.0', port=5000, debug=True)
