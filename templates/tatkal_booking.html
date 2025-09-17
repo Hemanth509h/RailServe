@@ -50,7 +50,6 @@
             <h3><i class="fas fa-bolt"></i> Tatkal Ticket Booking</h3>
             
             <form method="POST" class="tatkal-booking-form" id="tatkalForm">
-                {{ csrf_token() }}
                 <!-- Hidden fields for Tatkal -->
                 <input type="hidden" name="booking_type" value="tatkal">
                 <input type="hidden" name="quota" value="tatkal">
