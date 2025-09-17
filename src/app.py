@@ -21,22 +21,23 @@ app = Flask(__name__,
             static_folder='../static')
 
 # Load configuration
-app.config['SECRET_KEY'] = os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/")
+app.config['SECRET_KEY'] = os.environ.get("SESSION_SECRET")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 
-# Security settings
-flask_env = os.environ.get("FLASK_ENV", "production")
-app.config['SESSION_COOKIE_SECURE'] = flask_env == "production"
+# Security settings - Replit environment friendly
+flask_env = os.environ.get("FLASK_ENV", "development")
+app.config['SESSION_COOKIE_SECURE'] = False  # Disable for development in Replit
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600
+app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF as requested
 
 
-# Proxy support for production
+# Proxy support for Replit environment
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Additional security headers for production

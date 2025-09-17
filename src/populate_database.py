@@ -11,7 +11,7 @@ from datetime import datetime, time
 import random
 
 def populate_stations():
-    """Create comprehensive Indian railway stations"""
+    """Create comprehensive Indian railway stations - 750 total"""
     stations_data = [
         # Major Metropolitan Cities
         {'code': 'NDLS', 'name': 'New Delhi', 'city': 'Delhi', 'state': 'Delhi'},
@@ -86,9 +86,68 @@ def populate_stations():
         {'code': 'BSL', 'name': 'Bhusaval Junction', 'city': 'Bhusaval', 'state': 'Maharashtra'},
     ]
     
+    # Add base stations from the list
     stations = []
     for station_data in stations_data:
         station = Station(**station_data)
+        stations.append(station)
+        db.session.add(station)
+    
+    # Generate additional stations to reach 750 total
+    indian_cities = [
+        'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad', 'Ahmedabad', 'Chennai', 'Kolkata', 'Surat', 'Pune', 'Jaipur',
+        'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Patna', 'Bhopal', 'Ludhiana', 'Agra', 'Nashik', 'Faridabad',
+        'Meerut', 'Rajkot', 'Kalyan-Dombivli', 'Vasai-Virar', 'Varanasi', 'Srinagar', 'Aurangabad', 'Dhanbad',
+        'Amritsar', 'Navi Mumbai', 'Allahabad', 'Ranchi', 'Howrah', 'Coimbatore', 'Jabalpur', 'Gwalior', 'Vijayawada',
+        'Jodhpur', 'Madurai', 'Raipur', 'Kota', 'Guwahati', 'Chandigarh', 'Thiruvananthapuram', 'Solapur', 'Hubballi-Dharwad',
+        'Tiruchirappalli', 'Bareilly', 'Mysuru', 'Tiruppur', 'Gurgaon', 'Aligarh', 'Moradabad', 'Jalandhar', 'Bhubaneswar',
+        'Salem', 'Warangal', 'Mira-Bhayandar', 'Bhiwandi', 'Saharanpur', 'Guntur', 'Bikaner', 'Noida', 'Jamshedpur',
+        'Bhilai Nagar', 'Cuttack', 'Firozabad', 'Kochi', 'Nellore', 'Bhavnagar', 'Dehradun', 'Durgapur', 'Asansol',
+        'Nanded', 'Kolhapur', 'Ajmer', 'Gulbarga', 'Jamnagar', 'Ujjain', 'Loni', 'Siliguri', 'Jhansi', 'Ulhasnagar',
+        'Nanded-Waghala', 'Jammu', 'Sangli-Miraj & Kupwad', 'Mangalore', 'Erode', 'Belgaum', 'Ambattur', 'Tirunelveli',
+        'Malegaon', 'Gaya', 'Jalgaon', 'Udaipur', 'Maheshtala', 'Davanagere', 'Kozhikode', 'Akola', 'Kurnool', 'Rajpur Sonarpur',
+        'Rajahmundry', 'Bokaro', 'South Dumdum', 'Bellary', 'Patiala', 'Gopalpur', 'Agartala', 'Bhagalpur', 'Muzaffarnagar',
+        'Bhatpara', 'Panihati', 'Latur', 'Dhule', 'Rohtak', 'Korba', 'Bhilwara', 'Berhampur', 'Muzaffarpur', 'Ahmednagar',
+        'Mathura', 'Kollam', 'Avadi', 'Kadapa', 'Kamarhati', 'Sambalpur', 'Bilaspur', 'Shahjahanpur', 'Satara', 'Bijapur',
+        'Rampur', 'Shivamogga', 'Chandrapur', 'Junagadh', 'Thrissur', 'Alwar', 'Bardhaman', 'Kulti', 'Nizamabad', 'Parbhani',
+        'Tumkur', 'Khammam', 'Ozhukarai', 'Bihar Sharif', 'Panipat', 'Darbhanga', 'Bally', 'Aizawl', 'Dewas', 'Ichalkaranji',
+        'Karnal', 'Bathinda', 'Jalna', 'Eluru', 'Kirari Suleman Nagar', 'Barabanki', 'Purnia', 'Satna', 'Mau', 'Sonipat',
+        'Farrukhabad', 'Sagar', 'Rourkela', 'Durg', 'Imphal', 'Ratlam', 'Hapur', 'Arrah', 'Karimnagar', 'Anantapur',
+        'Etawah', 'Ambernath', 'North Dumdum', 'Bharatpur', 'Begusarai', 'New Delhi', 'Gandhidham', 'Baranagar', 'Tiruvottiyur',
+        'Puducherry', 'Sikar', 'Thoothukudi', 'Rewa', 'Mirzapur', 'Raichur', 'Pali', 'Ramagundam', 'Silchar', 'Orai',
+        'Nandyal', 'Morena', 'Bhiwani', 'Porbandar', 'Palakkad', 'Anand', 'Puruliya', 'Baharampur', 'Barmer', 'Ambala',
+    ]
+    
+    indian_states = [
+        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana',
+        'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+        'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana',
+        'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi'
+    ]
+    
+    current_count = len(stations)
+    needed_stations = 750 - current_count
+    
+    import itertools
+    city_state_combinations = list(itertools.product(indian_cities, indian_states))[:needed_stations]
+    
+    for i, (city, state) in enumerate(city_state_combinations):
+        # Generate unique station code
+        code_base = ''.join([c.upper() for c in city.replace('-', '').replace(' ', '') if c.isalpha()])[:4]
+        if len(code_base) < 3:
+            code_base = code_base + 'ST'
+        code = code_base[:4] + str(current_count + i).zfill(2)  # Ensure uniqueness
+        
+        # Generate unique station name
+        station_name = f"{city} {state[:3]} Stn{current_count + i}"
+        
+        station = Station(
+            code=code[:10],  # Allow longer codes for uniqueness
+            name=station_name[:100],  # Ensure name fits in DB field
+            city=city,
+            state=state,
+            active=True
+        )
         stations.append(station)
         db.session.add(station)
     
@@ -97,7 +156,7 @@ def populate_stations():
     return stations
 
 def populate_trains():
-    """Create 150 trains with realistic details"""
+    """Create 1000 trains with realistic details"""
     train_types = [
         ('Rajdhani Express', 'RAJ', 1800, 100),
         ('Shatabdi Express', 'SHTB', 1600, 80),
@@ -129,7 +188,7 @@ def populate_trains():
     trains = []
     train_number = 12001
     
-    for i in range(150):
+    for i in range(1000):
         train_type, type_code, base_fare, capacity = random.choice(train_types)
         route = random.choice(route_patterns)
         
@@ -305,9 +364,15 @@ def main():
         
         # Clear existing data (optional - comment out if you want to keep existing data)
         print("Clearing existing data...")
-        TrainRoute.query.delete()
-        Train.query.delete()
-        Station.query.delete()
+        db.session.execute(db.text('DELETE FROM train_route'))
+        db.session.execute(db.text('DELETE FROM booking'))
+        db.session.execute(db.text('DELETE FROM payment'))
+        db.session.execute(db.text('DELETE FROM waitlist'))
+        db.session.execute(db.text('DELETE FROM passenger'))
+        db.session.execute(db.text('DELETE FROM train'))
+        db.session.execute(db.text('DELETE FROM station'))
+        db.session.execute(db.text('DELETE FROM "user" WHERE username NOT IN (\'admin\', \'manager\', \'john_doe\', \'jane_smith\', \'test_user\')'))
+        db.session.commit()
         
         # Populate stations first
         print("Populating stations...")
