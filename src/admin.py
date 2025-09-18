@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from functools import wraps
-from .models import User, Train, Station, Booking, Payment, TrainRoute
+from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta
@@ -469,6 +469,107 @@ def update_quota(train_id):
     db.session.commit()
     flash(f'Quota updated for train {train.number}', 'success')
     return redirect(url_for('admin.quota_management'))
+
+@admin_bp.route('/tatkal-timeslots')
+@admin_required
+def tatkal_timeslots():
+    """Manage Tatkal time slot configurations"""
+    time_slots = TatkalTimeSlot.query.order_by(TatkalTimeSlot.created_at.desc()).all()
+    return render_template('admin/tatkal_timeslots.html', time_slots=time_slots)
+
+@admin_bp.route('/tatkal-timeslots/add', methods=['POST'])
+@admin_required
+def add_tatkal_timeslot():
+    """Add new Tatkal time slot configuration"""
+    name = request.form.get('name')
+    coach_classes = request.form.get('coach_classes')
+    open_time_str = request.form.get('open_time')
+    close_time_str = request.form.get('close_time')
+    days_before_journey = request.form.get('days_before_journey', type=int)
+    
+    if not all([name, coach_classes, open_time_str, days_before_journey]):
+        flash('Please fill all required fields', 'error')
+        return redirect(url_for('admin.tatkal_timeslots'))
+    
+    try:
+        from datetime import datetime
+        if not open_time_str:
+            flash('Open time is required', 'error')
+            return redirect(url_for('admin.tatkal_timeslots'))
+        
+        open_time = datetime.strptime(open_time_str, '%H:%M').time()
+        close_time = datetime.strptime(close_time_str, '%H:%M').time() if close_time_str and close_time_str.strip() else None
+        
+        # Validate time slot
+        if close_time and close_time <= open_time:
+            flash('Close time must be after open time', 'error')
+            return redirect(url_for('admin.tatkal_timeslots'))
+        
+        if days_before_journey is None or days_before_journey < 0 or days_before_journey > 30:
+            flash('Days before journey must be between 0 and 30', 'error')
+            return redirect(url_for('admin.tatkal_timeslots'))
+        
+        # Validate coach classes
+        valid_classes = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC']
+        if not coach_classes:
+            flash('Please select coach classes', 'error')
+            return redirect(url_for('admin.tatkal_timeslots'))
+        
+        selected_classes = [cls.strip() for cls in coach_classes.split(',') if cls.strip()]
+        invalid_classes = [cls for cls in selected_classes if cls not in valid_classes]
+        
+        if invalid_classes:
+            flash(f'Invalid coach classes: {invalid_classes}. Valid classes: {valid_classes}', 'error')
+            return redirect(url_for('admin.tatkal_timeslots'))
+        
+        time_slot = TatkalTimeSlot(
+            name=name,
+            coach_classes=coach_classes,
+            open_time=open_time,
+            close_time=close_time,
+            days_before_journey=days_before_journey,
+            created_by=current_user.id
+        )
+        
+        db.session.add(time_slot)
+        db.session.commit()
+        
+        flash(f'Tatkal time slot "{name}" created successfully', 'success')
+        
+    except ValueError as e:
+        flash('Invalid time format. Use HH:MM format', 'error')
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to create time slot. Please try again.', 'error')
+    
+    return redirect(url_for('admin.tatkal_timeslots'))
+
+@admin_bp.route('/tatkal-timeslots/toggle/<int:slot_id>', methods=['POST'])
+@admin_required
+def toggle_tatkal_timeslot(slot_id):
+    """Enable/disable Tatkal time slot"""
+    time_slot = TatkalTimeSlot.query.get_or_404(slot_id)
+    
+    time_slot.active = not time_slot.active
+    db.session.commit()
+    
+    status = 'enabled' if time_slot.active else 'disabled'
+    flash(f'Time slot "{time_slot.name}" {status}', 'success')
+    
+    return redirect(url_for('admin.tatkal_timeslots'))
+
+@admin_bp.route('/tatkal-timeslots/delete/<int:slot_id>', methods=['POST'])
+@admin_required
+def delete_tatkal_timeslot(slot_id):
+    """Delete Tatkal time slot"""
+    time_slot = TatkalTimeSlot.query.get_or_404(slot_id)
+    
+    slot_name = time_slot.name
+    db.session.delete(time_slot)
+    db.session.commit()
+    
+    flash(f'Time slot "{slot_name}" deleted successfully', 'success')
+    return redirect(url_for('admin.tatkal_timeslots'))
 
 @admin_bp.route('/tatkal-management')
 @admin_required

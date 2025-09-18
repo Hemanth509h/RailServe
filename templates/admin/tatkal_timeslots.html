@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Tatkal Time Slots - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-header">
+        <h1><i class="fas fa-clock"></i> Tatkal Time Slot Management</h1>
+        <p>Configure when Tatkal booking opens and closes for different coach classes</p>
+    </div>
+
+    <!-- Add New Time Slot Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3><i class="fas fa-plus"></i> Add New Time Slot</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.add_tatkal_timeslot') }}">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name">Time Slot Name</label>
+                            <input type="text" class="form-control" name="name" id="name" 
+                                   placeholder="e.g., AC Classes Morning, Non-AC Evening" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="coach_classes">Coach Classes (comma-separated)</label>
+                            <input type="text" class="form-control" name="coach_classes" id="coach_classes" 
+                                   placeholder="AC1,AC2,AC3,CC or SL,2S" required>
+                            <small class="form-text text-muted">Valid: AC1, AC2, AC3, SL, 2S, CC</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="open_time">Opening Time</label>
+                            <input type="time" class="form-control" name="open_time" id="open_time" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="close_time">Closing Time (Optional)</label>
+                            <input type="time" class="form-control" name="close_time" id="close_time">
+                            <small class="form-text text-muted">Leave empty for no closing time</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="days_before_journey">Days Before Journey</label>
+                            <input type="number" class="form-control" name="days_before_journey" id="days_before_journey" 
+                                   min="0" max="30" value="1" required>
+                            <small class="form-text text-muted">When Tatkal booking opens (0 = same day)</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Create Time Slot
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Time Slots -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list"></i> Configured Time Slots</h3>
+        </div>
+        <div class="card-body">
+            {% if time_slots %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Coach Classes</th>
+                                <th>Open Time</th>
+                                <th>Close Time</th>
+                                <th>Days Before</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for slot in time_slots %}
+                            <tr class="{% if not slot.active %}table-secondary{% endif %}">
+                                <td><strong>{{ slot.name }}</strong></td>
+                                <td>
+                                    <span class="badge badge-info">{{ slot.coach_classes }}</span>
+                                </td>
+                                <td>{{ slot.open_time.strftime('%H:%M') if slot.open_time else '-' }}</td>
+                                <td>{{ slot.close_time.strftime('%H:%M') if slot.close_time else 'No limit' }}</td>
+                                <td>{{ slot.days_before_journey }} day{{ 's' if slot.days_before_journey != 1 else '' }}</td>
+                                <td>
+                                    {% if slot.active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form method="POST" style="display: inline;" 
+                                          action="{{ url_for('admin.toggle_tatkal_timeslot', slot_id=slot.id) }}">
+                                        <button type="submit" class="btn btn-sm {% if slot.active %}btn-warning{% else %}btn-success{% endif %}">
+                                            {% if slot.active %}
+                                                <i class="fas fa-pause"></i> Disable
+                                            {% else %}
+                                                <i class="fas fa-play"></i> Enable
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" style="display: inline;" 
+                                          action="{{ url_for('admin.delete_tatkal_timeslot', slot_id=slot.id) }}"
+                                          onsubmit="return confirm('Are you sure you want to delete this time slot?')">
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    No time slots configured yet. Create your first time slot above.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('admin.tatkal_management') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Tatkal Management
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const coachClasses = document.getElementById('coach_classes').value;
+        const validClasses = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC'];
+        
+        if (coachClasses) {
+            const selectedClasses = coachClasses.split(',').map(c => c.trim());
+            const invalidClasses = selectedClasses.filter(c => !validClasses.includes(c));
+            
+            if (invalidClasses.length > 0) {
+                e.preventDefault();
+                alert('Invalid coach classes: ' + invalidClasses.join(', ') + '\nValid classes: ' + validClasses.join(', '));
+                return false;
+            }
+        }
+        
+        const openTime = document.getElementById('open_time').value;
+        const closeTime = document.getElementById('close_time').value;
+        
+        if (openTime && closeTime && closeTime <= openTime) {
+            e.preventDefault();
+            alert('Close time must be after open time');
+            return false;
+        }
+    });
+</script>
+{% endblock %}

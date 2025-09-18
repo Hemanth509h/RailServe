@@ -153,15 +153,30 @@ def format_currency(amount):
     """Format currency"""
     return f"₹{amount:,.2f}"
 
-def check_tatkal_availability(journey_date):
-    """Check if Tatkal booking is available for the date"""
+def check_tatkal_availability(journey_date, coach_class='SL'):
+    """Check if Tatkal booking is available for the date and coach class using admin-configured time slots"""
+    from .models import TatkalTimeSlot
     from datetime import timedelta
     
-    # Tatkal booking opens 1 day before travel (for AC) or same day (for non-AC)
-    today = date.today()
-    tatkal_open_date = journey_date - timedelta(days=1)
+    # Get active time slots for the given coach class
+    time_slots = TatkalTimeSlot.query.filter_by(active=True).all()
     
-    return today >= tatkal_open_date
+    if not time_slots:
+        # Fallback to old logic if no time slots configured
+        today = date.today()
+        tatkal_open_date = journey_date - timedelta(days=1)
+        return today >= tatkal_open_date
+    
+    # Check if any time slot allows booking for this coach class and journey date
+    for time_slot in time_slots:
+        coach_classes = time_slot.get_coach_classes_list()
+        
+        # If time slot applies to this coach class (or all classes if none specified)
+        if not coach_classes or coach_class in coach_classes:
+            if time_slot.is_currently_open(journey_date):
+                return True
+    
+    return False
 
 def is_booking_open(journey_date):
     """Check if booking is open for the journey date"""

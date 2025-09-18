@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     # Relationships
     bookings = db.relationship('Booking', backref='user', lazy=True)
     payments = db.relationship('Payment', backref='user', lazy=True)
+    tatkal_timeslots = db.relationship('TatkalTimeSlot', backref='creator', lazy=True)
     
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -170,3 +171,50 @@ def generate_pnr(mapper, connection, target):
             if not existing:
                 target.pnr = pnr
                 break
+
+class TatkalTimeSlot(db.Model):
+    """Tatkal booking time slot configuration"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # e.g., "AC Classes", "Non-AC Classes"
+    coach_classes = db.Column(db.String(200))  # Comma-separated list: "AC1,AC2,AC3,CC"
+    open_time = db.Column(db.Time, nullable=False)  # When Tatkal booking opens (e.g., 10:00 AM)
+    close_time = db.Column(db.Time)  # When Tatkal booking closes (optional)
+    days_before_journey = db.Column(db.Integer, default=1)  # How many days before journey date
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))  # Admin who created this
+    
+    def __init__(self, **kwargs):
+        super(TatkalTimeSlot, self).__init__(**kwargs)
+    
+    def get_coach_classes_list(self):
+        """Get list of coach classes from comma-separated string"""
+        if self.coach_classes:
+            return [cls.strip() for cls in self.coach_classes.split(',')]
+        return []
+    
+    def is_currently_open(self, journey_date):
+        """Check if Tatkal booking is currently open for given journey date"""
+        from datetime import datetime, timedelta
+        
+        if not self.active:
+            return False
+            
+        # Calculate when this time slot opens
+        tatkal_open_date = journey_date - timedelta(days=self.days_before_journey)
+        
+        # Check if we're on or after the open date
+        today = datetime.now().date()
+        current_time = datetime.now().time()
+        
+        if today < tatkal_open_date:
+            return False  # Too early
+        elif today > tatkal_open_date:
+            return True   # Already past open date
+        else:
+            # Today is the open date, check time
+            if current_time >= self.open_time:
+                if self.close_time:
+                    return current_time <= self.close_time
+                return True
+            return False
