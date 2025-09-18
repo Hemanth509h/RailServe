@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+# CSRF protection removed per user request
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -17,7 +17,7 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
-csrf = CSRFProtect()
+# CSRF protection disabled
 
 # Create the app with correct template and static paths
 app = Flask(__name__, 
@@ -48,7 +48,7 @@ app.config['SESSION_COOKIE_SECURE'] = (flask_env == 'production')  # Secure cook
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600
-app.config['WTF_CSRF_ENABLED'] = True  # Enable CSRF protection for security
+app.config['WTF_CSRF_ENABLED'] = False  # CSRF disabled per user request
 
 
 # Proxy support for Replit environment
@@ -61,7 +61,7 @@ if flask_env == 'production':
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)
-csrf.init_app(app)
+# CSRF initialization removed
 login_manager.login_view = 'auth.login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
 

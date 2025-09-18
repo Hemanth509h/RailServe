@@ -2743,6 +2743,124 @@ a:focus {
     color: var(--text-secondary) !important;
 }
 
+/* Additional Dark Theme Fixes for Better Visibility */
+
+/* Fix detail items and icons in dark theme */
+[data-theme="dark"] .detail-item {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .detail-item i {
+    color: var(--text-secondary) !important;
+}
+
+/* Fix option elements in select dropdowns */
+[data-theme="dark"] option {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Fix table elements */
+[data-theme="dark"] table {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] th {
+    background: var(--bg-table-header) !important;
+    color: var(--text-table-header) !important;
+}
+
+/* Fix navigation links */
+[data-theme="dark"] .navbar a,
+[data-theme="dark"] .nav-link {
+    color: var(--text-inverse) !important;
+}
+
+/* Fix any missed text elements */
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div {
+    color: var(--text-primary);
+}
+
+/* Fix card headers and content */
+[data-theme="dark"] .card h1,
+[data-theme="dark"] .card h2,
+[data-theme="dark"] .card h3,
+[data-theme="dark"] .card h4,
+[data-theme="dark"] .card h5,
+[data-theme="dark"] .card h6 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .train-header h3 {
+    color: var(--text-primary) !important;
+}
+
+/* Fix booking and admin forms */
+[data-theme="dark"] .booking-form,
+[data-theme="dark"] .admin-form {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Fix any hardcoded text colors */
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-gray-500,
+[data-theme="dark"] .text-gray-400 {
+    color: var(--text-secondary) !important;
+}
+
+/* Fix readonly and disabled inputs */
+[data-theme="dark"] input[readonly],
+[data-theme="dark"] input[disabled],
+[data-theme="dark"] select[readonly],
+[data-theme="dark"] select[disabled] {
+    background: var(--bg-primary) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Fix any modal or dropdown backgrounds */
+[data-theme="dark"] .modal,
+[data-theme="dark"] .dropdown-menu {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Fix anchor tags */
+[data-theme="dark"] a {
+    color: var(--accent-color) !important;
+}
+
+[data-theme="dark"] a:hover {
+    color: var(--accent-hover) !important;
+}
+
+/* Ensure buttons maintain their styling */
+[data-theme="dark"] .btn {
+    border-color: transparent !important;
+}
+
+/* Fix any hardcoded background colors */
+[data-theme="dark"] .bg-white {
+    background: var(--bg-secondary) !important;
+}
+
+[data-theme="dark"] .bg-gray-50,
+[data-theme="dark"] .bg-gray-100 {
+    background: var(--bg-primary) !important;
+}
+
 [data-theme="dark"] option {
     background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
