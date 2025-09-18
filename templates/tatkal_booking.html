@@ -8,6 +8,21 @@
         <!-- Tatkal Header with Warning -->
         <div class="tatkal-header">
             <h1><i class="fas fa-bolt text-warning"></i> Tatkal Booking</h1>
+            {% if not user_verified %}
+            <div class="aadhaar-alert">
+                <div class="alert-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div class="alert-content">
+                    <h3>Aadhaar Verification Required</h3>
+                    <p>As per new rules from 2025, Aadhaar authentication is mandatory for Tatkal bookings. Please verify your Aadhaar to proceed.</p>
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-user-check"></i> Complete Verification
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="tatkal-alert">
                 <div class="alert-icon">
                     <i class="fas fa-exclamation-triangle"></i>
@@ -15,9 +30,19 @@
                 <div class="alert-content">
                     <h3>Important Tatkal Guidelines</h3>
                     <ul>
-                        <li><strong>Booking Time:</strong> 10:00 AM for AC classes, 11:00 AM for Non-AC</li>
+                        <li><strong>Booking Time:</strong> 10:00-10:30 AM for AC classes, 11:00-11:30 AM for Non-AC (Priority window)</li>
+                        <li><strong>Current Status:</strong> 
+                            {% if is_ac_open %}
+                                <span style="color: #10b981;">AC Classes booking is OPEN</span>
+                            {% elif is_non_ac_open %}
+                                <span style="color: #10b981;">Non-AC Classes booking is OPEN</span>
+                            {% else %}
+                                <span style="color: #dc2626;">Tatkal booking is CLOSED</span>
+                            {% endif %}
+                        </li>
                         <li><strong>Advance Booking:</strong> Only 1 day before journey date</li>
-                        <li><strong>Premium Charges:</strong> Up to ₹400 additional charges apply</li>
+                        <li><strong>Premium Charges:</strong> Up to ₹400 for AC classes, ₹200 for Non-AC classes</li>
+                        <li><strong>Anti-Bot Protection:</strong> Only Aadhaar-verified users can book in priority window</li>
                         <li><strong>No Refund:</strong> Cancellation charges are 100% of fare</li>
                         <li><strong>ID Proof Mandatory:</strong> Must carry valid ID during travel</li>
                         <li><strong>Payment:</strong> Must be completed within 5 minutes</li>
@@ -40,7 +65,17 @@
                 </div>
                 <div class="detail-item">
                     <i class="fas fa-clock"></i>
-                    <span>Booking Status: <span class="tatkal-open">OPEN</span></span>
+                    <span>Booking Status: 
+                        {% if is_ac_open or is_non_ac_open %}
+                            <span class="tatkal-open">OPEN</span>
+                        {% else %}
+                            <span class="tatkal-closed">CLOSED</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-time"></i>
+                    <span>Current Time: {{ current_time }}</span>
                 </div>
             </div>
         </div>
@@ -212,9 +247,20 @@
                     <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Regular Booking
                     </a>
-                    <button type="submit" class="btn btn-warning tatkal-submit" id="submitBtn" disabled>
-                        <i class="fas fa-bolt"></i> Book Tatkal Ticket
-                    </button>
+                    {% if user_verified and (is_ac_open or is_non_ac_open) %}
+                        <button type="submit" class="btn btn-warning tatkal-submit" id="submitBtn" disabled>
+                            <i class="fas fa-bolt"></i> Book Tatkal Ticket
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-secondary" disabled>
+                            <i class="fas fa-lock"></i> 
+                            {% if not user_verified %}
+                                Aadhaar Verification Required
+                            {% else %}
+                                Tatkal Booking Closed
+                            {% endif %}
+                        </button>
+                    {% endif %}
                 </div>
                 
                 <!-- Countdown Timer -->
@@ -284,6 +330,55 @@
 .tatkal-open {
     color: #10b981;
     font-weight: bold;
+}
+
+.tatkal-closed {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.aadhaar-alert {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.aadhaar-alert .alert-icon {
+    font-size: 2rem;
+    color: #2563eb;
+    margin-top: 5px;
+}
+
+.aadhaar-alert .alert-content h3 {
+    color: #1e3a8a;
+    margin-bottom: 10px;
+}
+
+.aadhaar-alert .alert-content p {
+    color: #1e40af;
+    margin-bottom: 15px;
+}
+
+[data-theme="dark"] .aadhaar-alert {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+    border-color: #4338ca;
+}
+
+[data-theme="dark"] .aadhaar-alert .alert-icon {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .aadhaar-alert .alert-content h3 {
+    color: #bfdbfe;
+}
+
+[data-theme="dark"] .aadhaar-alert .alert-content p {
+    color: #cbd5e1;
 }
 
 .coach-selection {
@@ -503,7 +598,7 @@ function calculateTatkalFare() {
         'CC': 1.2
     };
     
-    const baseFarePerKm = {{ train.fare_per_km }};
+    const baseFarePerKm = parseFloat('{{ train.fare_per_km }}');
     const estimatedDistance = 300; // Simplified
     const multiplier = multipliers[coachClass];
     

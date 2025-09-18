@@ -2726,14 +2726,47 @@ a:focus {
     color: #3b82f6 !important;
 }
 
-/* Additional dark theme fixes for visibility issues */
-[data-theme="dark"] * {
+/* Additional dark theme fixes for visibility issues - more targeted approach */
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .text-secondary:not(.nav-user) {
+    color: var(--text-secondary) !important;
+}
+
+/* Fix specific elements that need primary text color */
+[data-theme="dark"] .card-title,
+[data-theme="dark"] .card-text,
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th,
+[data-theme="dark"] .list-group-item {
     color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] .text-secondary,
 [data-theme="dark"] small,
-[data-theme="dark"] .form-group small {
+[data-theme="dark"] .form-group small,
+[data-theme="dark"] .form-help,
+[data-theme="dark"] small {
+    color: var(--text-secondary) !important;
+}
+
+/* Fix coach selection radio buttons in dark theme */
+[data-theme="dark"] .coach-option input[type="radio"]:checked + .coach-label {
+    background: var(--bg-secondary) !important;
+    border-color: var(--accent-color) !important;
+}
+
+[data-theme="dark"] .coach-label {
+    background: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .coach-info strong {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .coach-info small {
     color: var(--text-secondary) !important;
 }
 
@@ -2741,6 +2774,50 @@ a:focus {
 [data-theme="dark"] select::placeholder,
 [data-theme="dark"] textarea::placeholder {
     color: var(--text-secondary) !important;
+    opacity: 0.7;
+}
+
+/* Fix table elements in dark theme */
+[data-theme="dark"] .table {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .table th {
+    background: var(--bg-table-header) !important;
+    color: var(--text-table-header) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table td {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Fix alert messages in dark theme */
+[data-theme="dark"] .alert {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .alert.alert-info {
+    background: var(--alert-info-bg) !important;
+    color: var(--alert-info-text) !important;
+    border-color: var(--alert-info-border) !important;
+}
+
+[data-theme="dark"] .alert.alert-success {
+    background: var(--alert-success-bg) !important;
+    color: var(--alert-success-text) !important;
+    border-color: var(--alert-success-border) !important;
+}
+
+[data-theme="dark"] .alert.alert-error {
+    background: var(--alert-error-bg) !important;
+    color: var(--alert-error-text) !important;
+    border-color: var(--alert-error-border) !important;
 }
 
 /* Additional Dark Theme Fixes for Better Visibility */

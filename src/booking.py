@@ -297,10 +297,25 @@ def tatkal_booking(train_id):
             TrainRoute.train_id == train_id
         ).order_by(TrainRoute.sequence).all()
         
+        # Check if user has Aadhaar verification (simulated)
+        user_verified = hasattr(current_user, 'aadhaar_verified') and current_user.aadhaar_verified
+        if not user_verified:
+            flash('Aadhaar verification is required for Tatkal bookings. Please complete your profile.', 'warning')
+        
+        # Get current tatkal booking status
+        from datetime import datetime, time
+        now = datetime.now().time()
+        is_ac_open = now >= time(10, 0) and now <= time(10, 30)  # AC classes: 10:00-10:30 AM
+        is_non_ac_open = now >= time(11, 0) and now <= time(11, 30)  # Non-AC: 11:00-11:30 AM
+        
         return render_template('tatkal_booking.html', 
                              train=train, 
                              stations=stations,
-                             train_stations=train_stations)
+                             train_stations=train_stations,
+                             user_verified=user_verified,
+                             is_ac_open=is_ac_open,
+                             is_non_ac_open=is_non_ac_open,
+                             current_time=now.strftime('%H:%M'))
     
     # Handle POST - process Tatkal booking with all data from previous form
     # All form validation and processing logic is the same as regular booking
