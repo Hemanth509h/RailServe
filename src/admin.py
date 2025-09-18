@@ -94,11 +94,11 @@ def add_train():
         return redirect(url_for('admin.trains'))
     
     # Additional validation
-    if total_seats < 50 or total_seats > 2000:
+    if total_seats and (total_seats < 50 or total_seats > 2000):
         flash('Total seats must be between 50 and 2000', 'error')
         return redirect(url_for('admin.trains'))
     
-    if fare_per_km < 0.5 or fare_per_km > 50.0:
+    if fare_per_km and (fare_per_km < 0.5 or fare_per_km > 50.0):
         flash('Fare per km must be between ₹0.50 and ₹50.00', 'error')
         return redirect(url_for('admin.trains'))
     
