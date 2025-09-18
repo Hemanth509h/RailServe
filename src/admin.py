@@ -74,9 +74,21 @@ def dashboard():
 @admin_bp.route('/trains')
 @admin_required
 def trains():
-    """Manage trains"""
-    trains = Train.query.all()
-    return render_template('admin/trains.html', trains=trains)
+    """Manage trains with search functionality"""
+    search = request.args.get('search', '').strip()
+    
+    if search:
+        # Search by train number or name
+        trains = Train.query.filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        ).all()
+    else:
+        trains = Train.query.all()
+    
+    return render_template('admin/trains.html', trains=trains, search=search)
 
 @admin_bp.route('/trains/add', methods=['POST'])
 @admin_required
@@ -142,9 +154,22 @@ def toggle_train(train_id):
 @admin_bp.route('/stations')
 @admin_required
 def stations():
-    """Manage stations"""
-    stations = Station.query.all()
-    return render_template('admin/stations.html', stations=stations)
+    """Manage stations with search functionality"""
+    search = request.args.get('search', '').strip()
+    
+    if search:
+        # Search by station code, name, or city
+        stations = Station.query.filter(
+            db.or_(
+                Station.code.ilike(f'%{search}%'),
+                Station.name.ilike(f'%{search}%'),
+                Station.city.ilike(f'%{search}%')
+            )
+        ).all()
+    else:
+        stations = Station.query.all()
+    
+    return render_template('admin/stations.html', stations=stations, search=search)
 
 @admin_bp.route('/stations/add', methods=['POST'])
 @admin_required
@@ -197,9 +222,21 @@ def toggle_station(station_id):
 @admin_bp.route('/users')
 @super_admin_required
 def users():
-    """Manage users (Super Admin only)"""
-    users = User.query.all()
-    return render_template('admin/users.html', users=users)
+    """Manage users (Super Admin only) with search functionality"""
+    search = request.args.get('search', '').strip()
+    
+    if search:
+        # Search by username or email
+        users = User.query.filter(
+            db.or_(
+                User.username.ilike(f'%{search}%'),
+                User.email.ilike(f'%{search}%')
+            )
+        ).all()
+    else:
+        users = User.query.all()
+    
+    return render_template('admin/users.html', users=users, search=search)
 
 @admin_bp.route('/users/<int:user_id>/toggle')
 @super_admin_required
@@ -351,13 +388,27 @@ def bookings():
     if booking_type_filter:
         query = query.filter_by(booking_type=booking_type_filter)
     
+    # Add search functionality
+    search = request.args.get('search', '').strip()
+    if search:
+        # Search by PNR, username, or train number
+        query = query.join(User).join(Train).filter(
+            db.or_(
+                Booking.pnr.ilike(f'%{search}%'),
+                User.username.ilike(f'%{search}%'),
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        )
+    
     bookings = query.order_by(Booking.booking_date.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
     
     return render_template('admin/bookings.html', bookings=bookings,
                          status_filter=status_filter,
-                         booking_type_filter=booking_type_filter)
+                         booking_type_filter=booking_type_filter,
+                         search=search)
 
 @admin_bp.route('/bookings/<int:booking_id>/update', methods=['POST'])
 @admin_required

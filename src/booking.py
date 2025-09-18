@@ -263,11 +263,26 @@ def cancel_booking(booking_id):
 @booking_bp.route('/history')
 @login_required
 def booking_history():
-    """User booking history"""
-    bookings = Booking.query.filter_by(user_id=current_user.id).order_by(
-        Booking.booking_date.desc()
-    ).all()
-    return render_template('booking_history.html', bookings=bookings)
+    """User booking history with search functionality"""
+    search = request.args.get('search', '').strip()
+    
+    if search:
+        # Search within user's bookings by PNR, train number, or train name
+        bookings = Booking.query.filter_by(user_id=current_user.id).join(Train).filter(
+            db.or_(
+                Booking.pnr.ilike(f'%{search}%'),
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        ).order_by(
+            Booking.booking_date.desc()
+        ).all()
+    else:
+        bookings = Booking.query.filter_by(user_id=current_user.id).order_by(
+            Booking.booking_date.desc()
+        ).all()
+    
+    return render_template('booking_history.html', bookings=bookings, search=search)
 
 @booking_bp.route('/tatkal/<int:train_id>', methods=['GET', 'POST'])
 @login_required

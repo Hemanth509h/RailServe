@@ -12,6 +12,28 @@
             </a>
         </div>
         
+        <!-- Search Form -->
+        <div class="search-section">
+            <form method="GET" class="search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" name="search" placeholder="Search by PNR, train number, or train name..." 
+                               value="{{ request.args.get('search', '') }}" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        {% if request.args.get('search') %}
+                            <a href="{{ url_for('booking.booking_history') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+        
         <div class="filter-section">
             <div class="filter-tabs">
                 <button class="filter-btn active" onclick="filterBookings('all')">

@@ -43,8 +43,33 @@
         </form>
     </div>
     
+    <!-- Search Form -->
     <div class="admin-card">
-        <h3><i class="fas fa-list"></i> All Stations</h3>
+        <h3><i class="fas fa-search"></i> Search Stations</h3>
+        <form method="GET" class="search-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="text" name="search" placeholder="Search by station code, name, or city..." 
+                           value="{{ search or '' }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    {% if search %}
+                        <a href="{{ url_for('admin.stations') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-list"></i> {% if search %}Search Results{% else %}All Stations{% endif %}
+            {% if search %}<small>({{ stations|length }} found)</small>{% endif %}
+        </h3>
         
         {% if stations %}
             <div class="table-responsive">
