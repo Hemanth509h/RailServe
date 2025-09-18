@@ -99,8 +99,13 @@ class Booking(db.Model):
     booking_type = db.Column(db.String(10), default='general')  # general, tatkal
     quota = db.Column(db.String(20), default='general')  # general, ladies, senior, disability, tatkal
     coach_class = db.Column(db.String(10), default='SL')  # AC1, AC2, AC3, SL, 2S, CC
-    status = db.Column(db.String(20), default='pending_payment')  # confirmed, waitlisted, cancelled, pending_payment
+    status = db.Column(db.String(20), default='pending_payment')  # confirmed, waitlisted, cancelled, pending_payment, rac
+    waitlist_type = db.Column(db.String(10), default='GNWL')  # GNWL, RAC, PQWL, RLWL, TQWL
+    chart_prepared = db.Column(db.Boolean, default=False)
+    berth_preference = db.Column(db.String(20), default='No Preference')  # Lower, Middle, Upper, Side Lower, Side Upper, Window, Aisle
+    current_reservation = db.Column(db.Boolean, default=False)  # Post-chart booking
     booking_date = db.Column(db.DateTime, default=datetime.utcnow)
+    cancellation_charges = db.Column(db.Float, default=0.0)
     
     def __init__(self, **kwargs):
         super(Booking, self).__init__(**kwargs)
@@ -152,6 +157,7 @@ class Waitlist(db.Model):
     train_id = db.Column(db.Integer, db.ForeignKey('train.id'), nullable=False)
     journey_date = db.Column(db.Date, nullable=False)
     position = db.Column(db.Integer, nullable=False)
+    waitlist_type = db.Column(db.String(10), default='GNWL')  # GNWL, RAC, PQWL, RLWL, TQWL
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def __init__(self, **kwargs):
@@ -218,3 +224,69 @@ class TatkalTimeSlot(db.Model):
                     return current_time <= self.close_time
                 return True
             return False
+
+class RefundRequest(db.Model):
+    """TDR (Ticket Deposit Receipt) and refund management"""
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reason = db.Column(db.String(100), nullable=False)  # Train cancelled, delay, AC failure, etc.
+    amount_paid = db.Column(db.Float, nullable=False)
+    refund_amount = db.Column(db.Float, nullable=False)
+    cancellation_charges = db.Column(db.Float, default=0.0)
+    tdr_number = db.Column(db.String(20), unique=True, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, approved, rejected, completed
+    filed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    processed_at = db.Column(db.DateTime)
+    
+    def __init__(self, **kwargs):
+        super(RefundRequest, self).__init__(**kwargs)
+        if not self.tdr_number:
+            self.tdr_number = f"TDR{datetime.utcnow().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+
+class TrainStatus(db.Model):
+    """Live train status tracking"""
+    id = db.Column(db.Integer, primary_key=True)
+    train_id = db.Column(db.Integer, db.ForeignKey('train.id'), nullable=False)
+    current_station_id = db.Column(db.Integer, db.ForeignKey('station.id'))
+    status = db.Column(db.String(50), default='On Time')  # On Time, Delayed, Cancelled, Diverted
+    delay_minutes = db.Column(db.Integer, default=0)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    journey_date = db.Column(db.Date, nullable=False)
+    
+    # Relationships
+    current_station = db.relationship('Station', foreign_keys=[current_station_id])
+    
+    def __init__(self, **kwargs):
+        super(TrainStatus, self).__init__(**kwargs)
+
+class SeatAvailability(db.Model):
+    """Real-time seat availability tracking"""
+    id = db.Column(db.Integer, primary_key=True)
+    train_id = db.Column(db.Integer, db.ForeignKey('train.id'), nullable=False)
+    from_station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    to_station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    journey_date = db.Column(db.Date, nullable=False)
+    coach_class = db.Column(db.String(10), nullable=False)
+    quota = db.Column(db.String(20), default='general')
+    available_seats = db.Column(db.Integer, default=0)
+    waiting_list = db.Column(db.Integer, default=0)
+    rac_seats = db.Column(db.Integer, default=0)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        super(SeatAvailability, self).__init__(**kwargs)
+
+class ChartPreparation(db.Model):
+    """Chart preparation tracking"""
+    id = db.Column(db.Integer, primary_key=True)
+    train_id = db.Column(db.Integer, db.ForeignKey('train.id'), nullable=False)
+    journey_date = db.Column(db.Date, nullable=False)
+    chart_prepared_at = db.Column(db.DateTime)
+    final_chart_at = db.Column(db.DateTime)
+    status = db.Column(db.String(20), default='pending')  # pending, prepared, final
+    confirmed_from_waitlist = db.Column(db.Integer, default=0)
+    cancelled_waitlist = db.Column(db.Integer, default=0)
+    
+    def __init__(self, **kwargs):
+        super(ChartPreparation, self).__init__(**kwargs)

@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
-from .models import Train, Station, Booking, TrainRoute, Passenger
+from .models import Train, Station, Booking, TrainRoute, Passenger, RefundRequest
 from .app import db
 from datetime import datetime, date
-from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability
+from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability, calculate_cancellation_charges, check_seat_availability_detailed, get_live_train_status, check_current_reservation_available, get_waitlist_type
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
 import random
@@ -321,3 +321,209 @@ def tatkal_booking(train_id):
     # All form validation and processing logic is the same as regular booking
     # but with enhanced Tatkal-specific checks and UI
     return book_ticket_post(train_id)  # Reuse existing logic
+
+@booking_bp.route('/seat-availability')
+def seat_availability():
+    """Check seat availability before booking"""
+    train_id = request.args.get('train_id', type=int)
+    from_station_id = request.args.get('from_station_id', type=int)
+    to_station_id = request.args.get('to_station_id', type=int)
+    journey_date = request.args.get('journey_date')
+    coach_class = request.args.get('coach_class', 'SL')
+    quota = request.args.get('quota', 'general')
+    
+    if not all([train_id, from_station_id, to_station_id, journey_date]):
+        return {'error': 'Missing required parameters'}, 400
+    
+    try:
+        journey_date = datetime.strptime(journey_date, '%Y-%m-%d').date()
+    except ValueError:
+        return {'error': 'Invalid date format'}, 400
+    
+    availability = check_seat_availability_detailed(
+        train_id, from_station_id, to_station_id, journey_date, coach_class, quota
+    )
+    
+    return availability
+
+@booking_bp.route('/train-status/<int:train_id>')
+def live_train_status(train_id):
+    """Get live train status"""
+    journey_date = request.args.get('journey_date')
+    
+    if not journey_date:
+        journey_date = date.today()
+    else:
+        try:
+            if journey_date:
+                journey_date = datetime.strptime(journey_date, '%Y-%m-%d').date()
+            else:
+                journey_date = date.today()
+        except ValueError:
+            return {'error': 'Invalid date format'}, 400
+    
+    status = get_live_train_status(train_id, journey_date)
+    
+    if not status:
+        return {'error': 'Train status not found'}, 404
+    
+    return {
+        'train_id': train_id,
+        'journey_date': journey_date.isoformat(),
+        'current_station': status.current_station_id,
+        'status': status.status,
+        'delay_minutes': status.delay_minutes,
+        'last_updated': status.last_updated.isoformat()
+    }
+
+@booking_bp.route('/current-reservation/<int:train_id>')
+@login_required
+def current_reservation(train_id):
+    """Current reservation booking (post-chart)"""
+    journey_date = request.args.get('journey_date')
+    
+    if not journey_date:
+        flash('Journey date is required', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    try:
+        journey_date = datetime.strptime(journey_date, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    if not check_current_reservation_available(train_id, journey_date):
+        flash('Current reservation is not available for this train/date', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    train = Train.query.get_or_404(train_id)
+    stations = Station.query.filter_by(active=True).all()
+    train_stations = db.session.query(Station).join(TrainRoute).filter(
+        TrainRoute.train_id == train_id
+    ).order_by(TrainRoute.sequence).all()
+    
+    return render_template('current_reservation.html', 
+                         train=train, 
+                         stations=stations,
+                         train_stations=train_stations,
+                         journey_date=journey_date)
+
+@booking_bp.route('/cancel-with-refund/<int:booking_id>', methods=['POST'])
+@login_required
+def cancel_with_refund(booking_id):
+    """Cancel booking with proper refund calculation"""
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Check if user owns the booking
+    if booking.user_id != current_user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Check if booking can be cancelled
+    if booking.status in ['cancelled', 'completed']:
+        flash('Booking cannot be cancelled', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    try:
+        # Calculate cancellation charges
+        cancellation_charges = calculate_cancellation_charges(booking)
+        refund_amount = max(0, booking.total_amount - cancellation_charges)
+        
+        # Store charges before cancelling
+        booking.cancellation_charges = cancellation_charges
+        
+        # Cancel booking (this will process waitlist)
+        original_status = booking.status
+        booking.status = 'cancelled'
+        
+        # Process waitlist if it was a confirmed booking
+        if original_status == 'confirmed':
+            from .queue_manager import WaitlistManager
+            waitlist_manager = WaitlistManager()
+            waitlist_manager.process_waitlist(booking.train_id, booking.journey_date)
+        
+        db.session.commit()
+        
+        # Show refund details
+        flash(f'Booking cancelled. Refund amount: ₹{refund_amount:.2f} (Cancellation charges: ₹{cancellation_charges:.2f})', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Cancellation failed. Please try again.', 'error')
+    
+    return redirect(url_for('auth.profile'))
+
+@booking_bp.route('/file-tdr/<int:booking_id>')
+@login_required
+def file_tdr(booking_id):
+    """File TDR (Ticket Deposit Receipt) for refund"""
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Check if user owns the booking
+    if booking.user_id != current_user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    return render_template('file_tdr.html', booking=booking)
+
+@booking_bp.route('/file-tdr/<int:booking_id>', methods=['POST'])
+@login_required
+def file_tdr_post(booking_id):
+    """Process TDR filing"""
+    from .models import RefundRequest
+    
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Check if user owns the booking
+    if booking.user_id != current_user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    reason = request.form.get('reason')
+    description = request.form.get('description', '')
+    
+    if not reason:
+        flash('Please select a reason for refund', 'error')
+        return render_template('file_tdr.html', booking=booking)
+    
+    # Check if TDR already filed
+    existing_tdr = RefundRequest.query.filter_by(booking_id=booking_id).first()
+    if existing_tdr:
+        flash('TDR already filed for this booking', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    try:
+        # Calculate refund amount based on reason
+        if reason in ['train_cancelled', 'ac_failure', 'coach_not_attached']:
+            # Full refund for valid reasons
+            refund_amount = booking.total_amount
+            cancellation_charges = 0.0
+        elif reason == 'delay_more_than_3_hours':
+            # Full refund for delay > 3 hours
+            refund_amount = booking.total_amount
+            cancellation_charges = 0.0
+        else:
+            # Normal cancellation charges
+            cancellation_charges = calculate_cancellation_charges(booking)
+            refund_amount = max(0, booking.total_amount - cancellation_charges)
+        
+        # Create TDR request
+        tdr = RefundRequest(
+            booking_id=booking_id,
+            user_id=current_user.id,
+            reason=f"{reason}: {description}" if description else reason,
+            amount_paid=booking.total_amount,
+            refund_amount=refund_amount,
+            cancellation_charges=cancellation_charges
+        )
+        
+        db.session.add(tdr)
+        db.session.commit()
+        
+        flash(f'TDR filed successfully. TDR Number: {tdr.tdr_number}. Expected refund: ₹{refund_amount:.2f}', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Failed to file TDR. Please try again.', 'error')
+    
+    return redirect(url_for('auth.profile'))
