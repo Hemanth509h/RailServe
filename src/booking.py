@@ -206,7 +206,21 @@ def book_ticket_post(train_id):
         
     except Exception as e:
         db.session.rollback()
-        flash('Booking failed due to high demand. Please try again.', 'error')
+        # Provide more specific error messages for debugging
+        import traceback
+        error_details = str(e)
+        print(f"Booking error: {error_details}")
+        print(f"Full traceback: {traceback.format_exc()}")
+        
+        # Specific error handling
+        if "constraint" in error_details.lower():
+            flash('Booking failed: Data constraint violation. Please check your details and try again.', 'error')
+        elif "connection" in error_details.lower():
+            flash('Booking failed: Database connection issue. Please try again in a moment.', 'error')
+        elif "integrity" in error_details.lower():
+            flash('Booking failed: Data integrity error. Please verify all details and try again.', 'error')
+        else:
+            flash(f'Booking failed: {error_details}. Please check your details and try again.', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
 
 @booking_bp.route('/cancel/<int:booking_id>')
