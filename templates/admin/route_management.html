@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+
+{% block title %}Route Management - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-route"></i> Route Management</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-train"></i> Train Routes & Scheduling</h3>
+        <p>Manage train routes, stations, and scheduling. Configure departure and arrival times for each station.</p>
+        
+        {% if trains %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Route Stations</th>
+                            <th>Total Distance</th>
+                            <th>Journey Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for train in trains %}
+                            <tr>
+                                <td><strong>{{ train.number }}</strong></td>
+                                <td>{{ train.name }}</td>
+                                <td>
+                                    {% set route_count = train.routes|length %}
+                                    {% if route_count > 0 %}
+                                        <span class="route-count">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {{ route_count }} stations
+                                        </span>
+                                        <div class="route-preview">
+                                            {% set first_station = train.routes|first %}
+                                            {% set last_station = train.routes|last %}
+                                            {% if first_station and last_station %}
+                                                <small>
+                                                    {{ first_station.station.name }} → {{ last_station.station.name }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <span class="no-route">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            No route configured
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if train.routes %}
+                                        {% set max_distance = train.routes|map(attribute='distance_from_start')|max %}
+                                        {{ "%.0f"|format(max_distance or 0) }} km
+                                    {% else %}
+                                        <em>-</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if train.routes|length >= 2 %}
+                                        {% set first_station = train.routes|first %}
+                                        {% set last_station = train.routes|last %}
+                                        {% if first_station.departure_time and last_station.arrival_time %}
+                                            <div class="journey-time">
+                                                <div>Depart: {{ first_station.departure_time.strftime('%H:%M') if first_station.departure_time else 'N/A' }}</div>
+                                                <div>Arrive: {{ last_station.arrival_time.strftime('%H:%M') if last_station.arrival_time else 'N/A' }}</div>
+                                            </div>
+                                        {% else %}
+                                            <em>Times not set</em>
+                                        {% endif %}
+                                    {% else %}
+                                        <em>Incomplete route</em>
+                                    {% endif %}
+                                </td>
+                                <td class="actions">
+                                    <a href="{{ url_for('admin.view_train_route', train_id=train.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> View Route
+                                    </a>
+                                    <button class="btn btn-sm btn-success" onclick="addStationToRoute({{ train.id }}, '{{ train.number }}')">
+                                        <i class="fas fa-plus"></i> Add Station
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-train"></i>
+                <h3>No trains found</h3>
+                <p>Please add trains first to configure routes.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Route Statistics -->
+    <div class="route-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-train"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ trains|length }}</h3>
+                <p>Total Trains</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stations|length }}</h3>
+                <p>Available Stations</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-route"></i>
+            </div>
+            <div class="stat-info">
+                {% set configured_routes = trains|selectattr('routes')|list|length %}
+                <h3>{{ configured_routes }}</h3>
+                <p>Configured Routes</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-info">
+                {% set incomplete_routes = trains|length - configured_routes %}
+                <h3>{{ incomplete_routes }}</h3>
+                <p>Incomplete Routes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Station Modal -->
+<div id="addStationModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus"></i> Add Station to Route</h3>
+            <button type="button" class="close-btn" onclick="closeAddStationModal()">&times;</button>
+        </div>
+        
+        <form id="addStationForm" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="station_select">Select Station</label>
+                    <select id="station_select" name="station_id" required>
+                        <option value="">Choose a station</option>
+                        {% for station in stations %}
+                            <option value="{{ station.id }}">
+                                {{ station.name }} ({{ station.code }}) - {{ station.city }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sequence">Station Sequence</label>
+                    <input type="number" id="sequence" name="sequence" min="1" required>
+                    <small class="form-help">Order of this station in the route (1 = first station)</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="arrival_time">Arrival Time</label>
+                        <input type="time" id="arrival_time" name="arrival_time">
+                        <small class="form-help">Leave empty for first station</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_time">Departure Time</label>
+                        <input type="time" id="departure_time" name="departure_time">
+                        <small class="form-help">Leave empty for last station</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="distance">Distance from Start (KM)</label>
+                    <input type="number" id="distance" name="distance" step="0.1" min="0" required>
+                    <small class="form-help">Total distance from the first station</small>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddStationModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Station
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.route-count {
+    background: #3b82f6;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.route-preview small {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.no-route {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.journey-time {
+    font-size: 0.9rem;
+}
+
+.journey-time div:first-child {
+    color: #059669;
+    font-weight: 600;
+}
+
+.journey-time div:last-child {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.route-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.route-stats .stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.route-stats .stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.route-stats .stat-info h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.route-stats .stat-info p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #374151;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+</style>
+
+<script>
+let currentTrainId = null;
+
+function addStationToRoute(trainId, trainNumber) {
+    currentTrainId = trainId;
+    document.getElementById('addStationForm').action = `/admin/route-management/${trainId}/add-station`;
+    document.getElementById('addStationModal').style.display = 'flex';
+}
+
+function closeAddStationModal() {
+    document.getElementById('addStationModal').style.display = 'none';
+    document.getElementById('addStationForm').reset();
+    currentTrainId = null;
+}
+
+// Close modal when clicking outside
+document.getElementById('addStationModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAddStationModal();
+    }
+});
+
+// Auto-suggest sequence number based on existing routes
+document.getElementById('station_select').addEventListener('change', function() {
+    // This would ideally fetch the current route length via AJAX
+    // For now, suggest incrementing sequence
+    const currentSequence = parseInt(document.getElementById('sequence').value) || 1;
+    if (!document.getElementById('sequence').value) {
+        document.getElementById('sequence').value = currentSequence;
+    }
+});
+</script>
+{% endblock %}

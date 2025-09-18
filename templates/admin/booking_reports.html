@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Reports - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-chart-pie"></i> Booking Reports & Analytics</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Report Filters -->
+    <div class="admin-card">
+        <h3><i class="fas fa-filter"></i> Report Filters</h3>
+        <form method="GET" class="filter-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date_range">Date Range</label>
+                    <select name="date_range" id="date_range" onchange="this.form.submit()">
+                        <option value="7" {% if date_filter == '7' %}selected{% endif %}>Last 7 days</option>
+                        <option value="30" {% if date_filter == '30' %}selected{% endif %}>Last 30 days</option>
+                        <option value="90" {% if date_filter == '90' %}selected{% endif %}>Last 90 days</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Report Period</label>
+                    <div class="date-info">
+                        <i class="fas fa-calendar"></i>
+                        {{ start_date.strftime('%d %b %Y') }} to {{ end_date.strftime('%d %b %Y') }}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Booking Statistics Summary -->
+    <div class="stats-grid">
+        {% set total_bookings = booking_stats|sum(attribute='count') %}
+        {% set total_revenue = booking_stats|sum(attribute='revenue') %}
+        {% set confirmed_bookings = booking_stats|selectattr('status', 'equalto', 'confirmed')|sum(attribute='count') %}
+        {% set tatkal_bookings = booking_stats|selectattr('booking_type', 'equalto', 'tatkal')|sum(attribute='count') %}
+        
+        <div class="stat-card">
+            <div class="stat-icon booking">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_bookings or 0 }}</h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon revenue">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>₹{{ "%.2f"|format(total_revenue or 0) }}</h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon confirmed">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ confirmed_bookings or 0 }}</h3>
+                <p>Confirmed Bookings</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon tatkal">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ tatkal_bookings or 0 }}</h3>
+                <p>Tatkal Bookings</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Booking Trends Chart -->
+    <div class="admin-card">
+        <h3><i class="fas fa-chart-line"></i> Booking Trends</h3>
+        <div class="chart-container">
+            <canvas id="bookingTrendsChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    
+    <!-- Popular Routes -->
+    <div class="admin-card">
+        <h3><i class="fas fa-route"></i> Top 10 Popular Routes</h3>
+        {% if popular_routes %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>From Station</th>
+                            <th>To Station</th>
+                            <th>Total Bookings</th>
+                            <th>Popularity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for route in popular_routes %}
+                            <tr>
+                                <td class="rank">{{ loop.index }}</td>
+                                <td><strong>{{ route.from_station }}</strong></td>
+                                <td><strong>{{ route.to_station }}</strong></td>
+                                <td>{{ route.bookings }}</td>
+                                <td>
+                                    <div class="popularity-bar">
+                                        {% set max_bookings = popular_routes[0].bookings if popular_routes else 1 %}
+                                        {% set popularity = (route.bookings / max_bookings * 100) if max_bookings > 0 else 0 %}
+                                        <div class="popularity-fill" style="width: {{ popularity }}%"></div>
+                                        <span>{{ "%.0f"|format(popularity) }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-route"></i>
+                <h3>No route data available</h3>
+                <p>No bookings found for the selected period.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Detailed Booking Statistics -->
+    <div class="admin-card">
+        <h3><i class="fas fa-table"></i> Detailed Booking Statistics</h3>
+        {% if booking_stats %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Booking Type</th>
+                            <th>Status</th>
+                            <th>Count</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in booking_stats %}
+                            <tr>
+                                <td>{{ stat.date.strftime('%d %b %Y') if stat.date else 'N/A' }}</td>
+                                <td>
+                                    <span class="booking-type-badge {{ stat.booking_type }}">
+                                        {% if stat.booking_type == 'tatkal' %}
+                                            <i class="fas fa-bolt"></i> Tatkal
+                                        {% else %}
+                                            <i class="fas fa-train"></i> General
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ stat.status }}">
+                                        {{ stat.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td><strong>{{ stat.count }}</strong></td>
+                                <td>₹{{ "%.2f"|format(stat.revenue or 0) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-chart-bar"></i>
+                <h3>No booking data available</h3>
+                <p>No bookings found for the selected period.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Export Options -->
+    <div class="admin-card">
+        <h3><i class="fas fa-download"></i> Export Reports</h3>
+        <div class="export-options">
+            <a href="{{ url_for('admin.export_bookings') }}?format=csv&date_range={{ date_filter }}" class="btn btn-primary">
+                <i class="fas fa-file-csv"></i> Export to CSV
+            </a>
+            <button class="btn btn-secondary" onclick="exportToPDF()">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+            </button>
+            <button class="btn btn-success" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.filter-form {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.date-info {
+    background: white;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.stat-card .stat-icon.booking {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.stat-card .stat-icon.revenue {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-card .stat-icon.confirmed {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.stat-card .stat-icon.tatkal {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+.rank {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #6b7280;
+}
+
+.popularity-bar {
+    position: relative;
+    width: 150px;
+    height: 25px;
+    background: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.popularity-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    transition: width 0.3s ease;
+}
+
+.popularity-bar span {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.booking-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.booking-type-badge.general {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+.booking-type-badge.tatkal {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.export-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .export-options {
+        flex-direction: column;
+    }
+}
+
+@media print {
+    .admin-header .btn,
+    .export-options {
+        display: none !important;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Booking Trends Chart
+const ctx = document.getElementById('bookingTrendsChart').getContext('2d');
+
+// Process data for chart
+const bookingData = {{ booking_stats|tojson }};
+const chartData = {};
+
+bookingData.forEach(stat => {
+    const date = stat.date;
+    const type = stat.booking_type;
+    const count = stat.count;
+    
+    if (!chartData[date]) {
+        chartData[date] = { general: 0, tatkal: 0 };
+    }
+    chartData[date][type] = count;
+});
+
+const dates = Object.keys(chartData).sort();
+const generalData = dates.map(date => chartData[date].general || 0);
+const tatkalData = dates.map(date => chartData[date].tatkal || 0);
+
+const bookingTrendsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: dates.map(date => new Date(date).toLocaleDateString()),
+        datasets: [{
+            label: 'General Bookings',
+            data: generalData,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Tatkal Bookings',
+            data: tatkalData,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            },
+            title: {
+                display: true,
+                text: 'Daily Booking Trends'
+            }
+        },
+        scales: {
+            x: {
+                display: true,
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            },
+            y: {
+                display: true,
+                title: {
+                    display: true,
+                    text: 'Number of Bookings'
+                },
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+function exportToPDF() {
+    // Basic PDF export functionality
+    alert('PDF export functionality would be implemented here using libraries like jsPDF');
+}
+</script>
+{% endblock %}

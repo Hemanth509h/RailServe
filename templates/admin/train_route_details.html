@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+
+{% block title %}{{ train.number }} Route Details - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-route"></i> Route Details: {{ train.number }} - {{ train.name }}</h1>
+        <div class="header-actions">
+            <a href="{{ url_for('admin.route_management') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Routes
+            </a>
+            <button class="btn btn-success" onclick="addStationToRoute()">
+                <i class="fas fa-plus"></i> Add Station
+            </button>
+        </div>
+    </div>
+    
+    <!-- Train Information -->
+    <div class="train-info-card">
+        <div class="info-section">
+            <h3><i class="fas fa-train"></i> Train Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Train Number:</label>
+                    <span class="value">{{ train.number }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Train Name:</label>
+                    <span class="value">{{ train.name }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Total Seats:</label>
+                    <span class="value">{{ train.total_seats }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Base Fare/KM:</label>
+                    <span class="value">₹{{ "%.2f"|format(train.fare_per_km) }}</span>
+                </div>
+            </div>
+        </div>
+        
+        {% if routes %}
+            {% set total_distance = routes|map(attribute='distance_from_start')|max %}
+            {% set first_station = routes|first %}
+            {% set last_station = routes|last %}
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> Route Summary</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Total Stations:</label>
+                        <span class="value">{{ routes|length }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Total Distance:</label>
+                        <span class="value">{{ "%.0f"|format(total_distance) }} km</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Journey Time:</label>
+                        <span class="value">
+                            {% if first_station.departure_time and last_station.arrival_time %}
+                                {{ first_station.departure_time.strftime('%H:%M') }} - {{ last_station.arrival_time.strftime('%H:%M') }}
+                            {% else %}
+                                Not configured
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <label>Route:</label>
+                        <span class="value">{{ first_station.station.name }} → {{ last_station.station.name }}</span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Route Timeline -->
+    {% if routes %}
+        <div class="admin-card">
+            <h3><i class="fas fa-clock"></i> Route Timeline</h3>
+            <div class="route-timeline">
+                {% for route in routes %}
+                    <div class="timeline-item {% if loop.first %}first{% elif loop.last %}last{% endif %}">
+                        <div class="timeline-marker">
+                            <div class="marker-circle">{{ route.sequence }}</div>
+                            {% if not loop.last %}
+                                <div class="timeline-line"></div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="timeline-content">
+                            <div class="station-info">
+                                <h4>{{ route.station.name }} <span class="station-code">({{ route.station.code }})</span></h4>
+                                <p class="station-location">{{ route.station.city }}, {{ route.station.state }}</p>
+                            </div>
+                            
+                            <div class="timing-info">
+                                {% if route.arrival_time %}
+                                    <div class="time-item arrival">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        <span>Arrival: {{ route.arrival_time.strftime('%H:%M') }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if route.departure_time %}
+                                    <div class="time-item departure">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Departure: {{ route.departure_time.strftime('%H:%M') }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if route.arrival_time and route.departure_time %}
+                                    {% set halt_duration = (route.departure_time.hour * 60 + route.departure_time.minute) - (route.arrival_time.hour * 60 + route.arrival_time.minute) %}
+                                    <div class="time-item halt">
+                                        <i class="fas fa-pause"></i>
+                                        <span>Halt: {{ halt_duration }} min</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="distance-info">
+                                <span class="distance">{{ "%.0f"|format(route.distance_from_start) }} km from start</span>
+                                {% if not loop.first %}
+                                    {% set prev_distance = routes[loop.index0-1].distance_from_start %}
+                                    <span class="segment-distance">(+{{ "%.0f"|format(route.distance_from_start - prev_distance) }} km)</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="actions">
+                                <button class="btn btn-sm btn-primary" onclick="editStation({{ route.id }}, {{ route.sequence }})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="removeStation({{ route.id }}, '{{ route.station.name }}')" 
+                                        {% if routes|length <= 2 %}disabled title="Cannot remove - minimum 2 stations required"{% endif %}>
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-route"></i>
+            <h3>No route configured</h3>
+            <p>This train doesn't have any stations configured. Add stations to create a route.</p>
+            <button class="btn btn-primary" onclick="addStationToRoute()">
+                <i class="fas fa-plus"></i> Add First Station
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add/Edit Station Modal -->
+<div id="stationModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle"><i class="fas fa-plus"></i> Add Station to Route</h3>
+            <button type="button" class="close-btn" onclick="closeStationModal()">&times;</button>
+        </div>
+        
+        <form id="stationForm" method="POST" action="{{ url_for('admin.add_station_to_route', train_id=train.id) }}">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="station_select">Select Station</label>
+                    <select id="station_select" name="station_id" required>
+                        <option value="">Choose a station</option>
+                        {% for station in stations %}
+                            <option value="{{ station.id }}">
+                                {{ station.name }} ({{ station.code }}) - {{ station.city }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sequence">Station Sequence</label>
+                    <input type="number" id="sequence" name="sequence" min="1" value="{{ (routes|length + 1) if routes else 1 }}" required>
+                    <small class="form-help">Order of this station in the route</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="arrival_time">Arrival Time</label>
+                        <input type="time" id="arrival_time" name="arrival_time">
+                        <small class="form-help">Leave empty for first station</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="departure_time">Departure Time</label>
+                        <input type="time" id="departure_time" name="departure_time">
+                        <small class="form-help">Leave empty for last station</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="distance">Distance from Start (KM)</label>
+                    <input type="number" id="distance" name="distance" step="0.1" min="0" required>
+                    <small class="form-help">Total distance from the first station</small>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeStationModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> <span id="submitText">Add Station</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.train-info-card {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.info-section h3 {
+    margin: 0 0 1rem 0;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.info-item .value {
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 1.1rem;
+}
+
+.route-timeline {
+    position: relative;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.timeline-item.last {
+    margin-bottom: 0;
+}
+
+.timeline-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 2rem;
+    position: relative;
+}
+
+.marker-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.timeline-item.first .marker-circle {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.timeline-item.last .marker-circle {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.timeline-line {
+    width: 3px;
+    height: 60px;
+    background: linear-gradient(180deg, #3b82f6, #60a5fa);
+    margin-top: 0.5rem;
+}
+
+.timeline-content {
+    flex: 1;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.station-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1.2rem;
+}
+
+.station-code {
+    color: #6b7280;
+    font-weight: normal;
+}
+
+.station-location {
+    margin: 0 0 1rem 0;
+    color: #6b7280;
+}
+
+.timing-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.time-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.time-item.arrival {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.time-item.departure {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.time-item.halt {
+    background: #fefce8;
+    color: #a16207;
+}
+
+.distance-info {
+    margin-bottom: 1rem;
+}
+
+.distance {
+    font-weight: 600;
+    color: #374151;
+}
+
+.segment-distance {
+    color: #6b7280;
+    font-style: italic;
+    margin-left: 0.5rem;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #374151;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .train-info-card {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .timeline-marker {
+        margin: 0 0 1rem 0;
+        align-self: flex-start;
+    }
+    
+    .timeline-line {
+        display: none;
+    }
+}
+</style>
+
+<script>
+let editMode = false;
+let currentRouteId = null;
+
+function addStationToRoute() {
+    editMode = false;
+    currentRouteId = null;
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> Add Station to Route';
+    document.getElementById('submitText').textContent = 'Add Station';
+    document.getElementById('stationForm').action = '{{ url_for("admin.add_station_to_route", train_id=train.id) }}';
+    
+    // Set next sequence number
+    const currentStationCount = {{ routes|length if routes else 0 }};
+    document.getElementById('sequence').value = currentStationCount + 1;
+    
+    document.getElementById('stationModal').style.display = 'flex';
+}
+
+function editStation(routeId, sequence) {
+    editMode = true;
+    currentRouteId = routeId;
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Station';
+    document.getElementById('submitText').textContent = 'Update Station';
+    
+    // Would need to populate form with existing data via AJAX
+    // For now, just show the modal
+    document.getElementById('stationModal').style.display = 'flex';
+}
+
+function removeStation(routeId, stationName) {
+    if (confirm(`Are you sure you want to remove "${stationName}" from this route?`)) {
+        // Would need to implement remove station endpoint
+        window.location.href = `/admin/route-management/{{ train.id }}/remove-station/${routeId}`;
+    }
+}
+
+function closeStationModal() {
+    document.getElementById('stationModal').style.display = 'none';
+    document.getElementById('stationForm').reset();
+    editMode = false;
+    currentRouteId = null;
+}
+
+// Close modal when clicking outside
+document.getElementById('stationModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeStationModal();
+    }
+});
+
+// Auto-suggest times and distances based on sequence
+document.getElementById('sequence').addEventListener('change', function() {
+    const sequence = parseInt(this.value);
+    
+    // If first station, clear arrival time
+    if (sequence === 1) {
+        document.getElementById('arrival_time').value = '';
+        document.getElementById('arrival_time').disabled = true;
+        document.getElementById('distance').value = '0';
+    } else {
+        document.getElementById('arrival_time').disabled = false;
+    }
+    
+    // Auto-suggest distance based on sequence (rough estimate)
+    if (sequence > 1) {
+        const estimatedDistance = (sequence - 1) * 150; // Assume 150km between major stations
+        if (!document.getElementById('distance').value) {
+            document.getElementById('distance').value = estimatedDistance;
+        }
+    }
+});
+
+// Validate times
+document.getElementById('stationForm').addEventListener('submit', function(e) {
+    const sequence = parseInt(document.getElementById('sequence').value);
+    const arrivalTime = document.getElementById('arrival_time').value;
+    const departureTime = document.getElementById('departure_time').value;
+    
+    // First station must have departure time
+    if (sequence === 1 && !departureTime) {
+        alert('First station must have a departure time');
+        e.preventDefault();
+        return;
+    }
+    
+    // If both times are provided, departure must be after arrival
+    if (arrivalTime && departureTime && arrivalTime >= departureTime) {
+        alert('Departure time must be after arrival time');
+        e.preventDefault();
+        return;
+    }
+});
+</script>
+{% endblock %}

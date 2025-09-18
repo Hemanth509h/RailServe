@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Quota - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-exclamation-triangle"></i> Emergency Quota Management</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="emergency-notice">
+        <div class="notice-icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <div class="notice-content">
+            <h3>Emergency Quota System</h3>
+            <p>Use this system to release emergency seats for high-demand trains or special circumstances. Emergency quota releases should be used sparingly and with proper authorization.</p>
+            <ul>
+                <li>Emergency seats are released from reserved quotas</li>
+                <li>Released seats become immediately available for booking</li>
+                <li>All emergency releases are logged for audit purposes</li>
+                <li>Use only for genuine emergencies or VIP requirements</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-train"></i> Train Emergency Quota Management</h3>
+        
+        {% if trains %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Total Seats</th>
+                            <th>Available Seats</th>
+                            <th>Occupancy</th>
+                            <th>Emergency Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for train in trains %}
+                            <tr class="{% if train.available_seats < 50 %}high-demand{% elif train.available_seats < 100 %}medium-demand{% endif %}">
+                                <td><strong>{{ train.number }}</strong></td>
+                                <td>{{ train.name }}</td>
+                                <td>{{ train.total_seats }}</td>
+                                <td>
+                                    <span class="seat-count {% if train.available_seats > 100 %}high{% elif train.available_seats > 50 %}medium{% else %}low{% endif %}">
+                                        {{ train.available_seats }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% set occupancy = ((train.total_seats - train.available_seats) / train.total_seats * 100) if train.total_seats > 0 else 0 %}
+                                    <div class="occupancy-bar">
+                                        <div class="occupancy-fill" style="width: {{ occupancy }}%"></div>
+                                        <span class="occupancy-text">{{ "%.0f"|format(occupancy) }}%</span>
+                                    </div>
+                                </td>
+                                <td class="actions">
+                                    <button class="btn btn-sm btn-warning" onclick="releaseEmergencySeats({{ train.id }}, '{{ train.number }}', {{ train.available_seats }})"
+                                            {% if train.available_seats > 200 %}disabled title="Sufficient seats available"{% endif %}>
+                                        <i class="fas fa-bolt"></i> Emergency Release
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-train"></i>
+                <h3>No trains found</h3>
+                <p>Please add trains first to manage emergency quotas.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Emergency Release Modal -->
+<div id="emergencyModal" class="modal" style="display: none;">
+    <div class="modal-content emergency-modal">
+        <div class="modal-header emergency-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Emergency Seat Release</h3>
+            <button type="button" class="close-btn" onclick="closeEmergencyModal()">&times;</button>
+        </div>
+        
+        <form id="emergencyForm" method="POST">
+            <div class="modal-body">
+                <div class="emergency-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div>
+                        <strong>EMERGENCY ACTION REQUIRED</strong>
+                        <p>You are about to release emergency seats for <strong id="train-info"></strong>. This action should only be performed for genuine emergencies or special circumstances.</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="seats_to_release">Number of Emergency Seats to Release</label>
+                    <input type="number" id="seats_to_release" name="seats" min="1" max="50" required>
+                    <small class="form-help">Maximum 50 seats can be released at once</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="emergency_reason">Reason for Emergency Release</label>
+                    <select id="emergency_reason" name="reason" required>
+                        <option value="">Select Reason</option>
+                        <option value="vip_travel">VIP Travel Requirement</option>
+                        <option value="medical_emergency">Medical Emergency</option>
+                        <option value="natural_disaster">Natural Disaster</option>
+                        <option value="government_order">Government Order</option>
+                        <option value="technical_issue">Technical System Issue</option>
+                        <option value="other">Other (Specify Below)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="emergency_notes">Additional Notes</label>
+                    <textarea id="emergency_notes" name="notes" rows="3" placeholder="Provide detailed justification for this emergency release..."></textarea>
+                </div>
+                
+                <div class="authorization-section">
+                    <h4><i class="fas fa-shield-alt"></i> Authorization Required</h4>
+                    <div class="form-group">
+                        <label for="admin_password">Confirm with Admin Password</label>
+                        <input type="password" id="admin_password" name="admin_password" required>
+                        <small class="form-help">Enter your admin password to authorize this action</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEmergencyModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-bolt"></i> Release Emergency Seats
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.emergency-notice {
+    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.notice-icon {
+    font-size: 2rem;
+    color: #d97706;
+    flex-shrink: 0;
+}
+
+.notice-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: #92400e;
+    font-size: 1.3rem;
+}
+
+.notice-content p {
+    margin: 0 0 1rem 0;
+    color: #92400e;
+}
+
+.notice-content ul {
+    margin: 0;
+    color: #92400e;
+    list-style-position: inside;
+}
+
+.notice-content li {
+    margin-bottom: 0.5rem;
+}
+
+.high-demand {
+    background-color: #fef2f2 !important;
+}
+
+.medium-demand {
+    background-color: #fffbeb !important;
+}
+
+.occupancy-bar {
+    position: relative;
+    width: 100px;
+    height: 20px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.occupancy-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+    transition: width 0.3s ease;
+}
+
+.occupancy-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.emergency-modal .modal-content {
+    max-width: 600px;
+}
+
+.emergency-header {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+}
+
+.emergency-header h3 {
+    color: white;
+}
+
+.close-btn {
+    color: white !important;
+}
+
+.emergency-warning {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.emergency-warning i {
+    color: #dc2626;
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+}
+
+.emergency-warning strong {
+    color: #dc2626;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.emergency-warning p {
+    margin: 0;
+    color: #7f1d1d;
+}
+
+.authorization-section {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.authorization-section h4 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+</style>
+
+<script>
+let currentTrainId = null;
+
+function releaseEmergencySeats(trainId, trainNumber, availableSeats) {
+    currentTrainId = trainId;
+    document.getElementById('emergencyForm').action = `/admin/emergency-quota/${trainId}/release`;
+    document.getElementById('train-info').textContent = trainNumber;
+    document.getElementById('seats_to_release').max = Math.min(50, Math.floor(availableSeats * 0.1)); // Max 10% of available or 50
+    
+    document.getElementById('emergencyModal').style.display = 'flex';
+}
+
+function closeEmergencyModal() {
+    document.getElementById('emergencyModal').style.display = 'none';
+    currentTrainId = null;
+    document.getElementById('emergencyForm').reset();
+}
+
+// Close modal when clicking outside
+document.getElementById('emergencyModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEmergencyModal();
+    }
+});
+
+// Form validation
+document.getElementById('emergencyForm').addEventListener('submit', function(e) {
+    const seats = parseInt(document.getElementById('seats_to_release').value);
+    const reason = document.getElementById('emergency_reason').value;
+    const password = document.getElementById('admin_password').value;
+    
+    if (!seats || seats < 1 || seats > 50) {
+        alert('Please enter a valid number of seats (1-50)');
+        e.preventDefault();
+        return;
+    }
+    
+    if (!reason) {
+        alert('Please select a reason for emergency release');
+        e.preventDefault();
+        return;
+    }
+    
+    if (!password) {
+        alert('Admin password is required for authorization');
+        e.preventDefault();
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to release ${seats} emergency seats? This action will be logged and audited.`)) {
+        e.preventDefault();
+        return;
+    }
+});
+</script>
+{% endblock %}

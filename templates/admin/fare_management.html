@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Fare Management - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-rupee-sign"></i> Fare Management</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="admin-card">
+        <h3><i class="fas fa-chart-line"></i> Pricing & Fare Structure Control</h3>
+        <p>Manage fare structures for all trains. Set base fares and Tatkal premium rates.</p>
+        
+        {% if trains %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Base Fare/KM</th>
+                            <th>Tatkal Fare/KM</th>
+                            <th>Tatkal Premium</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for train in trains %}
+                            <tr>
+                                <td><strong>{{ train.number }}</strong></td>
+                                <td>{{ train.name }}</td>
+                                <td>₹{{ "%.2f"|format(train.fare_per_km) }}</td>
+                                <td>
+                                    {% if train.tatkal_fare_per_km %}
+                                        ₹{{ "%.2f"|format(train.tatkal_fare_per_km) }}
+                                    {% else %}
+                                        <em class="text-muted">Not set</em>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if train.tatkal_fare_per_km and train.fare_per_km %}
+                                        <span class="premium-badge">
+                                            {{ "%.0f"|format((train.tatkal_fare_per_km / train.fare_per_km - 1) * 100) }}%
+                                        </span>
+                                    {% else %}
+                                        <em class="text-muted">-</em>
+                                    {% endif %}
+                                </td>
+                                <td class="actions">
+                                    <button class="btn btn-sm btn-primary" onclick="editFare({{ train.id }}, '{{ train.number }}', {{ train.fare_per_km }}, {{ train.tatkal_fare_per_km or 0 }})">
+                                        <i class="fas fa-edit"></i> Update Fare
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-train"></i>
+                <h3>No trains found</h3>
+                <p>Please add trains first to manage fares.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Fare Edit Modal -->
+<div id="fareModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-rupee-sign"></i> Update Fare Structure</h3>
+            <button type="button" class="close-btn" onclick="closeFareModal()">&times;</button>
+        </div>
+        
+        <form id="fareForm" method="POST">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="base_fare">Base Fare per KM (₹)</label>
+                    <input type="number" id="base_fare" name="fare_per_km" step="0.01" min="0.5" max="100" required>
+                    <small class="form-help">Regular booking fare per kilometer</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tatkal_fare">Tatkal Fare per KM (₹)</label>
+                    <input type="number" id="tatkal_fare" name="tatkal_fare_per_km" step="0.01" min="0.5" max="200">
+                    <small class="form-help">Premium Tatkal fare per kilometer</small>
+                </div>
+                
+                <div class="fare-preview">
+                    <h4>Fare Preview (100 KM journey)</h4>
+                    <div class="preview-item">
+                        <span>Regular Fare:</span>
+                        <span id="regular_preview">₹0.00</span>
+                    </div>
+                    <div class="preview-item">
+                        <span>Tatkal Fare:</span>
+                        <span id="tatkal_preview">₹0.00</span>
+                    </div>
+                    <div class="preview-item premium">
+                        <span>Premium:</span>
+                        <span id="premium_preview">0%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeFareModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Fare
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.premium-badge {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.fare-preview {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.fare-preview h4 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+    font-size: 1rem;
+}
+
+.preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.preview-item:last-child {
+    border-bottom: none;
+}
+
+.preview-item.premium {
+    font-weight: 600;
+    color: #d97706;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #374151;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+</style>
+
+<script>
+let currentTrainId = null;
+
+function editFare(trainId, trainNumber, baseFare, tatkalFare) {
+    currentTrainId = trainId;
+    document.getElementById('fareForm').action = `/admin/fare-management/${trainId}`;
+    document.getElementById('base_fare').value = baseFare;
+    document.getElementById('tatkal_fare').value = tatkalFare || '';
+    
+    updatePreview();
+    document.getElementById('fareModal').style.display = 'flex';
+}
+
+function closeFareModal() {
+    document.getElementById('fareModal').style.display = 'none';
+    currentTrainId = null;
+}
+
+function updatePreview() {
+    const baseFare = parseFloat(document.getElementById('base_fare').value) || 0;
+    const tatkalFare = parseFloat(document.getElementById('tatkal_fare').value) || baseFare * 1.5;
+    
+    const distance = 100; // 100 KM for preview
+    const regularTotal = baseFare * distance;
+    const tatkalTotal = tatkalFare * distance;
+    const premium = tatkalFare > 0 && baseFare > 0 ? ((tatkalFare / baseFare - 1) * 100) : 0;
+    
+    document.getElementById('regular_preview').textContent = `₹${regularTotal.toFixed(2)}`;
+    document.getElementById('tatkal_preview').textContent = `₹${tatkalTotal.toFixed(2)}`;
+    document.getElementById('premium_preview').textContent = `${premium.toFixed(0)}%`;
+}
+
+// Update preview when values change
+document.getElementById('base_fare').addEventListener('input', updatePreview);
+document.getElementById('tatkal_fare').addEventListener('input', updatePreview);
+
+// Close modal when clicking outside
+document.getElementById('fareModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeFareModal();
+    }
+});
+</script>
+{% endblock %}
