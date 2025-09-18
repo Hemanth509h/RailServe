@@ -57,7 +57,7 @@
         <div class="payment-form-card">
             <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
             
-            <form method="POST" action="{{ url_for('payment.process_payment', booking_id=booking.id) }}" 
+            <form method="POST" action="{% if from_session %}{{ url_for('payment.process_session_payment') }}{% else %}{{ url_for('payment.process_payment', booking_id=booking.id) }}{% endif %}" 
                   class="payment-form">
                 
                 <div class="payment-methods">
@@ -133,10 +133,16 @@
                 </div>
                 
                 <div class="payment-actions">
-                    <a href="{{ url_for('booking.book_ticket', train_id=booking.train_id) }}" 
-                       class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </a>
+                    {% if from_session %}
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Search
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('booking.book_ticket', train_id=booking.train_id) }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    {% endif %}
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-lock"></i> Pay ₹{{ "%.2f"|format(booking.total_amount) }}
                     </button>

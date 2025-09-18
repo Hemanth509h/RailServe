@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from .models import Train, Station, Booking, TrainRoute, Passenger
 from .app import db
@@ -7,6 +7,7 @@ from .utils import calculate_fare, check_seat_availability, is_booking_open, che
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
 import random
+import json
 
 booking_bp = Blueprint('booking', __name__)
 
@@ -141,25 +142,8 @@ def book_ticket_post(train_id):
             general_quota = train.total_seats - (train.tatkal_seats or 0)
             available_seats = max(0, general_quota - general_booked)
         
-        # Create booking record
-        booking = Booking(
-            user_id=current_user.id,
-            train_id=train_id,
-            from_station_id=from_station_id,
-            to_station_id=to_station_id,
-            journey_date=journey_date,
-            passengers=passengers,
-            total_amount=total_amount,
-            booking_type=booking_type,
-            quota=quota,
-            coach_class=coach_class,
-            status='pending_payment'
-        )
-        
-        db.session.add(booking)
-        db.session.flush()  # Get booking ID without committing
-        
-        # Parse and create passenger details with concurrent safety
+        # Store booking data in session instead of creating database record
+        # This ensures booking is only created AFTER successful payment
         passenger_details = []
         for i in range(passengers or 0):
             passenger_name = request.form.get(f'passenger_{i}_name', '')
@@ -170,38 +154,49 @@ def book_ticket_post(train_id):
             passenger_seat_pref = request.form.get(f'passenger_{i}_seat_preference', 'No Preference')
             
             if passenger_name and passenger_age and passenger_gender:
-                passenger = Passenger(
-                    booking_id=booking.id,
-                    name=passenger_name,
-                    age=passenger_age,
-                    gender=passenger_gender,
-                    id_proof_type=passenger_id_type or 'Aadhar',
-                    id_proof_number=passenger_id_number or f'ID{random.randint(100000, 999999)}',
-                    seat_preference=passenger_seat_pref,
-                    coach_class=coach_class
-                )
-                passenger_details.append(passenger)
-                db.session.add(passenger)
+                passenger_data = {
+                    'name': passenger_name,
+                    'age': passenger_age,
+                    'gender': passenger_gender,
+                    'id_proof_type': passenger_id_type or 'Aadhar',
+                    'id_proof_number': passenger_id_number or f'ID{random.randint(100000, 999999)}',
+                    'seat_preference': passenger_seat_pref,
+                    'coach_class': coach_class
+                }
+                passenger_details.append(passenger_data)
         
-        # Atomic seat allocation or waitlist assignment with concurrent protection
+        # Determine seat availability status
         if available_seats >= (passengers or 0):
-            booking.status = 'confirmed'
-            # Note: Do not modify train.available_seats as it's global - availability is calculated per-date
+            booking_status = 'confirmed'
         else:
-            booking.status = 'waitlisted'
-            # Add to waitlist queue
-            waitlist_manager = WaitlistManager()
-            waitlist_manager.add_to_waitlist(booking.id, train_id, journey_date)
+            booking_status = 'waitlisted'
         
-        # Commit all changes
-        db.session.commit()
-            
-        if booking.status == 'confirmed':
-            flash(f'Ticket booked successfully! PNR: {booking.pnr}', 'success')
-            return redirect(url_for('payment.pay', booking_id=booking.id))
-        else:
-            flash(f'No seats available. Added to waitlist! PNR: {booking.pnr}', 'warning')
-            return redirect(url_for('booking.booking_history'))
+        # Store all booking data in session for payment processing
+        booking_data = {
+            'user_id': current_user.id,
+            'train_id': train_id,
+            'from_station_id': from_station_id,
+            'to_station_id': to_station_id,
+            'journey_date': journey_date.isoformat(),  # Convert to string for JSON
+            'passengers': passengers,
+            'total_amount': total_amount,
+            'booking_type': booking_type,
+            'quota': quota,
+            'coach_class': coach_class,
+            'status': booking_status,
+            'passenger_details': passenger_details,
+            'available_seats': available_seats
+        }
+        
+        session['pending_booking'] = booking_data
+        session.permanent = True  # Make session data persistent
+        
+        # Rollback any database changes since we're not saving yet
+        db.session.rollback()
+        
+        # Redirect to payment with session data
+        flash(f'Booking details confirmed. Proceed to payment to complete booking.', 'info')
+        return redirect(url_for('payment.pay_from_session'))
         
     except Exception as e:
         db.session.rollback()
