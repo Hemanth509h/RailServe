@@ -425,28 +425,28 @@ class RailServeUniversalSetup:
                 created_count = 0
                 batch_size = 100
                 
-                with db.session.begin():
-                    for i in range(0, len(stations_data), batch_size):
-                        batch = stations_data[i:i + batch_size]
-                        
-                        for station_data in batch:
-                            try:
-                                db.session.execute(text("""
-                                    INSERT INTO station (code, name, city, state, active, created_at) 
-                                    VALUES (:code, :name, :city, :state, true, :created_at)
-                                    ON CONFLICT (code) DO UPDATE SET 
-                                        name = EXCLUDED.name,
-                                        city = EXCLUDED.city,
-                                        state = EXCLUDED.state,
-                                        active = true
-                                """), {**station_data, 'created_at': datetime.utcnow()})
-                                created_count += 1
-                            except Exception as e:
-                                logger.warning(f"Failed to insert station {station_data.get('code')}: {e}")
-                                continue
-                        
-                        if i % 500 == 0:
-                            logger.info(f"📍 Processed {min(i + batch_size, len(stations_data))} stations...")
+                for i in range(0, len(stations_data), batch_size):
+                    batch = stations_data[i:i + batch_size]
+                    
+                    for station_data in batch:
+                        try:
+                            db.session.execute(text("""
+                                INSERT INTO station (code, name, city, state, active, created_at) 
+                                VALUES (:code, :name, :city, :state, true, :created_at)
+                                ON CONFLICT (code) DO UPDATE SET 
+                                    name = EXCLUDED.name,
+                                    city = EXCLUDED.city,
+                                    state = EXCLUDED.state,
+                                    active = true
+                            """), {**station_data, 'created_at': datetime.utcnow()})
+                            created_count += 1
+                        except Exception as e:
+                            logger.warning(f"Failed to insert station {station_data.get('code')}: {e}")
+                            continue
+                    
+                    db.session.commit()
+                    if i % 500 == 0:
+                        logger.info(f"📍 Processed {min(i + batch_size, len(stations_data))} stations...")
                 
                 logger.info(f"✅ Stations populated successfully: {created_count} stations")
                 return True
@@ -468,33 +468,33 @@ class RailServeUniversalSetup:
                 created_count = 0
                 batch_size = 50
                 
-                with db.session.begin():
-                    for i in range(0, len(trains_data), batch_size):
-                        batch = trains_data[i:i + batch_size]
-                        
-                        for train_data in batch:
-                            try:
-                                db.session.execute(text("""
-                                    INSERT INTO train (number, name, total_seats, available_seats, fare_per_km, 
-                                                     tatkal_seats, tatkal_fare_per_km, active, created_at) 
-                                    VALUES (:number, :name, :total_seats, :available_seats, :fare_per_km,
-                                           :tatkal_seats, :tatkal_fare_per_km, :active, :created_at)
-                                    ON CONFLICT (number) DO UPDATE SET
-                                        name = EXCLUDED.name,
-                                        total_seats = EXCLUDED.total_seats,
-                                        available_seats = EXCLUDED.available_seats,
-                                        fare_per_km = EXCLUDED.fare_per_km,
-                                        tatkal_seats = EXCLUDED.tatkal_seats,
-                                        tatkal_fare_per_km = EXCLUDED.tatkal_fare_per_km,
-                                        active = EXCLUDED.active
-                                """), train_data)
-                                created_count += 1
-                            except Exception as e:
-                                logger.warning(f"Failed to insert train {train_data.get('number')}: {e}")
-                                continue
-                        
-                        if i % 200 == 0:
-                            logger.info(f"🚂 Processed {min(i + batch_size, len(trains_data))} trains...")
+                for i in range(0, len(trains_data), batch_size):
+                    batch = trains_data[i:i + batch_size]
+                    
+                    for train_data in batch:
+                        try:
+                            db.session.execute(text("""
+                                INSERT INTO train (number, name, total_seats, available_seats, fare_per_km, 
+                                                 tatkal_seats, tatkal_fare_per_km, active, created_at) 
+                                VALUES (:number, :name, :total_seats, :available_seats, :fare_per_km,
+                                       :tatkal_seats, :tatkal_fare_per_km, :active, :created_at)
+                                ON CONFLICT (number) DO UPDATE SET
+                                    name = EXCLUDED.name,
+                                    total_seats = EXCLUDED.total_seats,
+                                    available_seats = EXCLUDED.available_seats,
+                                    fare_per_km = EXCLUDED.fare_per_km,
+                                    tatkal_seats = EXCLUDED.tatkal_seats,
+                                    tatkal_fare_per_km = EXCLUDED.tatkal_fare_per_km,
+                                    active = EXCLUDED.active
+                            """), train_data)
+                            created_count += 1
+                        except Exception as e:
+                            logger.warning(f"Failed to insert train {train_data.get('number')}: {e}")
+                            continue
+                    
+                    db.session.commit()
+                    if i % 200 == 0:
+                        logger.info(f"🚂 Processed {min(i + batch_size, len(trains_data))} trains...")
                 
                 logger.info(f"✅ Trains populated successfully: {created_count} trains")
                 return True
@@ -611,19 +611,20 @@ class RailServeUniversalSetup:
         from src.app import app, db
         
         try:
-            with db.session.begin():
-                for route in routes_batch:
-                    db.session.execute(text("""
-                        INSERT INTO train_route (train_id, station_id, sequence, arrival_time, departure_time, distance_from_start)
-                        VALUES (:train_id, :station_id, :sequence, :arrival_time, :departure_time, :distance_from_start)
-                        ON CONFLICT (train_id, sequence) DO UPDATE SET
-                            station_id = EXCLUDED.station_id,
-                            arrival_time = EXCLUDED.arrival_time,
-                            departure_time = EXCLUDED.departure_time,
-                            distance_from_start = EXCLUDED.distance_from_start
-                    """), route)
+            for route in routes_batch:
+                db.session.execute(text("""
+                    INSERT INTO train_route (train_id, station_id, sequence, arrival_time, departure_time, distance_from_start)
+                    VALUES (:train_id, :station_id, :sequence, :arrival_time, :departure_time, :distance_from_start)
+                    ON CONFLICT (train_id, sequence) DO UPDATE SET
+                        station_id = EXCLUDED.station_id,
+                        arrival_time = EXCLUDED.arrival_time,
+                        departure_time = EXCLUDED.departure_time,
+                        distance_from_start = EXCLUDED.distance_from_start
+                """), route)
+            db.session.commit()
         except Exception as e:
             logger.warning(f"Failed to insert route batch: {e}")
+            db.session.rollback()
     
     def populate_comprehensive_data(self) -> bool:
         """Populate comprehensive additional data"""
