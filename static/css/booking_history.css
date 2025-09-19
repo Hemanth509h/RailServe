@@ -1,0 +1,400 @@
+/* Booking History Page Specific Styles */
+
+/* Booking History Container */
+.booking-history-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.booking-history-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.booking-history-header h1 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.booking-history-header h1 i {
+    color: var(--accent-color);
+}
+
+.booking-history-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Booking Statistics */
+.booking-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card .stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Booking Timeline */
+.bookings-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.bookings-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.booking-item {
+    position: relative;
+    margin-bottom: 2rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.booking-item:hover {
+    transform: translateX(5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+/* Timeline Marker */
+.booking-timeline-marker {
+    position: absolute;
+    left: -2rem;
+    top: 1.5rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.booking-timeline-marker.status-confirmed {
+    background: var(--success-color);
+    color: white;
+}
+
+.booking-timeline-marker.status-waitlisted {
+    background: var(--warning-color);
+    color: white;
+}
+
+.booking-timeline-marker.status-cancelled {
+    background: var(--danger-color);
+    color: white;
+}
+
+.booking-timeline-marker.status-pending_payment {
+    background: var(--info-color);
+    color: white;
+}
+
+/* Booking Content */
+.booking-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.booking-main-info h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.booking-main-info h3 i {
+    color: var(--accent-color);
+}
+
+.booking-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Journey Route */
+.journey-route {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+}
+
+.station-point {
+    text-align: center;
+    flex: 1;
+}
+
+.station-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.station-code {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.route-arrow {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+/* Booking Status */
+.booking-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+}
+
+.booking-status.confirmed {
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed-text);
+}
+
+.booking-status.waitlisted {
+    background: var(--status-waitlist-bg);
+    color: var(--status-waitlist-text);
+}
+
+.booking-status.cancelled {
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}
+
+.booking-status.pending_payment {
+    background: var(--alert-info-bg);
+    color: var(--alert-info-text);
+}
+
+/* Booking Actions */
+.booking-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.booking-actions .btn {
+    width: 100%;
+    min-width: 140px;
+}
+
+.booking-count {
+    background: var(--accent-color);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    margin-left: 0.5rem;
+}
+
+/* No Bookings State */
+.no-bookings {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+
+.no-bookings i {
+    font-size: 4rem;
+    color: var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.no-bookings h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.no-bookings p {
+    margin-bottom: 2rem;
+}
+
+/* Filters */
+.booking-filters {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .booking-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .booking-actions {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .booking-history-container {
+        padding: 1rem;
+    }
+    
+    .bookings-timeline {
+        padding-left: 1rem;
+    }
+    
+    .booking-timeline-marker {
+        left: -1.5rem;
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+    
+    .booking-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .journey-route {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .route-arrow {
+        transform: rotate(90deg);
+    }
+    
+    .booking-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-history-header h1 {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .booking-item {
+        padding: 1rem;
+    }
+    
+    .booking-actions {
+        flex-direction: column;
+    }
+    
+    .booking-actions .btn {
+        min-width: auto;
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .bookings-timeline::before {
+    background: var(--border-color);
+}
+
+[data-theme="dark"] .booking-timeline-marker {
+    border-color: var(--bg-secondary);
+}

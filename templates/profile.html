@@ -2,6 +2,10 @@
 
 {% block title %}My Profile - RailServe{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="profile-header">

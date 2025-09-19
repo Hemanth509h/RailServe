@@ -1,0 +1,49 @@
+
+TypeError: object of type 'int' has no len()
+
+Traceback (most recent call last)
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\werkzeug\middleware\proxy_fix.py", line 183, in __call__
+return self.app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\main.py", line 53, in pnr_enquiry
+return render_template('pnr_enquiry.html', booking=booking)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\templating.py", line 150, in render_template
+return _render(app, template, context)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\templating.py", line 131, in _render
+rv = template.render(context)
+     ^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\jinja2\environment.py", line 1295, in render
+self.environment.handle_exception()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+raise rewrite_traceback_stack(source=source)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\templates\pnr_enquiry.html", line 1, in top-level template code
+{% extends "base.html" %}
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\templates\base.html", line 109, in top-level template code
+{% block content %}{% endblock %}
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\templates\pnr_enquiry.html", line 99, in block 'content'
+<span class="value">{{ booking.passengers|length }}</span>
+TypeError: object of type 'int' has no len()
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "T
