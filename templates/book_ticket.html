@@ -149,6 +149,36 @@
                         Please provide details for all passengers as per government ID proof. 
                         Ensure names match your ID documents exactly.
                     </p>
+                    
+                    <!-- Seat Allotment Information -->
+                    <div class="seat-allotment-info">
+                        <div class="info-header">
+                            <i class="fas fa-chair text-primary"></i>
+                            <h5>About Seat Allotment</h5>
+                        </div>
+                        <div class="allotment-details">
+                            <div class="allotment-item">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <span><strong>Automatic Assignment:</strong> Seats are allocated automatically by the system based on availability and your preferences</span>
+                            </div>
+                            <div class="allotment-item">
+                                <i class="fas fa-users text-info"></i>
+                                <span><strong>Group Booking:</strong> Passengers booked together are allotted nearby seats when possible</span>
+                            </div>
+                            <div class="allotment-item">
+                                <i class="fas fa-heart text-danger"></i>
+                                <span><strong>Special Needs:</strong> Lower berth preference for senior citizens (60+), pregnant women, and differently-abled passengers</span>
+                            </div>
+                            <div class="allotment-item">
+                                <i class="fas fa-random text-warning"></i>
+                                <span><strong>Final Allotment:</strong> Exact seat/berth numbers are confirmed during chart preparation (4-6 hours before departure)</span>
+                            </div>
+                            <div class="allotment-item">
+                                <i class="fas fa-clock text-secondary"></i>
+                                <span><strong>Waitlist Process:</strong> If confirmed seats unavailable, you'll be placed on waitlist. Confirmation depends on cancellations</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="passenger-requirements">
                         <div class="req-item">
                             <i class="fas fa-check-circle text-success"></i>
@@ -552,30 +582,8 @@
     
     // Function to proceed to Tatkal booking
     function proceedToTatkal() {
-        const errors = validateForm();
-        
-        if (errors.length > 0) {
-            alert('Please fix the following errors:\n' + errors.join('\n'));
-            return;
-        }
-        
-        // Create a form to submit to Tatkal booking page
-        const tatkalForm = document.createElement('form');
-        tatkalForm.method = 'POST';
-        tatkalForm.action = '{{ url_for("booking.tatkal_booking", train_id=train.id) }}';
-        
-        // Copy all form data
-        const formData = new FormData(form);
-        for (let [key, value] of formData.entries()) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = key;
-            input.value = value;
-            tatkalForm.appendChild(input);
-        }
-        
-        document.body.appendChild(tatkalForm);
-        tatkalForm.submit();
+        // Simply redirect to Tatkal booking page to show the dedicated form
+        window.location.href = '{{ url_for("booking.tatkal_booking", train_id=train.id) }}';
     }
     
     // Make function globally available

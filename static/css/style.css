@@ -2974,3 +2974,90 @@ a:focus {
 [data-theme="dark"] .hero-content p {
     color: var(--text-inverse) !important;
 }
+
+/* Seat Allotment Information Styling */
+.seat-allotment-info {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 2px solid #bae6fd;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.seat-allotment-info .info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: var(--info-color);
+}
+
+.seat-allotment-info .info-header h5 {
+    margin: 0;
+    color: var(--info-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.allotment-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.allotment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.allotment-item:nth-child(1) { border-left-color: var(--success-color); }
+.allotment-item:nth-child(2) { border-left-color: var(--info-color); }
+.allotment-item:nth-child(3) { border-left-color: var(--danger-color); }
+.allotment-item:nth-child(4) { border-left-color: var(--warning-color); }
+.allotment-item:nth-child(5) { border-left-color: var(--text-secondary); }
+
+.allotment-item:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
+}
+
+.allotment-item i {
+    margin-top: 3px;
+    font-size: 1rem;
+}
+
+.allotment-item span {
+    flex: 1;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+/* Dark theme styles for seat allotment info */
+[data-theme="dark"] .seat-allotment-info {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    border-color: #3730a3;
+}
+
+[data-theme="dark"] .seat-allotment-info .info-header h5 {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .allotment-item {
+    background: rgba(30, 41, 59, 0.7);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .allotment-item:hover {
+    background: rgba(30, 41, 59, 0.9);
+}
+
+[data-theme="dark"] .allotment-item span {
+    color: #cbd5e1;
+}
