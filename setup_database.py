@@ -888,7 +888,7 @@ def main():
     args = parse_arguments()
     
     # Get database URL from args or environment
-    database_url = args.db_url or os.environ.get('DATABASE_URL')
+    database_url = args.db_url or  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
     
     if not database_url:
         logger.error("❌ Database URL not provided")
