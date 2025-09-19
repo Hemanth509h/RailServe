@@ -75,11 +75,15 @@ from .auth import auth_bp
 from .admin import admin_bp
 from .booking import booking_bp
 from .payment import payment_bp
+from .food import food_bp
+from .groups import groups_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(booking_bp, url_prefix='/booking')
 app.register_blueprint(payment_bp, url_prefix='/payment')
+app.register_blueprint(food_bp, url_prefix='/food')
+app.register_blueprint(groups_bp, url_prefix='/groups')
 
 with app.app_context():
     # Import models to ensure tables are created

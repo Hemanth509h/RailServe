@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Order Food - RailServe{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-utensils text-primary me-2"></i>Order Food for Your Journey</h2>
+                <a href="{{ url_for('booking.booking_history') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Bookings
+                </a>
+            </div>
+            
+            <div class="card bg-light-dark mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Journey Details</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>PNR:</strong> {{ booking.pnr }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Train:</strong> {{ booking.train.name }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Date:</strong> {{ booking.journey_date.strftime('%d %b %Y') }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Route:</strong> {{ booking.from_station.code }} → {{ booking.to_station.code }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if restaurants %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Food can be delivered at the following stations on your route. Select a restaurant to view their menu.
+                </div>
+                
+                <div class="row">
+                    {% for restaurant in restaurants %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card h-100 shadow-sm restaurant-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title text-primary">{{ restaurant.name }}</h5>
+                                    <div class="text-end">
+                                        <div class="badge bg-success">
+                                            <i class="fas fa-star"></i> {{ "%.1f"|format(restaurant.rating) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ restaurant.station.name }} Station
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ restaurant.delivery_time }} min delivery
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <span class="badge bg-secondary">{{ restaurant.cuisine_type }}</span>
+                                </div>
+                                
+                                {% if restaurant.minimum_order > 0 %}
+                                <div class="mb-2">
+                                    <small class="text-warning">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Min order: ₹{{ "%.0f"|format(restaurant.minimum_order) }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                
+                                {% if restaurant.delivery_charge > 0 %}
+                                <div class="mb-3">
+                                    <small class="text-info">
+                                        <i class="fas fa-truck me-1"></i>
+                                        Delivery: ₹{{ "%.0f"|format(restaurant.delivery_charge) }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('food.restaurant_menu', restaurant_id=restaurant.id, booking_id=booking.id) }}" 
+                                   class="btn btn-primary w-100">
+                                    <i class="fas fa-utensils me-2"></i>View Menu
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No restaurants are available for food delivery on your route at this time. Please check again later.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.restaurant-card {
+    transition: transform 0.2s;
+}
+.restaurant-card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}
