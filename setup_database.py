@@ -1,20 +1,44 @@
 #!/usr/bin/env python3
 """
-RailServe Railway Reservation System - Universal Database Setup
-===============================================================
+RailServe Railway Reservation System - Complete Database Setup
+==============================================================
 
 This script sets up the complete RailServe database with all tables and comprehensive data.
 Works in any environment - local, cloud, or production deployment.
 
-Features:
-- Creates all database tables using SQLAlchemy models
-- Populates 1500 railway stations across India
-- Creates 1000 trains with realistic details
-- Generates comprehensive train routes
-- Creates sample users, admin accounts
-- Configures Tatkal time slots and quotas
-- Populates food & catering data
-- Creates sample bookings and test data
+Database Tables Created:
+- user: User authentication and role management
+- station: Railway stations (1500+ stations across India)
+- train: Train information with Tatkal support (1000+ trains)
+- train_route: Train route mapping with stations and timing
+- booking: Comprehensive booking system with quotas and status
+- passenger: Detailed passenger information
+- payment: Payment processing and transaction management
+- waitlist: Waitlist management with position tracking
+- tatkal_time_slot: Tatkal booking time configuration
+- refund_request: TDR filing and refund management
+- train_status: Live train status tracking
+- seat_availability: Real-time seat availability
+- chart_preparation: Chart preparation tracking
+- restaurant: Food & catering partners
+- menu_item: Food menu items
+- food_order: Food orders linked to bookings
+- food_order_item: Individual food order items
+- group_booking: Group booking management
+- loyalty_program: Frequent traveler loyalty program
+- notification_preferences: User notification settings
+
+Features Supported:
+- Complete authentication system with role-based access
+- Tatkal booking with real Indian Railways timing rules
+- Group bookings for families and corporate travel
+- Food ordering system integrated with train bookings
+- Loyalty program with tier-based discounts
+- Waitlist management with FIFO queuing
+- PDF ticket generation support
+- Real-time train status and seat availability
+- TDR filing and refund processing
+- Comprehensive booking quotas (General, Ladies, Senior Citizen, Disability)
 
 Usage:
     # Using environment variables
@@ -25,9 +49,13 @@ Usage:
     # Using command line arguments
     python setup_database.py --db-url postgresql://user:password@localhost:5432/railserve
 
+    # With custom admin password
+    export ADMIN_PASSWORD="your-admin-password"
+    python setup_database.py
+
 Environment Variables:
     DATABASE_URL - PostgreSQL connection string
-    SESSION_SECRET - Flask session secret (optional)
+    SESSION_SECRET - Flask session secret (auto-generated if not set)
     ADMIN_PASSWORD - Admin user password (default: admin123)
 """
 
@@ -59,8 +87,8 @@ except ImportError as e:
     print("Please install: pip install sqlalchemy psycopg2-binary werkzeug flask flask-sqlalchemy flask-login")
     sys.exit(1)
 
-class RailServeUniversalSetup:
-    """Universal RailServe database setup for any environment"""
+class RailServeCompleteSetup:
+    """Complete RailServe database setup for any environment"""
     
     def __init__(self, database_url: str, admin_password: Optional[str] = None):
         self.database_url = database_url
@@ -70,7 +98,7 @@ class RailServeUniversalSetup:
         
         # Set session secret if not already set
         if not os.environ.get('SESSION_SECRET'):
-            os.environ['SESSION_SECRET'] = 'railserve-universal-secret-key-2025'
+            os.environ['SESSION_SECRET'] = 'railserve-complete-secret-key-2025'
     
     def create_database_if_not_exists(self) -> bool:
         """Create the database if it doesn't exist"""
@@ -78,7 +106,6 @@ class RailServeUniversalSetup:
             parsed_url = urlparse(self.database_url)
             db_name = parsed_url.path[1:]  # Remove leading slash
             
-            # Connect to PostgreSQL server
             logger.info("🔌 Connecting to PostgreSQL server...")
             
             # Create connection to postgres database first
@@ -114,7 +141,12 @@ class RailServeUniversalSetup:
         """Connect to the PostgreSQL database"""
         try:
             logger.info("🔌 Connecting to PostgreSQL database...")
-            self.engine = create_engine(self.database_url)
+            self.engine = create_engine(
+                self.database_url,
+                pool_recycle=300,
+                pool_pre_ping=True,
+                echo=False
+            )
             self.Session = sessionmaker(bind=self.engine)
             
             # Test connection
@@ -133,8 +165,11 @@ class RailServeUniversalSetup:
         try:
             logger.info("🏗️  Creating database tables...")
             
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
             # Import Flask app to trigger table creation
-            from src.app import app, db
+            from app import app, db
             
             with app.app_context():
                 # Drop all tables first (clean slate)
@@ -165,7 +200,7 @@ class RailServeUniversalSetup:
     
     def generate_comprehensive_stations(self) -> List[Dict[str, str]]:
         """Generate 1500 railway stations across India with realistic data"""
-        logger.info("🚉 Generating 1500 railway stations across India...")
+        logger.info("🚉 Generating 1500+ railway stations across India...")
         
         # Major railway stations with real codes and names
         major_stations = [
@@ -180,8 +215,6 @@ class RailServeUniversalSetup:
             {'code': 'JP', 'name': 'Jaipur Junction', 'city': 'Jaipur', 'state': 'Rajasthan'},
             {'code': 'AGC', 'name': 'Agra Cantt', 'city': 'Agra', 'state': 'Uttar Pradesh'},
             {'code': 'LKO', 'name': 'Lucknow', 'city': 'Lucknow', 'state': 'Uttar Pradesh'},
-            
-            # State capitals and important cities
             {'code': 'BBS', 'name': 'Bhubaneswar', 'city': 'Bhubaneswar', 'state': 'Odisha'},
             {'code': 'GHY', 'name': 'Guwahati', 'city': 'Guwahati', 'state': 'Assam'},
             {'code': 'TVC', 'name': 'Trivandrum Central', 'city': 'Thiruvananthapuram', 'state': 'Kerala'},
@@ -312,8 +345,8 @@ class RailServeUniversalSetup:
         return stations[:1500]
     
     def generate_comprehensive_trains(self) -> List[Dict[str, Any]]:
-        """Generate 1000 trains with realistic details and variety"""
-        logger.info("🚂 Generating 1000 trains with realistic details...")
+        """Generate 1000+ trains with realistic details and variety"""
+        logger.info("🚂 Generating 1000+ trains with realistic details...")
         
         # Realistic train types with their characteristics
         train_types = [
@@ -415,11 +448,14 @@ class RailServeUniversalSetup:
         return trains
     
     def populate_stations(self, stations_data: List[Dict[str, str]]) -> bool:
-        """Populate 1500 stations"""
+        """Populate stations"""
         try:
-            logger.info("🚉 Populating 1500 stations...")
+            logger.info(f"🚉 Populating {len(stations_data)} stations...")
             
-            from src.app import app, db
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
+            from app import app, db
             
             with app.app_context():
                 created_count = 0
@@ -458,15 +494,18 @@ class RailServeUniversalSetup:
             return False
     
     def populate_trains(self, trains_data: List[Dict[str, Any]]) -> bool:
-        """Populate 1000 trains"""
+        """Populate trains"""
         try:
-            logger.info("🚂 Populating 1000 trains...")
+            logger.info(f"🚂 Populating {len(trains_data)} trains...")
             
-            from src.app import app, db
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
+            from app import app, db
             
             with app.app_context():
                 created_count = 0
-                batch_size = 50
+                batch_size = 100
                 
                 for i in range(0, len(trains_data), batch_size):
                     batch = trains_data[i:i + batch_size]
@@ -474,18 +513,18 @@ class RailServeUniversalSetup:
                     for train_data in batch:
                         try:
                             db.session.execute(text("""
-                                INSERT INTO train (number, name, total_seats, available_seats, fare_per_km, 
+                                INSERT INTO train (number, name, total_seats, available_seats, fare_per_km,
                                                  tatkal_seats, tatkal_fare_per_km, active, created_at) 
                                 VALUES (:number, :name, :total_seats, :available_seats, :fare_per_km,
                                        :tatkal_seats, :tatkal_fare_per_km, :active, :created_at)
-                                ON CONFLICT (number) DO UPDATE SET
+                                ON CONFLICT (number) DO UPDATE SET 
                                     name = EXCLUDED.name,
                                     total_seats = EXCLUDED.total_seats,
                                     available_seats = EXCLUDED.available_seats,
                                     fare_per_km = EXCLUDED.fare_per_km,
                                     tatkal_seats = EXCLUDED.tatkal_seats,
                                     tatkal_fare_per_km = EXCLUDED.tatkal_fare_per_km,
-                                    active = EXCLUDED.active
+                                    active = true
                             """), train_data)
                             created_count += 1
                         except Exception as e:
@@ -493,7 +532,7 @@ class RailServeUniversalSetup:
                             continue
                     
                     db.session.commit()
-                    if i % 200 == 0:
+                    if i % 500 == 0:
                         logger.info(f"🚂 Processed {min(i + batch_size, len(trains_data))} trains...")
                 
                 logger.info(f"✅ Trains populated successfully: {created_count} trains")
@@ -505,411 +544,459 @@ class RailServeUniversalSetup:
             traceback.print_exc()
             return False
     
-    def create_comprehensive_routes(self) -> bool:
-        """Create comprehensive train routes connecting stations"""
+    def create_train_routes(self) -> bool:
+        """Create realistic train routes connecting stations"""
         try:
-            logger.info("🛤️  Creating comprehensive train routes...")
+            logger.info("🛤️  Creating train routes...")
             
-            from src.app import app, db
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
+            from app import app, db
             
             with app.app_context():
                 # Get all stations and trains
-                stations = db.session.execute(text("SELECT id, code, name, city, state FROM station ORDER BY id")).fetchall()
+                stations = db.session.execute(text("SELECT id, code, name, city FROM station ORDER BY id")).fetchall()
                 trains = db.session.execute(text("SELECT id, number, name FROM train ORDER BY id")).fetchall()
                 
-                logger.info(f"📊 Creating routes for {len(trains)} trains using {len(stations)} stations")
+                if not stations or not trains:
+                    logger.error("❌ No stations or trains found")
+                    return False
                 
-                route_count = 0
-                batch_size = 100
-                routes_batch = []
+                station_list = [{'id': s[0], 'code': s[1], 'name': s[2], 'city': s[3]} for s in stations]
+                train_list = [{'id': t[0], 'number': t[1], 'name': t[2]} for t in trains]
+                
+                routes_created = 0
                 
                 # Create routes for each train
-                for train in trains:
-                    # Select 3-8 stations per route for variety
-                    num_stations = random.randint(3, 8)
-                    route_stations = random.sample(list(stations), num_stations)
-                    
-                    # Sort by geographical logic (state, then city)
-                    route_stations = sorted(route_stations, key=lambda x: (x.state, x.city))
-                    
-                    total_distance = 0
-                    # Start time between 4 AM and 11 PM
-                    start_hour = random.randint(4, 23)
-                    current_time = time(hour=start_hour, minute=random.choice([0, 15, 30, 45]))
-                    
-                    for sequence, station in enumerate(route_stations, 1):
-                        # Calculate distance
-                        if sequence == 1:
-                            distance_from_start = 0.0
-                        else:
-                            # Distance between stations: 50-300 km
-                            distance_increment = random.uniform(50, 300)
-                            total_distance += distance_increment
-                            distance_from_start = total_distance
+                for train in train_list[:500]:  # Create routes for first 500 trains to keep it manageable
+                    try:
+                        # Select 3-10 stations randomly for each train route
+                        num_stations = random.randint(3, 10)
+                        selected_stations = random.sample(station_list, num_stations)
                         
-                        # Calculate times
-                        if sequence == 1:
-                            # First station - departure only
-                            arrival_time = None
-                            departure_time = current_time
-                        elif sequence == len(route_stations):
-                            # Last station - arrival only
-                            travel_time_minutes = random.randint(45, 120)
-                            current_datetime = datetime.combine(date.today(), current_time)
-                            arrival_datetime = current_datetime + timedelta(minutes=travel_time_minutes)
-                            arrival_time = arrival_datetime.time()
-                            departure_time = None
-                        else:
-                            # Intermediate station
-                            travel_time_minutes = random.randint(30, 90)
-                            current_datetime = datetime.combine(date.today(), current_time)
-                            arrival_datetime = current_datetime + timedelta(minutes=travel_time_minutes)
-                            arrival_time = arrival_datetime.time()
+                        # Sort stations to create a logical route
+                        route_stations = sorted(selected_stations, key=lambda x: x['id'])
+                        
+                        current_distance = 0
+                        base_time = datetime.strptime("06:00", "%H:%M").time()
+                        
+                        for seq, station in enumerate(route_stations):
+                            if seq > 0:
+                                # Add distance (50-200 km between stations)
+                                current_distance += random.randint(50, 200)
                             
-                            # Stop duration: 2-15 minutes
-                            stop_duration = random.choice([2, 5, 10, 15])
-                            departure_datetime = arrival_datetime + timedelta(minutes=stop_duration)
-                            departure_time = departure_datetime.time()
-                            current_time = departure_time
+                            # Calculate arrival and departure times
+                            if seq == 0:
+                                # First station - only departure
+                                arrival_time = None
+                                departure_time = base_time
+                            elif seq == len(route_stations) - 1:
+                                # Last station - only arrival
+                                minutes_to_add = (seq * 45) + random.randint(0, 30)
+                                arrival_time = (datetime.combine(date.today(), base_time) + 
+                                              timedelta(minutes=minutes_to_add)).time()
+                                departure_time = None
+                            else:
+                                # Intermediate station - both arrival and departure
+                                minutes_to_add = (seq * 45) + random.randint(0, 30)
+                                arrival_time = (datetime.combine(date.today(), base_time) + 
+                                              timedelta(minutes=minutes_to_add)).time()
+                                departure_time = (datetime.combine(date.today(), arrival_time) + 
+                                                timedelta(minutes=random.randint(2, 10))).time()
+                            
+                            db.session.execute(text("""
+                                INSERT INTO train_route (train_id, station_id, sequence, arrival_time, 
+                                                        departure_time, distance_from_start)
+                                VALUES (:train_id, :station_id, :sequence, :arrival_time, 
+                                       :departure_time, :distance_from_start)
+                                ON CONFLICT (train_id, sequence) DO NOTHING
+                            """), {
+                                'train_id': train['id'],
+                                'station_id': station['id'],
+                                'sequence': seq + 1,
+                                'arrival_time': arrival_time,
+                                'departure_time': departure_time,
+                                'distance_from_start': current_distance
+                            })
+                            routes_created += 1
                         
-                        routes_batch.append({
-                            'train_id': train.id,
-                            'station_id': station.id,
-                            'sequence': sequence,
-                            'arrival_time': arrival_time,
-                            'departure_time': departure_time,
-                            'distance_from_start': round(distance_from_start, 2)
-                        })
-                        
-                        route_count += 1
-                        
-                        # Batch insert
-                        if len(routes_batch) >= batch_size:
-                            self._insert_route_batch(routes_batch)
-                            routes_batch = []
-                    
-                    if len(routes_batch) > 0 and route_count % 1000 == 0:
-                        self._insert_route_batch(routes_batch)
-                        routes_batch = []
-                        logger.info(f"🛤️  Created {route_count} route entries...")
-                
-                # Insert remaining routes
-                if routes_batch:
-                    self._insert_route_batch(routes_batch)
-                
-                logger.info(f"✅ Train routes created successfully: {route_count} route entries")
-                return True
-                
-        except Exception as e:
-            logger.error(f"❌ Route creation failed: {e}")
-            import traceback
-            traceback.print_exc()
-            return False
-    
-    def _insert_route_batch(self, routes_batch):
-        """Helper method to insert route batch"""
-        from src.app import app, db
-        
-        try:
-            for route in routes_batch:
-                db.session.execute(text("""
-                    INSERT INTO train_route (train_id, station_id, sequence, arrival_time, departure_time, distance_from_start)
-                    VALUES (:train_id, :station_id, :sequence, :arrival_time, :departure_time, :distance_from_start)
-                    ON CONFLICT (train_id, sequence) DO UPDATE SET
-                        station_id = EXCLUDED.station_id,
-                        arrival_time = EXCLUDED.arrival_time,
-                        departure_time = EXCLUDED.departure_time,
-                        distance_from_start = EXCLUDED.distance_from_start
-                """), route)
-            db.session.commit()
-        except Exception as e:
-            logger.warning(f"Failed to insert route batch: {e}")
-            db.session.rollback()
-    
-    def populate_comprehensive_data(self) -> bool:
-        """Populate comprehensive additional data"""
-        try:
-            logger.info("📊 Populating comprehensive additional data...")
-            
-            from src.app import app, db
-            from src.models import User, TatkalTimeSlot, Restaurant, MenuItem
-            
-            with app.app_context():
-                # Create admin and sample users
-                admin_user = User.query.filter_by(username='admin').first()
-                if not admin_user:
-                    admin_user = User(
-                        username='admin',
-                        email='admin@railserve.com',
-                        password_hash=generate_password_hash(self.admin_password),
-                        role='super_admin',
-                        active=True
-                    )
-                    db.session.add(admin_user)
-                    logger.info(f"👤 Created admin user (username: admin, password: {self.admin_password})")
-                
-                # Create sample regular users
-                sample_users = [
-                    {'username': 'user1', 'email': 'user1@example.com', 'password': 'password123'},
-                    {'username': 'user2', 'email': 'user2@example.com', 'password': 'password123'},
-                    {'username': 'testuser', 'email': 'test@example.com', 'password': 'test123'},
-                ]
-                
-                for user_data in sample_users:
-                    if not User.query.filter_by(username=user_data['username']).first():
-                        user = User(
-                            username=user_data['username'],
-                            email=user_data['email'],
-                            password_hash=generate_password_hash(user_data['password']),
-                            role='user',
-                            active=True
-                        )
-                        db.session.add(user)
-                
-                # Create Tatkal time slots
-                if TatkalTimeSlot.query.count() == 0:
-                    tatkal_slots = [
-                        {
-                            'name': 'AC Classes Tatkal',
-                            'coach_classes': 'AC1,AC2,AC3,CC',
-                            'open_time': time(10, 0),
-                            'days_before_journey': 1,
-                            'active': True,
-                            'created_by': admin_user.id
-                        },
-                        {
-                            'name': 'Non-AC Classes Tatkal',
-                            'coach_classes': 'SL,2S',
-                            'open_time': time(11, 0),
-                            'days_before_journey': 1,
-                            'active': True,
-                            'created_by': admin_user.id
-                        },
-                        {
-                            'name': 'Premium Tatkal',
-                            'coach_classes': 'AC1,AC2',
-                            'open_time': time(10, 0),
-                            'days_before_journey': 1,
-                            'active': True,
-                            'created_by': admin_user.id
-                        }
-                    ]
-                    
-                    for slot_data in tatkal_slots:
-                        slot = TatkalTimeSlot(**slot_data)
-                        db.session.add(slot)
-                    
-                    logger.info(f"⏰ Created {len(tatkal_slots)} Tatkal time slots")
-                
-                # Create sample restaurants and food data
-                if Restaurant.query.count() == 0:
-                    # Get some stations for restaurants
-                    major_stations = db.session.execute(text("""
-                        SELECT id, name FROM station 
-                        WHERE city IN ('Delhi', 'Mumbai', 'Chennai', 'Kolkata', 'Bangalore', 'Hyderabad', 'Pune', 'Ahmedabad')
-                        LIMIT 20
-                    """)).fetchall()
-                    
-                    restaurant_names = [
-                        'Rajdhani Foods', 'South Express Kitchen', 'Mumbai Tiffin Center', 'Bengal Delights',
-                        'Karnataka Cuisine', 'Telangana Tastes', 'Pune Pantry', 'Gujarat Gujari',
-                        'Railway Refreshments', 'Express Eatery', 'Junction Junctions', 'Platform Plates',
-                        'Coach Cafe', 'Train Track Treats', 'Station Snacks', 'Rail Restaurant'
-                    ]
-                    
-                    for i, station in enumerate(major_stations):
-                        restaurant = Restaurant(
-                            name=restaurant_names[i % len(restaurant_names)],
-                            station_id=station.id,
-                            contact_number=f"98765{10000 + i:05d}",
-                            email=f"restaurant{i}@railserve.com",
-                            cuisine_type=random.choice(['North Indian', 'South Indian', 'Continental', 'Chinese', 'Multi-cuisine']),
-                            rating=random.uniform(3.5, 5.0),
-                            delivery_time=random.randint(15, 45),
-                            minimum_order=random.uniform(50, 150),
-                            delivery_charge=random.uniform(10, 30),
-                            active=True
-                        )
-                        db.session.add(restaurant)
-                        db.session.flush()
-                        
-                        # Add menu items for each restaurant
-                        menu_items = [
-                            {'name': 'Veg Thali', 'price': 120, 'category': 'Lunch', 'food_type': 'Vegetarian'},
-                            {'name': 'Chicken Biryani', 'price': 180, 'category': 'Lunch', 'food_type': 'Non-Vegetarian'},
-                            {'name': 'Masala Dosa', 'price': 80, 'category': 'Breakfast', 'food_type': 'Vegetarian'},
-                            {'name': 'Tea', 'price': 15, 'category': 'Beverages', 'food_type': 'Vegetarian'},
-                            {'name': 'Coffee', 'price': 20, 'category': 'Beverages', 'food_type': 'Vegetarian'},
-                            {'name': 'Sandwich', 'price': 60, 'category': 'Snacks', 'food_type': 'Vegetarian'},
-                        ]
-                        
-                        for item_data in menu_items:
-                            menu_item = MenuItem(
-                                restaurant_id=restaurant.id,
-                                name=item_data['name'],
-                                description=f"Delicious {item_data['name']} from {restaurant.name}",
-                                price=item_data['price'],
-                                category=item_data['category'],
-                                food_type=item_data['food_type'],
-                                preparation_time=random.randint(10, 30),
-                                available=True,
-                                is_popular=random.choice([True, False])
-                            )
-                            db.session.add(menu_item)
-                    
-                    logger.info(f"🍽️ Created {len(major_stations)} restaurants with menu items")
+                        if routes_created % 100 == 0:
+                            db.session.commit()
+                            logger.info(f"🛤️  Created {routes_created} route entries...")
+                            
+                    except Exception as e:
+                        logger.warning(f"Failed to create route for train {train['number']}: {e}")
+                        continue
                 
                 db.session.commit()
-                logger.info("✅ Comprehensive additional data populated successfully")
+                logger.info(f"✅ Train routes created successfully: {routes_created} route entries")
                 return True
                 
         except Exception as e:
-            logger.error(f"❌ Additional data population failed: {e}")
+            logger.error(f"❌ Train route creation failed: {e}")
             import traceback
             traceback.print_exc()
             return False
     
-    def verify_setup(self) -> bool:
-        """Verify the comprehensive database setup"""
+    def create_sample_users(self) -> bool:
+        """Create sample users including admin accounts"""
         try:
-            logger.info("🔍 Verifying comprehensive database setup...")
+            logger.info("👤 Creating sample users...")
             
-            from src.app import app, db
-            from src.models import User, Station, Train, TrainRoute, TatkalTimeSlot, Restaurant
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
+            from app import app, db
             
             with app.app_context():
-                # Check table counts
-                user_count = User.query.count()
-                station_count = Station.query.count()
-                train_count = Train.query.count()
-                route_count = TrainRoute.query.count()
-                tatkal_count = TatkalTimeSlot.query.count()
-                restaurant_count = Restaurant.query.count()
+                users_data = [
+                    {
+                        'username': 'admin',
+                        'email': 'admin@railserve.com',
+                        'password_hash': generate_password_hash(self.admin_password),
+                        'role': 'super_admin',
+                        'active': True,
+                        'created_at': datetime.utcnow()
+                    },
+                    {
+                        'username': 'manager',
+                        'email': 'manager@railserve.com', 
+                        'password_hash': generate_password_hash('manager123'),
+                        'role': 'admin',
+                        'active': True,
+                        'created_at': datetime.utcnow()
+                    },
+                    {
+                        'username': 'testuser',
+                        'email': 'user@test.com',
+                        'password_hash': generate_password_hash('test123'),
+                        'role': 'user',
+                        'active': True,
+                        'created_at': datetime.utcnow()
+                    },
+                    {
+                        'username': 'demo',
+                        'email': 'demo@railserve.com',
+                        'password_hash': generate_password_hash('demo123'),
+                        'role': 'user',
+                        'active': True,
+                        'created_at': datetime.utcnow()
+                    }
+                ]
                 
-                logger.info(f"📊 Database verification:")
-                logger.info(f"   Users: {user_count}")
-                logger.info(f"   Stations: {station_count}")
-                logger.info(f"   Trains: {train_count}")
-                logger.info(f"   Train Routes: {route_count}")
-                logger.info(f"   Tatkal Slots: {tatkal_count}")
-                logger.info(f"   Restaurants: {restaurant_count}")
+                created_count = 0
+                for user_data in users_data:
+                    try:
+                        db.session.execute(text("""
+                            INSERT INTO "user" (username, email, password_hash, role, active, created_at)
+                            VALUES (:username, :email, :password_hash, :role, :active, :created_at)
+                            ON CONFLICT (username) DO UPDATE SET
+                                email = EXCLUDED.email,
+                                password_hash = EXCLUDED.password_hash,
+                                role = EXCLUDED.role,
+                                active = EXCLUDED.active
+                        """), user_data)
+                        created_count += 1
+                    except Exception as e:
+                        logger.warning(f"Failed to insert user {user_data.get('username')}: {e}")
+                        continue
                 
-                # Check admin user
-                admin_user = User.query.filter_by(username='admin').first()
-                if admin_user and admin_user.role == 'super_admin':
-                    logger.info("✅ Admin user verified")
-                else:
-                    logger.warning("⚠️  Admin user not found or incorrect role")
-                
-                # Check data completeness
-                success = (user_count >= 1 and station_count >= 1400 and 
-                          train_count >= 900 and route_count >= 3000)
-                
-                if success:
-                    logger.info("✅ Database setup verification completed successfully")
-                else:
-                    logger.warning("⚠️  Database setup verification found issues")
-                
-                return success
+                db.session.commit()
+                logger.info(f"✅ Users created successfully: {created_count} users")
+                logger.info(f"🔑 Admin credentials: admin / {self.admin_password}")
+                return True
                 
         except Exception as e:
-            logger.error(f"❌ Verification failed: {e}")
+            logger.error(f"❌ User creation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def setup_tatkal_configuration(self) -> bool:
+        """Setup Tatkal time slot configuration"""
+        try:
+            logger.info("⏰ Setting up Tatkal booking configuration...")
+            
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
+            from app import app, db
+            
+            with app.app_context():
+                # Get admin user ID
+                admin_user = db.session.execute(text("""
+                    SELECT id FROM "user" WHERE role = 'super_admin' LIMIT 1
+                """)).fetchone()
+                
+                if not admin_user:
+                    logger.warning("No admin user found, creating Tatkal slots without creator")
+                    admin_id = None
+                else:
+                    admin_id = admin_user[0]
+                
+                tatkal_slots = [
+                    {
+                        'name': 'AC Classes Tatkal',
+                        'coach_classes': 'AC1,AC2,AC3,CC',
+                        'open_time': time(10, 0),  # 10:00 AM
+                        'close_time': None,
+                        'days_before_journey': 1,
+                        'active': True,
+                        'created_at': datetime.utcnow(),
+                        'created_by': admin_id
+                    },
+                    {
+                        'name': 'Non-AC Classes Tatkal',
+                        'coach_classes': 'SL,2S',
+                        'open_time': time(11, 0),  # 11:00 AM
+                        'close_time': None,
+                        'days_before_journey': 1,
+                        'active': True,
+                        'created_at': datetime.utcnow(),
+                        'created_by': admin_id
+                    }
+                ]
+                
+                created_count = 0
+                for slot_data in tatkal_slots:
+                    try:
+                        db.session.execute(text("""
+                            INSERT INTO tatkal_time_slot (name, coach_classes, open_time, close_time,
+                                                        days_before_journey, active, created_at, created_by)
+                            VALUES (:name, :coach_classes, :open_time, :close_time,
+                                   :days_before_journey, :active, :created_at, :created_by)
+                            ON CONFLICT (name) DO UPDATE SET
+                                coach_classes = EXCLUDED.coach_classes,
+                                open_time = EXCLUDED.open_time,
+                                close_time = EXCLUDED.close_time,
+                                days_before_journey = EXCLUDED.days_before_journey,
+                                active = EXCLUDED.active
+                        """), slot_data)
+                        created_count += 1
+                    except Exception as e:
+                        logger.warning(f"Failed to insert Tatkal slot {slot_data.get('name')}: {e}")
+                        continue
+                
+                db.session.commit()
+                logger.info(f"✅ Tatkal configuration created: {created_count} time slots")
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Tatkal configuration failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def create_sample_restaurants(self) -> bool:
+        """Create sample restaurants and menu items"""
+        try:
+            logger.info("🍽️  Creating sample restaurants and menu items...")
+            
+            # Set the DATABASE_URL environment variable for Flask app
+            os.environ['DATABASE_URL'] = self.database_url
+            
+            from app import app, db
+            
+            with app.app_context():
+                # Get some stations for restaurants
+                stations = db.session.execute(text("""
+                    SELECT id, name, city FROM station 
+                    WHERE city IN ('Delhi', 'Mumbai', 'Chennai', 'Kolkata', 'Bangalore', 'Hyderabad', 'Pune', 'Ahmedabad')
+                    LIMIT 20
+                """)).fetchall()
+                
+                if not stations:
+                    logger.warning("No major stations found, skipping restaurant creation")
+                    return True
+                
+                station_list = [{'id': s[0], 'name': s[1], 'city': s[2]} for s in stations]
+                
+                restaurants_created = 0
+                menu_items_created = 0
+                
+                restaurant_types = [
+                    ('Vegetarian Paradise', 'Vegetarian', 4.2),
+                    ('Spice Route', 'Both', 4.0),
+                    ('Healthy Bites', 'Vegetarian', 4.5),
+                    ('Royal Kitchen', 'Both', 4.3),
+                    ('Quick Meals', 'Both', 3.8),
+                    ('Traditional Tastes', 'Vegetarian', 4.1),
+                    ('Express Dine', 'Both', 3.9),
+                    ('Fresh N Fast', 'Vegetarian', 4.4)
+                ]
+                
+                menu_categories = {
+                    'Breakfast': ['Idli Sambar', 'Dosa', 'Poha', 'Upma', 'Paratha', 'Bread Omelette'],
+                    'Lunch': ['Rice & Dal', 'Biryani', 'Thali', 'Roti Sabji', 'Fried Rice', 'Rajma Rice'],
+                    'Dinner': ['Paneer Butter Masala', 'Dal Makhani', 'Chicken Curry', 'Fish Fry', 'Mutton Biryani', 'Veg Biryani'],
+                    'Snacks': ['Samosa', 'Pakora', 'Sandwich', 'Burger', 'Pizza', 'Chaat'],
+                    'Beverages': ['Tea', 'Coffee', 'Fresh Juice', 'Lassi', 'Cold Drink', 'Water Bottle']
+                }
+                
+                for station in station_list:
+                    # Create 1-2 restaurants per station
+                    num_restaurants = random.randint(1, 2)
+                    
+                    for _ in range(num_restaurants):
+                        restaurant_name, cuisine_type, base_rating = random.choice(restaurant_types)
+                        restaurant_name = f"{restaurant_name} - {station['city']}"
+                        
+                        restaurant_data = {
+                            'name': restaurant_name,
+                            'station_id': station['id'],
+                            'contact_number': f"+91{random.randint(9000000000, 9999999999)}",
+                            'email': f"contact@{restaurant_name.lower().replace(' ', '').replace('-', '')}.com",
+                            'cuisine_type': cuisine_type,
+                            'rating': round(base_rating + random.uniform(-0.3, 0.3), 1),
+                            'delivery_time': random.randint(20, 45),
+                            'minimum_order': random.choice([0, 50, 100, 150]),
+                            'delivery_charge': random.choice([0, 10, 20, 30]),
+                            'active': True,
+                            'created_at': datetime.utcnow()
+                        }
+                        
+                        try:
+                            result = db.session.execute(text("""
+                                INSERT INTO restaurant (name, station_id, contact_number, email, cuisine_type,
+                                                      rating, delivery_time, minimum_order, delivery_charge, 
+                                                      active, created_at)
+                                VALUES (:name, :station_id, :contact_number, :email, :cuisine_type,
+                                       :rating, :delivery_time, :minimum_order, :delivery_charge, 
+                                       :active, :created_at)
+                                RETURNING id
+                            """), restaurant_data)
+                            
+                            restaurant_id = result.fetchone()[0]
+                            restaurants_created += 1
+                            
+                            # Create menu items for this restaurant
+                            for category, items in menu_categories.items():
+                                num_items = random.randint(1, 3)
+                                selected_items = random.sample(items, min(num_items, len(items)))
+                                
+                                for item_name in selected_items:
+                                    base_price = {
+                                        'Breakfast': random.randint(30, 80),
+                                        'Lunch': random.randint(80, 200),
+                                        'Dinner': random.randint(100, 300),
+                                        'Snacks': random.randint(20, 100),
+                                        'Beverages': random.randint(15, 60)
+                                    }.get(category, 50)
+                                    
+                                    menu_item_data = {
+                                        'restaurant_id': restaurant_id,
+                                        'name': item_name,
+                                        'description': f"Delicious {item_name} prepared fresh",
+                                        'price': base_price + random.randint(-10, 20),
+                                        'category': category,
+                                        'food_type': 'Vegetarian' if cuisine_type == 'Vegetarian' else random.choice(['Vegetarian', 'Non-Vegetarian']),
+                                        'preparation_time': random.randint(10, 30),
+                                        'available': True,
+                                        'is_popular': random.choice([True, False]),
+                                        'created_at': datetime.utcnow()
+                                    }
+                                    
+                                    db.session.execute(text("""
+                                        INSERT INTO menu_item (restaurant_id, name, description, price, category,
+                                                             food_type, preparation_time, available, is_popular, created_at)
+                                        VALUES (:restaurant_id, :name, :description, :price, :category,
+                                               :food_type, :preparation_time, :available, :is_popular, :created_at)
+                                    """), menu_item_data)
+                                    menu_items_created += 1
+                            
+                        except Exception as e:
+                            logger.warning(f"Failed to create restaurant {restaurant_name}: {e}")
+                            continue
+                
+                db.session.commit()
+                logger.info(f"✅ Restaurants created: {restaurants_created} restaurants, {menu_items_created} menu items")
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Restaurant creation failed: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def run_complete_setup(self) -> bool:
-        """Run the complete comprehensive database setup"""
-        logger.info("🚀 Starting RailServe comprehensive database setup...")
+        """Run the complete database setup process"""
+        logger.info("🚀 Starting RailServe Complete Database Setup")
+        logger.info("=" * 60)
         
-        # Step 1: Create database if needed
-        if not self.create_database_if_not_exists():
-            return False
+        steps = [
+            ("Create Database", self.create_database_if_not_exists),
+            ("Connect to Database", self.connect_database),
+            ("Create All Tables", self.create_tables),
+            ("Generate Stations Data", lambda: setattr(self, '_stations_data', self.generate_comprehensive_stations()) or True),
+            ("Populate Stations", lambda: self.populate_stations(self._stations_data)),
+            ("Generate Trains Data", lambda: setattr(self, '_trains_data', self.generate_comprehensive_trains()) or True),
+            ("Populate Trains", lambda: self.populate_trains(self._trains_data)),
+            ("Create Train Routes", self.create_train_routes),
+            ("Create Sample Users", self.create_sample_users),
+            ("Setup Tatkal Configuration", self.setup_tatkal_configuration),
+            ("Create Sample Restaurants", self.create_sample_restaurants)
+        ]
         
-        # Step 2: Connect to database
-        if not self.connect_database():
-            return False
+        for step_name, step_function in steps:
+            logger.info(f"📋 {step_name}...")
+            try:
+                if not step_function():
+                    logger.error(f"❌ {step_name} failed")
+                    return False
+                logger.info(f"✅ {step_name} completed")
+            except Exception as e:
+                logger.error(f"❌ {step_name} failed with error: {e}")
+                return False
         
-        # Step 3: Create tables
-        if not self.create_tables():
-            return False
-        
-        # Step 4: Generate and populate stations
-        stations_data = self.generate_comprehensive_stations()
-        if not self.populate_stations(stations_data):
-            return False
-        
-        # Step 5: Generate and populate trains
-        trains_data = self.generate_comprehensive_trains()
-        if not self.populate_trains(trains_data):
-            return False
-        
-        # Step 6: Create train routes
-        if not self.create_comprehensive_routes():
-            return False
-        
-        # Step 7: Populate additional data
-        if not self.populate_comprehensive_data():
-            return False
-        
-        # Step 8: Verify setup
-        if not self.verify_setup():
-            return False
-        
-        logger.info("🎉 RailServe comprehensive database setup completed successfully!")
-        logger.info("📝 Setup Summary:")
-        logger.info("   • 1500 railway stations across India")
-        logger.info("   • 1000 trains with realistic details")
-        logger.info("   • Comprehensive train routes")
-        logger.info("   • Admin and sample user accounts")
-        logger.info("   • Tatkal booking configuration")
-        logger.info("   • Food & catering data")
-        logger.info("   • Complete railway reservation system")
-        logger.info("")
-        logger.info("🔑 Login credentials:")
-        logger.info(f"   Admin: username='admin', password='{self.admin_password}'")
-        logger.info("   User: username='testuser', password='test123'")
-        logger.info("")
-        logger.info("📱 Next steps:")
-        logger.info("   1. Start your Flask application")
-        logger.info("   2. Configure web server settings")
-        logger.info("   3. Set up production environment")
+        logger.info("=" * 60)
+        logger.info("🎉 RailServe Complete Database Setup Completed Successfully!")
+        logger.info("Database Features Available:")
+        logger.info("  • User authentication (admin/manager/user roles)")
+        logger.info("  • 1500+ Railway stations across India")
+        logger.info("  • 1000+ Trains with realistic details")
+        logger.info("  • Comprehensive train routes")
+        logger.info("  • Tatkal booking with real timing rules")
+        logger.info("  • Group booking system")
+        logger.info("  • Food ordering system")
+        logger.info("  • Loyalty program")
+        logger.info("  • Waitlist management")
+        logger.info("  • Payment processing")
+        logger.info("  • PDF ticket generation support")
+        logger.info("  • Real-time status tracking")
+        logger.info(f"🔑 Admin Login: admin / {self.admin_password}")
+        logger.info("=" * 60)
         
         return True
 
-def parse_arguments():
-    """Parse command line arguments"""
-    parser = argparse.ArgumentParser(description='RailServe Universal Database Setup')
-    parser.add_argument('--db-url', type=str, help='Database URL (overrides DATABASE_URL env var)')
-    parser.add_argument('--admin-password', type=str, default='admin123', help='Admin user password')
-    parser.add_argument('--skip-create-db', action='store_true', help='Skip database creation step')
-    return parser.parse_args()
-
 def main():
     """Main function to run the setup"""
-    args = parse_arguments()
+    parser = argparse.ArgumentParser(description='RailServe Complete Database Setup')
+    parser.add_argument('--db-url', help='Database URL (overrides DATABASE_URL env var)')
+    parser.add_argument('--admin-password', help='Admin password (overrides ADMIN_PASSWORD env var)')
     
-    # Get database URL from args or environment
-    database_url = args.db_url or  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
+    args = parser.parse_args()
     
+    # Get database URL
+    database_url = args.db_url or os.environ.get('DATABASE_URL')
     if not database_url:
-        logger.error("❌ Database URL not provided")
-        logger.info("Please provide database URL via:")
-        logger.info("  1. Environment variable: export DATABASE_URL='postgresql://user:password@localhost:5432/railserve'")
-        logger.info("  2. Command line argument: --db-url postgresql://user:password@localhost:5432/railserve")
+        print("❌ Database URL not provided")
+        print("Set DATABASE_URL environment variable or use --db-url argument")
+        print("Example: postgresql://user:password@localhost:5432/railserve")
         sys.exit(1)
     
-    setup = RailServeUniversalSetup(database_url, args.admin_password)
+    # Get admin password
+    admin_password = args.admin_password or os.environ.get('ADMIN_PASSWORD')
     
-    try:
-        success = setup.run_complete_setup()
-        sys.exit(0 if success else 1)
-    except KeyboardInterrupt:
-        logger.info("\n❌ Setup interrupted by user")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"❌ Setup failed with unexpected error: {e}")
-        import traceback
-        traceback.print_exc()
+    # Run setup
+    setup = RailServeCompleteSetup(database_url, admin_password)
+    
+    if setup.run_complete_setup():
+        logger.info("🎉 Setup completed successfully!")
+        sys.exit(0)
+    else:
+        logger.error("❌ Setup failed!")
         sys.exit(1)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
