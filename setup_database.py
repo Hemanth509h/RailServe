@@ -119,6 +119,9 @@ class RailServeCompleteSetup:
     
     def verify_connection(self) -> bool:
         """Verify database connection"""
+        if not self.engine:
+            logger.error("❌ Database engine not initialized")
+            return False
         try:
             with self.engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
@@ -146,6 +149,9 @@ class RailServeCompleteSetup:
     
     def reset_data(self) -> bool:
         """Clear existing data (destructive operation)"""
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             with self.Session() as session:
                 logger.info("🗑️  Clearing existing data...")
@@ -261,6 +267,9 @@ class RailServeCompleteSetup:
     
     def populate_stations(self) -> bool:
         """Populate 1000 stations"""
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             logger.info("🚉 Generating and populating 1000 stations...")
             stations_data = self.generate_station_data()
@@ -319,6 +328,9 @@ class RailServeCompleteSetup:
             ('Jan Sadharan Express', 'JS', 7.00, 220, 9.50, 44)
         ]
         
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             logger.info("🚄 Generating and populating 1000 trains...")
             
@@ -396,6 +408,9 @@ class RailServeCompleteSetup:
     
     def create_train_routes(self) -> bool:
         """Create train routes connecting stations efficiently"""
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             logger.info("🛤️  Creating train routes...")
             
@@ -499,6 +514,9 @@ class RailServeCompleteSetup:
     
     def create_admin_user(self) -> bool:
         """Create admin user for system access"""
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             with self.Session() as session:
                 logger.info("👤 Creating admin user...")
@@ -530,6 +548,9 @@ class RailServeCompleteSetup:
     
     def create_sample_users(self) -> bool:
         """Create sample users for testing"""
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             with self.Session() as session:
                 logger.info("👥 Creating sample users...")
@@ -570,13 +591,16 @@ class RailServeCompleteSetup:
     
     def create_tatkal_timeslots(self) -> bool:
         """Create default Tatkal time slots"""
+        if not self.Session:
+            logger.error("❌ Database session not initialized")
+            return False
         try:
             with self.Session() as session:
                 logger.info("⏰ Creating default Tatkal time slots...")
                 
                 # Check if time slots already exist
                 result = session.execute(text("SELECT COUNT(*) FROM tatkal_time_slot"))
-                count = result.scalar()
+                count = result.scalar() or 0
                 
                 if count > 0:
                     logger.info("ℹ️  Tatkal time slots already exist")

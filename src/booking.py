@@ -336,6 +336,8 @@ def seat_availability():
         return {'error': 'Missing required parameters'}, 400
     
     try:
+        if not journey_date:
+            return {'error': 'Journey date is required'}, 400
         journey_date = datetime.strptime(journey_date, '%Y-%m-%d').date()
     except ValueError:
         return {'error': 'Invalid date format'}, 400
