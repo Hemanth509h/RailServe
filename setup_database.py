@@ -66,7 +66,7 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 # Database connection
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/railserve')
+DATABASE_URL =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
 
 try:
     import psycopg2
