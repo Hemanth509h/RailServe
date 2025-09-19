@@ -1,0 +1,423 @@
+/* Admin Booking Reports Specific Styles */
+
+/* Report Filter Section */
+.filter-form {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.filter-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.filter-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-form label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-form select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.date-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+/* Booking Statistics Cards */
+.booking-stats-section {
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto 1rem;
+    font-size: 1.2rem;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-change {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+}
+
+.stat-change.positive {
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed-text);
+}
+
+.stat-change.negative {
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}
+
+.stat-change.neutral {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+}
+
+/* Charts Section */
+.charts-section {
+    margin-bottom: 2rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+}
+
+.chart-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.chart-card h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.chart-card h4 i {
+    color: var(--accent-color);
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+
+/* Data Tables */
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.reports-table th,
+.reports-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reports-table th {
+    background: var(--bg-table-header);
+    color: var(--text-table-header);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reports-table tr:hover {
+    background: var(--bg-table-hover);
+}
+
+.reports-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Train Performance Table */
+.train-performance {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.performance-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.performance-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.performance-fill.excellent {
+    background: var(--success-color);
+}
+
+.performance-fill.good {
+    background: var(--info-color);
+}
+
+.performance-fill.average {
+    background: var(--warning-color);
+}
+
+.performance-fill.poor {
+    background: var(--danger-color);
+}
+
+.performance-value {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-width: 40px;
+}
+
+/* Revenue Breakdown */
+.revenue-breakdown {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.revenue-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.revenue-item {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.revenue-amount {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: 0.25rem;
+}
+
+.revenue-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Export Actions */
+.export-actions {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.export-actions h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.export-btn:hover {
+    border-color: var(--accent-color);
+    background: rgba(59, 130, 246, 0.1);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+/* Booking Status Distribution */
+.status-distribution {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.status-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-color.confirmed {
+    background: var(--success-color);
+}
+
+.status-color.waitlisted {
+    background: var(--warning-color);
+}
+
+.status-color.cancelled {
+    background: var(--danger-color);
+}
+
+.status-color.pending {
+    background: var(--info-color);
+}
+
+.status-count {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .revenue-items {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons {
+        justify-content: center;
+    }
+    
+    .status-distribution {
+        justify-content: center;
+    }
+    
+    .reports-table {
+        font-size: 0.9rem;
+    }
+    
+    .reports-table th,
+    .reports-table td {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .status-distribution {
+        flex-direction: column;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+}
