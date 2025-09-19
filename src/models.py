@@ -408,14 +408,23 @@ class GroupBooking(db.Model):
     def get_total_amount(self):
         """Calculate total amount for all bookings in the group"""
         try:
-            return sum(booking.total_amount for booking in self.individual_bookings)
+            # Use a database query instead of iterating over relationship
+            from sqlalchemy import func
+            result = db.session.query(func.sum(Booking.total_amount)).filter(
+                Booking.group_booking_id == self.id
+            ).scalar()
+            return result or 0.0
         except:
             return 0.0
     
     def get_confirmed_bookings(self):
         """Get confirmed bookings in the group"""
         try:
-            return [b for b in self.individual_bookings if b.status == 'confirmed']
+            # Use a database query instead of iterating over relationship
+            return Booking.query.filter(
+                Booking.group_booking_id == self.id,
+                Booking.status == 'confirmed'
+            ).all()
         except:
             return []
 

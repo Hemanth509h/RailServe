@@ -57,6 +57,10 @@ class RailServeSetup:
             logger.info("Please create a Replit database and ensure DATABASE_URL is set")
             sys.exit(1)
         
+        # Ensure database_url is a string
+        if self.database_url is None:
+            raise ValueError("DATABASE_URL cannot be None")
+        
         self.engine = None
         self.Session = None
         
@@ -89,7 +93,7 @@ class RailServeSetup:
             logger.info("🏗️  Creating database tables...")
             
             # Import Flask app to trigger table creation
-            from app import app, db
+            from src.app import app, db
             
             with app.app_context():
                 # Drop all tables first (clean slate)
@@ -123,8 +127,8 @@ class RailServeSetup:
         try:
             logger.info("📊 Populating basic reference data...")
             
-            from app import app, db
-            from models import User, Station, Train, TatkalTimeSlot
+            from src.app import app, db
+            from src.models import User, Station, Train, TatkalTimeSlot
             
             with app.app_context():
                 # Create admin user
@@ -221,8 +225,8 @@ class RailServeSetup:
         try:
             logger.info("🔍 Verifying database setup...")
             
-            from app import app, db
-            from models import User, Station, Train, TatkalTimeSlot
+            from src.app import app, db
+            from src.models import User, Station, Train, TatkalTimeSlot
             
             with app.app_context():
                 # Check tables exist and have data
