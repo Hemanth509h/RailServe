@@ -2,6 +2,11 @@
 
 {% block title %}Register - RailServe{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">

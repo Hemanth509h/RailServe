@@ -2,6 +2,10 @@
 
 {% block title %}RailServe - Find Your Train{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="hero-section">
     <canvas id="hero3d" class="hero-3d-canvas"></canvas>
