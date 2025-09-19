@@ -525,9 +525,17 @@ def format_currency(amount):
     return f"₹{amount:,.2f}"
 
 def check_tatkal_availability(journey_date, coach_class='SL'):
-    """Check if Tatkal booking is available for the date and coach class using admin-configured time slots"""
-    from .models import TatkalTimeSlot
+    """Check if Tatkal booking is available for the date and coach class using admin-configured time slots or override"""
+    from .models import TatkalTimeSlot, TatkalOverride
     from datetime import datetime, timedelta, time
+    
+    # First check for admin override - if active, allow Tatkal booking anytime
+    active_override = TatkalOverride.get_active_override()
+    if active_override and active_override.is_valid():
+        # Check if override applies to this coach class
+        override_classes = active_override.get_coach_classes_list()
+        if not override_classes or coach_class in override_classes:
+            return True
     
     # Get active time slots for the given coach class
     time_slots = TatkalTimeSlot.query.filter_by(active=True).all()
@@ -536,7 +544,7 @@ def check_tatkal_availability(journey_date, coach_class='SL'):
     today = date.today()
     tatkal_open_date = journey_date - timedelta(days=1)
     
-    # If journey date is not tomorrow, tatkal is not available
+    # If journey date is not tomorrow, tatkal is not available (unless overridden)
     if today != tatkal_open_date:
         return False
     

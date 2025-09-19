@@ -79,6 +79,51 @@
                 </div>
             </div>
             
+            <!-- Passenger Details with Seat Assignments -->
+            {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
+            <div class="passenger-confirmation">
+                <h3><i class="fas fa-user-friends"></i> Passenger Details & Seat Allocation</h3>
+                <div class="passengers-grid">
+                    {% for passenger in booking.passengers_details %}
+                    <div class="passenger-card">
+                        <div class="passenger-header">
+                            <div class="passenger-name">
+                                <i class="fas fa-user"></i>
+                                <strong>{{ passenger.name }}</strong>
+                            </div>
+                            <div class="passenger-meta">
+                                <span class="age-gender">{{ passenger.age }}{{ passenger.gender[0] }}</span>
+                                <span class="coach-class">{{ passenger.coach_class }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if passenger.seat_number %}
+                        <div class="seat-allocation">
+                            <div class="seat-info">
+                                <i class="fas fa-chair"></i>
+                                <span class="seat-label">Seat:</span>
+                                <span class="seat-number">{{ passenger.seat_number }}</span>
+                            </div>
+                            {% if passenger.berth_type %}
+                            <div class="berth-info">
+                                <i class="fas fa-bed"></i>
+                                <span class="berth-label">Berth:</span>
+                                <span class="berth-type">{{ passenger.berth_type }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="seat-allocation pending">
+                            <i class="fas fa-clock"></i>
+                            <span class="pending-text">Seat assignment pending</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="next-steps">
                 <h3><i class="fas fa-info-circle"></i> What's Next?</h3>
                 
@@ -127,6 +172,163 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Passenger Confirmation Section */
+.passenger-confirmation {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+    border: 2px solid #28a745;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.passenger-confirmation h3 {
+    color: #155724;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #28a745;
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+.passengers-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.passenger-card {
+    background: white;
+    border: 1px solid #d4edda;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(40,167,69,0.1);
+}
+
+.passenger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.passenger-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.passenger-name strong {
+    color: #155724;
+    font-size: 1rem;
+}
+
+.passenger-meta {
+    display: flex;
+    gap: 8px;
+}
+
+.age-gender, .coach-class {
+    background: #6c757d;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.coach-class {
+    background: #17a2b8;
+}
+
+.seat-allocation {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 8px 12px;
+    background: #d1f2eb;
+    border-radius: 6px;
+    border-left: 4px solid #28a745;
+}
+
+.seat-allocation.pending {
+    background: #fef3cd;
+    border-left-color: #ffc107;
+    color: #856404;
+}
+
+.seat-info, .berth-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.seat-label, .berth-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.seat-number {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+}
+
+.berth-type {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.pending-text {
+    color: #856404;
+    font-weight: 500;
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+    .passengers-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .passenger-confirmation {
+    background: linear-gradient(135deg, #1a2c1a 0%, #0f1b0f 100%);
+    border-color: #48bb78;
+}
+
+[data-theme="dark"] .passenger-confirmation h3 {
+    color: #9ae6b4;
+    border-bottom-color: #48bb78;
+}
+
+[data-theme="dark"] .passenger-card {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .passenger-name strong {
+    color: #9ae6b4;
+}
+
+[data-theme="dark"] .seat-allocation {
+    background: #2d3748;
+}
+
+[data-theme="dark"] .seat-allocation.pending {
+    background: #2d2017;
+}
+</style>
+
 <script>
     // Auto-format PNR display
     document.addEventListener('DOMContentLoaded', function() {

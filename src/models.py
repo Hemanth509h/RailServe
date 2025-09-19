@@ -498,3 +498,38 @@ class NotificationPreferences(db.Model):
     
     def __init__(self, **kwargs):
         super(NotificationPreferences, self).__init__(**kwargs)
+
+class TatkalOverride(db.Model):
+    """Admin override control for Tatkal booking availability"""
+    id = db.Column(db.Integer, primary_key=True)
+    is_enabled = db.Column(db.Boolean, default=False)
+    enabled_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    enabled_at = db.Column(db.DateTime, default=datetime.utcnow)
+    override_message = db.Column(db.String(200), default='Tatkal booking enabled by admin')
+    coach_classes = db.Column(db.String(200))  # Comma-separated list of classes, empty means all
+    valid_until = db.Column(db.DateTime)  # Optional expiry time
+    
+    # Relationships
+    admin_user = db.relationship('User', foreign_keys=[enabled_by])
+    
+    def __init__(self, **kwargs):
+        super(TatkalOverride, self).__init__(**kwargs)
+    
+    def get_coach_classes_list(self):
+        """Get list of coach classes from comma-separated string"""
+        if self.coach_classes:
+            return [cls.strip() for cls in self.coach_classes.split(',') if cls.strip()]
+        return []  # Empty list means all classes
+    
+    def is_valid(self):
+        """Check if override is currently valid"""
+        if not self.is_enabled:
+            return False
+        if self.valid_until and datetime.utcnow() > self.valid_until:
+            return False
+        return True
+    
+    @classmethod
+    def get_active_override(cls):
+        """Get the currently active Tatkal override"""
+        return cls.query.filter_by(is_enabled=True).order_by(cls.enabled_at.desc()).first()
