@@ -123,7 +123,51 @@
                                             <span>{{ booking.payment.payment_method.title() }}</span>
                                         </div>
                                     {% endif %}
+                                    <div class="summary-item">
+                                        <i class="fas fa-train"></i>
+                                        <span>{{ booking.coach_class }} Class</span>
+                                    </div>
+                                    {% if booking.booking_type == 'tatkal' %}
+                                        <div class="summary-item tatkal-badge">
+                                            <i class="fas fa-bolt"></i>
+                                            <span>Tatkal</span>
+                                        </div>
+                                    {% endif %}
                                 </div>
+                                
+                                <!-- Passenger Details with Seat Assignments -->
+                                {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
+                                <div class="passenger-details">
+                                    <h5><i class="fas fa-user-friends"></i> Passenger Details & Seat Allocation</h5>
+                                    <div class="passengers-list">
+                                        {% for passenger in booking.passengers_details %}
+                                        <div class="passenger-card">
+                                            <div class="passenger-info">
+                                                <div class="passenger-name">
+                                                    <i class="fas fa-user"></i>
+                                                    <strong>{{ passenger.name }}</strong>
+                                                    <span class="age-gender">{{ passenger.age }}{{ passenger.gender[0] }}</span>
+                                                </div>
+                                                {% if passenger.seat_number %}
+                                                <div class="seat-info">
+                                                    <i class="fas fa-chair"></i>
+                                                    <span class="seat-number">{{ passenger.seat_number }}</span>
+                                                    {% if passenger.berth_type %}
+                                                        <span class="berth-type">{{ passenger.berth_type }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% else %}
+                                                <div class="seat-info pending">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>Seat assignment pending</span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
                                 
                                 <div class="booking-actions">
                                     {% if booking.status == 'pending_payment' %}
@@ -178,6 +222,115 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Passenger Details Styling */
+.passenger-details {
+    margin-top: 20px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.passenger-details h5 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.passengers-list {
+    display: grid;
+    gap: 10px;
+}
+
+.passenger-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.passenger-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.passenger-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.passenger-name strong {
+    color: #212529;
+}
+
+.age-gender {
+    background: #6c757d;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.seat-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.seat-info.pending {
+    color: #ffc107;
+}
+
+.seat-number {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.berth-type {
+    background: #17a2b8;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.tatkal-badge {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+    color: white;
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .passenger-details {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .passenger-card {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .passenger-name strong {
+    color: #e2e8f0;
+}
+</style>
+
 <script>
     function filterBookings(status) {
         const bookings = document.querySelectorAll('.booking-item');

@@ -257,6 +257,12 @@ def process_session_payment():
         
         db.session.add(payment)
         
+        # Allocate seats for confirmed bookings
+        if final_status == 'confirmed':
+            from .seat_allocation import SeatAllocator
+            seat_allocator = SeatAllocator()
+            seat_allocator.allocate_seats(booking.id)
+        
         # Handle waitlist if needed
         if final_status == 'waitlisted':
             waitlist_manager = WaitlistManager()

@@ -4,6 +4,7 @@ from .models import Train, Station, Booking, TrainRoute, Passenger, RefundReques
 from .app import db
 from datetime import datetime, date
 from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability, calculate_cancellation_charges, check_seat_availability_detailed, get_live_train_status, check_current_reservation_available, get_waitlist_type
+from .seat_allocation import SeatAllocator
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
 import random

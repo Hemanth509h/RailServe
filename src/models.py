@@ -130,6 +130,8 @@ class Passenger(db.Model):
     id_proof_number = db.Column(db.String(50), nullable=False)
     seat_preference = db.Column(db.String(20), default='No Preference')  # Lower, Middle, Upper, Window, Aisle
     coach_class = db.Column(db.String(10), default='SL')  # AC1, AC2, AC3, SL, 2S, CC
+    seat_number = db.Column(db.String(20))  # Assigned seat number like "S1-45", "B2-32", "A1-18"
+    berth_type = db.Column(db.String(20))  # Lower, Middle, Upper, Side Lower, Side Upper
     
     def __init__(self, **kwargs):
         super(Passenger, self).__init__(**kwargs)
