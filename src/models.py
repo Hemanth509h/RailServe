@@ -405,19 +405,19 @@ class GroupBooking(db.Model):
     def __init__(self, **kwargs):
         super(GroupBooking, self).__init__(**kwargs)
     
-    @property
-    def total_amount(self):
+    def get_total_amount(self):
         """Calculate total amount for all bookings in the group"""
-        if self.individual_bookings:
+        try:
             return sum(booking.total_amount for booking in self.individual_bookings)
-        return 0.0
+        except:
+            return 0.0
     
-    @property
-    def confirmed_bookings(self):
+    def get_confirmed_bookings(self):
         """Get confirmed bookings in the group"""
-        if self.individual_bookings:
+        try:
             return [b for b in self.individual_bookings if b.status == 'confirmed']
-        return []
+        except:
+            return []
 
 class LoyaltyProgram(db.Model):
     """Frequent traveler loyalty program"""
