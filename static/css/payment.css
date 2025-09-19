@@ -1,0 +1,446 @@
+/* Payment Pages Specific Styles */
+
+/* Payment Container */
+.payment-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.payment-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    background: var(--bg-accent);
+    color: var(--text-inverse);
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+}
+
+.payment-header h1 {
+    margin-bottom: 0.5rem;
+    font-size: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.payment-header p {
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+/* Payment Card */
+.payment-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.payment-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.payment-card h3 i {
+    color: var(--accent-color);
+}
+
+/* Booking Summary in Payment */
+.payment-booking-summary {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-row:last-child {
+    border-bottom: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border-color);
+}
+
+.summary-label {
+    color: var(--text-secondary);
+}
+
+.summary-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.total-amount {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* Payment Methods */
+.payment-methods {
+    margin-bottom: 2rem;
+}
+
+.payment-method-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-method {
+    position: relative;
+}
+
+.payment-method input {
+    display: none;
+}
+
+.payment-method label {
+    display: block;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+}
+
+.payment-method label:hover {
+    border-color: var(--accent-color);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.payment-method input:checked + label {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+    color: white;
+}
+
+.payment-method-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.payment-method-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Payment Form */
+.payment-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.payment-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.payment-form label i {
+    color: var(--accent-color);
+    width: 16px;
+}
+
+.payment-form input,
+.payment-form select {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.payment-form input:focus,
+.payment-form select:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+}
+
+/* Card Details */
+.card-details {
+    display: none;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.card-details.show {
+    display: block;
+}
+
+/* UPI Details */
+.upi-details {
+    display: none;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.upi-details.show {
+    display: block;
+}
+
+.upi-qr-section {
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.upi-qr-code {
+    width: 200px;
+    height: 200px;
+    margin: 1rem auto;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: white;
+    padding: 1rem;
+}
+
+/* Security Notice */
+.security-notice {
+    background: var(--security-bg);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.security-notice i {
+    color: var(--security-icon);
+    font-size: 1.2rem;
+    margin-top: 0.25rem;
+}
+
+.security-notice div {
+    color: var(--security-text);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Payment Actions */
+.payment-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.payment-actions .btn {
+    min-width: 150px;
+}
+
+/* Success/Failure Pages */
+.payment-result {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.payment-result-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-result-icon.success {
+    color: var(--success-color);
+}
+
+.payment-result-icon.failure {
+    color: var(--danger-color);
+}
+
+.payment-result h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.payment-result p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.transaction-details {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.transaction-details h4 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.transaction-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Loading Spinner */
+.payment-loading {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+}
+
+.payment-loading.show {
+    display: block;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .payment-container {
+        padding: 1rem;
+    }
+    
+    .payment-method-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-actions {
+        justify-content: stretch;
+    }
+    
+    .payment-actions .btn {
+        flex: 1;
+        min-width: auto;
+    }
+    
+    .payment-header {
+        padding: 2rem;
+    }
+    
+    .payment-header h1 {
+        font-size: 1.8rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-header {
+        padding: 1.5rem;
+    }
+    
+    .payment-card {
+        padding: 1.5rem;
+    }
+    
+    .payment-method-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-actions {
+        flex-direction: column;
+    }
+    
+    .upi-qr-code {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .payment-result {
+        padding: 2rem 1rem;
+    }
+    
+    .payment-result h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .upi-qr-code {
+    background: white;
+    border-color: var(--border-color);
+}
