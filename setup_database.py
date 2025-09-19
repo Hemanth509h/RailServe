@@ -146,7 +146,7 @@ def create_tables(conn):
         DROP TABLE IF EXISTS group_booking CASCADE;
         DROP TABLE IF EXISTS train CASCADE;
         DROP TABLE IF EXISTS station CASCADE;
-        DROP TABLE IF EXISTS user CASCADE;
+        DROP TABLE IF EXISTS "user" CASCADE;
     """)
     
     # Create all tables matching the ORM models exactly
