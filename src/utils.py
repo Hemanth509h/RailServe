@@ -527,16 +527,30 @@ def format_currency(amount):
 def check_tatkal_availability(journey_date, coach_class='SL'):
     """Check if Tatkal booking is available for the date and coach class using admin-configured time slots"""
     from .models import TatkalTimeSlot
-    from datetime import timedelta
+    from datetime import datetime, timedelta, time
     
     # Get active time slots for the given coach class
     time_slots = TatkalTimeSlot.query.filter_by(active=True).all()
     
+    # Real tatkal booking logic - booking opens 1 day before journey at specific times
+    today = date.today()
+    tatkal_open_date = journey_date - timedelta(days=1)
+    
+    # If journey date is not tomorrow, tatkal is not available
+    if today != tatkal_open_date:
+        return False
+    
     if not time_slots:
-        # Fallback to old logic if no time slots configured
-        today = date.today()
-        tatkal_open_date = journey_date - timedelta(days=1)
-        return today >= tatkal_open_date
+        # Fallback to real Indian Railways timing
+        now = datetime.now().time()
+        ac_classes = ['AC1', 'AC2', 'AC3', 'CC']
+        
+        if coach_class in ac_classes:
+            # AC classes: 10:00 AM to 12:00 PM
+            return time(10, 0) <= now <= time(12, 0)
+        else:
+            # Non-AC classes: 11:00 AM to 12:00 PM  
+            return time(11, 0) <= now <= time(12, 0)
     
     # Check if any time slot allows booking for this coach class and journey date
     for time_slot in time_slots:

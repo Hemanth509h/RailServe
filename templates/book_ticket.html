@@ -114,11 +114,14 @@
                             <i class="fas fa-users-cog"></i> Quota
                         </label>
                         <select name="quota" id="quota" required>
-                            <option value="general">General</option>
-                            <option value="ladies">Ladies</option>
-                            <option value="senior">Senior Citizen</option>
-                            <option value="disability">Person with Disability</option>
-                            <option value="tatkal">Tatkal</option>
+                            <option value="general">General Quota</option>
+                            <option value="ladies">Ladies Quota</option>
+                            <option value="senior">Senior Citizen Quota</option>
+                            <option value="disability">Divyangjan Quota</option>
+                            <option value="tatkal">Tatkal Quota</option>
+                            <option value="premium_tatkal">Premium Tatkal</option>
+                            <option value="lower_berth">Lower Berth Quota</option>
+                            <option value="defence">Defence Quota</option>
                         </select>
                     </div>
                     
@@ -139,9 +142,27 @@
                 </div>
                 
                 <!-- Passenger Details Section -->
-                <div class="passenger-section" id="passengerSection" style="display: none;">
+                <div class="passenger-section" id="passengerSection">
                     <h4><i class="fas fa-user-friends"></i> Passenger Details</h4>
-                    <p class="section-help">Please provide details for all passengers as per government ID proof</p>
+                    <p class="section-help">
+                        <i class="fas fa-info-circle text-info"></i>
+                        Please provide details for all passengers as per government ID proof. 
+                        Ensure names match your ID documents exactly.
+                    </p>
+                    <div class="passenger-requirements">
+                        <div class="req-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Names must match ID proof (Aadhaar/PAN/Passport)</span>
+                        </div>
+                        <div class="req-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Age should be accurate as per ID</span>
+                        </div>
+                        <div class="req-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>At least one adult (18+) required for booking</span>
+                        </div>
+                    </div>
                     <div id="passengerContainer">
                         <!-- Passenger details will be dynamically added here -->
                     </div>
@@ -477,6 +498,13 @@
     passengers.addEventListener('change', function() {
         generatePassengerForms();
         showValidationFeedback();
+    });
+    
+    // Auto-generate passenger forms on page load if passengers already selected
+    document.addEventListener('DOMContentLoaded', function() {
+        if (passengers.value) {
+            generatePassengerForms();
+        }
     });
     
     // Handle Tatkal booking flow and warnings
