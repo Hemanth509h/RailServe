@@ -1,0 +1,101 @@
+sqlalchemy.exc.ProgrammingError
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column booking.waitlist_type does not exist
+LINE 2: ...ng_coach_class, booking.status AS booking_status, booking.wa...
+                                                             ^
+
+[SQL: SELECT count(*) AS count_1 
+FROM (SELECT booking.id AS booking_id, booking.pnr AS booking_pnr, booking.user_id AS booking_user_id, booking.train_id AS booking_train_id, booking.from_station_id AS booking_from_station_id, booking.to_station_id AS booking_to_station_id, booking.journey_date AS booking_journey_date, booking.passengers AS booking_passengers, booking.total_amount AS booking_total_amount, booking.booking_type AS booking_booking_type, booking.quota AS booking_quota, booking.coach_class AS booking_coach_class, booking.status AS booking_status, booking.waitlist_type AS booking_waitlist_type, booking.chart_prepared AS booking_chart_prepared, booking.berth_preference AS booking_berth_preference, booking.current_reservation AS booking_current_reservation, booking.booking_date AS booking_booking_date, booking.cancellation_charges AS booking_cancellation_charges 
+FROM booking) AS anon_1]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+Traceback (most recent call last)
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+self.dialect.do_execute(
+^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above exception was the direct cause of the following exception:
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\werkzeug\middleware\proxy_fix.py", line 183, in __call__
+return self.app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\admin.py", line 20, in decorated_function
+return f(*args, **kwargs)
+       ^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\admin.py", line 39, in dashboard
+total_bookings = Booking.query.count()
+                 ^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 3147, in count
+self._legacy_from_self(col).enable_eagerloads(False).scalar()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2836, in scalar
+ret = self.one()
+      ^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2809, in one
+return self._iter().one()  # type: ignore
+       ^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                              
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+return self._execute_internal(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+result: Result[Any] = compile_state_cls.orm_execute_statement(
+                      
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+result = conn.execute(
+         
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+return meth(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+return connection._execute_clauseelement(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+ret = self._execute_context(
+      
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+return self._exec_single_context(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+self._handle_dbapi_exception(
+^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+self.dialect.do_execute(
+^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column booking.waitlist_type does not exist
+LINE 2: ...ng_coach_class, booking.status AS booking_status, booking.wa...
+^
+
+[SQL: SELECT count(*) AS count_1
+FROM (SELECT booking.id AS booking_id, booking.pnr AS booking_pnr, booking.user_id AS booking_user_id, booking.train_id AS booking_train_id, booking.from_station_id AS booking_from_station_id, booking.to_station_id AS booking_to_station_id, booking.journey_date AS booking_journey_date, booking.passengers AS booking_passengers, booking.total_amount AS booking_total_amount, booking.booking_type AS booking_booking_type, booking.quota AS booking_quota, booking.coach_class AS booking_coach_class, booking.status AS booking_status, booking.waitlist_type AS booking_waitlist_type, booking.chart_prepared AS booking_chart_prepared, booking.berth_preference AS booking_berth_preference, booking.current_reservation AS booking_current_reservation, booking.booking_date AS booking_booking_date, booking.cancellation_charges AS booking_cancellation_charges
+FROM booking) AS anon_1]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "Traceback" headline. From the text traceback you can also create a paste of it.
+
