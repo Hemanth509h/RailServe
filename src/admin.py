@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from functools import wraps
-from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot
+from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta
@@ -868,3 +868,85 @@ def booking_reports():
                          date_filter=date_filter,
                          start_date=start_date,
                          end_date=end_date)
+
+# Tatkal Override Management
+
+@admin_bp.route('/tatkal-override')
+@admin_required
+def tatkal_override():
+    """Manage Tatkal booking override settings"""
+    active_override = TatkalOverride.get_active_override()
+    override_history = TatkalOverride.query.order_by(TatkalOverride.enabled_at.desc()).limit(10).all()
+    
+    return render_template('admin/tatkal_override.html', 
+                         active_override=active_override,
+                         override_history=override_history)
+
+@admin_bp.route('/tatkal-override/enable', methods=['POST'])
+@admin_required
+def enable_tatkal_override():
+    """Enable Tatkal booking override"""
+    coach_classes = request.form.get('coach_classes', '').strip()
+    override_message = request.form.get('override_message', 'Tatkal booking enabled by admin').strip()
+    valid_hours = request.form.get('valid_hours', type=int)
+    
+    # Disable any existing active override first
+    existing_overrides = TatkalOverride.query.filter_by(is_enabled=True).all()
+    for override in existing_overrides:
+        override.is_enabled = False
+    
+    # Create new override
+    valid_until = None
+    if valid_hours and valid_hours > 0:
+        valid_until = datetime.utcnow() + timedelta(hours=valid_hours)
+    
+    new_override = TatkalOverride(
+        is_enabled=True,
+        enabled_by=current_user.id,
+        override_message=override_message,
+        coach_classes=coach_classes if coach_classes else None,
+        valid_until=valid_until
+    )
+    
+    db.session.add(new_override)
+    db.session.commit()
+    
+    duration_msg = f" for {valid_hours} hours" if valid_hours else " (no expiry)"
+    classes_msg = f" for classes: {coach_classes}" if coach_classes else " for all coach classes"
+    flash(f'Tatkal booking override enabled{duration_msg}{classes_msg}', 'success')
+    
+    return redirect(url_for('admin.tatkal_override'))
+
+@admin_bp.route('/tatkal-override/disable', methods=['POST'])
+@admin_required
+def disable_tatkal_override():
+    """Disable Tatkal booking override"""
+    active_override = TatkalOverride.get_active_override()
+    if active_override:
+        active_override.is_enabled = False
+        db.session.commit()
+        flash('Tatkal booking override disabled', 'success')
+    else:
+        flash('No active override to disable', 'info')
+    
+    return redirect(url_for('admin.tatkal_override'))
+
+@admin_bp.route('/tatkal-override/status')
+@admin_required
+def tatkal_override_status():
+    """Get current Tatkal override status (AJAX endpoint)"""
+    active_override = TatkalOverride.get_active_override()
+    
+    if active_override and active_override.is_valid():
+        return jsonify({
+            'active': True,
+            'message': active_override.override_message,
+            'enabled_by': active_override.admin_user.username,
+            'enabled_at': active_override.enabled_at.isoformat(),
+            'coach_classes': active_override.coach_classes,
+            'valid_until': active_override.valid_until.isoformat() if active_override.valid_until else None
+        })
+    else:
+        return jsonify({
+            'active': False
+        })

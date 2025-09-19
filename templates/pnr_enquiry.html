@@ -109,6 +109,60 @@
                         </div>
                     </div>
                     
+                    <!-- Passenger Details with Seat Assignments -->
+                    {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
+                        <div class="info-section passenger-section">
+                            <h3><i class="fas fa-user-friends"></i> Passenger Details & Seat Allocation</h3>
+                            <div class="passengers-grid">
+                                {% for passenger in booking.passengers_details %}
+                                <div class="passenger-card">
+                                    <div class="passenger-header">
+                                        <div class="passenger-name">
+                                            <i class="fas fa-user"></i>
+                                            <strong>{{ passenger.name }}</strong>
+                                        </div>
+                                        <div class="passenger-meta">
+                                            <span class="age-gender">{{ passenger.age }}{{ passenger.gender[0] }}</span>
+                                            <span class="coach-class">{{ passenger.coach_class }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if passenger.seat_number %}
+                                    <div class="seat-allocation">
+                                        <div class="seat-info">
+                                            <i class="fas fa-chair"></i>
+                                            <span class="seat-label">Seat:</span>
+                                            <span class="seat-number">{{ passenger.seat_number }}</span>
+                                        </div>
+                                        {% if passenger.berth_type %}
+                                        <div class="berth-info">
+                                            <i class="fas fa-bed"></i>
+                                            <span class="berth-label">Berth:</span>
+                                            <span class="berth-type">{{ passenger.berth_type }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <div class="seat-allocation pending">
+                                        <i class="fas fa-clock"></i>
+                                        <span class="pending-text">Seat assignment pending</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if passenger.id_proof_type and passenger.id_proof_number %}
+                                    <div class="id-info">
+                                        <small class="text-muted">
+                                            <i class="fas fa-id-card"></i>
+                                            {{ passenger.id_proof_type }}: {{ passenger.id_proof_number }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
                     {% if booking.payment %}
                         <div class="info-section">
                             <h3><i class="fas fa-credit-card"></i> Payment Information</h3>
@@ -200,6 +254,187 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+/* Passenger Section Styling */
+.passenger-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.passenger-section h3 {
+    color: #495057;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #28a745;
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+.passengers-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.passenger-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.passenger-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.passenger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.passenger-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.passenger-name strong {
+    color: #212529;
+    font-size: 1rem;
+}
+
+.passenger-meta {
+    display: flex;
+    gap: 8px;
+}
+
+.age-gender, .coach-class {
+    background: #6c757d;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.coach-class {
+    background: #17a2b8;
+}
+
+.seat-allocation {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f1f8ff;
+    border-radius: 6px;
+    border-left: 4px solid #28a745;
+    margin-bottom: 10px;
+}
+
+.seat-allocation.pending {
+    background: #fff8e1;
+    border-left-color: #ffc107;
+    color: #856404;
+}
+
+.seat-info, .berth-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.seat-label, .berth-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.seat-number {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+}
+
+.berth-type {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.pending-text {
+    color: #856404;
+    font-weight: 500;
+}
+
+.id-info {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e9ecef;
+}
+
+.id-info small {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+    .passengers-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .passenger-section {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .passenger-section h3 {
+    color: #e2e8f0;
+    border-bottom-color: #48bb78;
+}
+
+[data-theme="dark"] .passenger-card {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .passenger-name strong {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .seat-allocation {
+    background: #2d3748;
+}
+
+[data-theme="dark"] .seat-allocation.pending {
+    background: #2d2017;
+}
+
+[data-theme="dark"] .id-info {
+    border-top-color: #4a5568;
+}
+</style>
+
 <script>
     // Format PNR input to allow only numbers
     document.getElementById('pnr').addEventListener('input', function(e) {
