@@ -25,7 +25,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload --workers 1 main:app"
+args = "uv run python main.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -34,6 +34,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 40725
+externalPort = 3001
 
 [[ports]]
 localPort = 42945
@@ -45,4 +49,4 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port", "--workers", "2", "main:app"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
