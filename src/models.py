@@ -290,3 +290,92 @@ class ChartPreparation(db.Model):
     
     def __init__(self, **kwargs):
         super(ChartPreparation, self).__init__(**kwargs)
+
+class Restaurant(db.Model):
+    """Food & Catering - Restaurant partners"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    contact_number = db.Column(db.String(15))
+    email = db.Column(db.String(120))
+    cuisine_type = db.Column(db.String(50))  # Vegetarian, Non-Vegetarian, Both
+    rating = db.Column(db.Float, default=4.0)
+    delivery_time = db.Column(db.Integer, default=30)  # minutes
+    minimum_order = db.Column(db.Float, default=0.0)
+    delivery_charge = db.Column(db.Float, default=0.0)
+    active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    station = db.relationship('Station', backref='restaurants')
+    menu_items = db.relationship('MenuItem', backref='restaurant', lazy=True)
+    food_orders = db.relationship('FoodOrder', backref='restaurant', lazy=True)
+    
+    def __init__(self, **kwargs):
+        super(Restaurant, self).__init__(**kwargs)
+
+class MenuItem(db.Model):
+    """Food menu items for restaurants"""
+    id = db.Column(db.Integer, primary_key=True)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500))
+    price = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(50))  # Breakfast, Lunch, Dinner, Snacks, Beverages
+    food_type = db.Column(db.String(20), default='Vegetarian')  # Vegetarian, Non-Vegetarian
+    image_url = db.Column(db.String(200))
+    preparation_time = db.Column(db.Integer, default=15)  # minutes
+    available = db.Column(db.Boolean, default=True)
+    is_popular = db.Column(db.Boolean, default=False)
+    ingredients = db.Column(db.Text)  # JSON string of ingredients
+    nutrition_info = db.Column(db.Text)  # JSON string of nutrition data
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __init__(self, **kwargs):
+        super(MenuItem, self).__init__(**kwargs)
+
+class FoodOrder(db.Model):
+    """Food orders linked to train bookings"""
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
+    delivery_station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    order_number = db.Column(db.String(20), unique=True, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    delivery_charge = db.Column(db.Float, default=0.0)
+    tax_amount = db.Column(db.Float, default=0.0)
+    status = db.Column(db.String(20), default='pending')  # pending, confirmed, preparing, dispatched, delivered, cancelled
+    special_instructions = db.Column(db.Text)
+    delivery_time = db.Column(db.DateTime)
+    contact_number = db.Column(db.String(15), nullable=False)
+    coach_number = db.Column(db.String(10))
+    seat_number = db.Column(db.String(10))
+    payment_status = db.Column(db.String(20), default='pending')  # pending, paid, failed, refunded
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    delivery_station = db.relationship('Station', foreign_keys=[delivery_station_id])
+    items = db.relationship('FoodOrderItem', backref='food_order', lazy=True, cascade='all, delete-orphan')
+    
+    def __init__(self, **kwargs):
+        super(FoodOrder, self).__init__(**kwargs)
+        if not self.order_number:
+            self.order_number = f"FD{datetime.utcnow().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+
+class FoodOrderItem(db.Model):
+    """Individual items in a food order"""
+    id = db.Column(db.Integer, primary_key=True)
+    food_order_id = db.Column(db.Integer, db.ForeignKey('food_order.id'), nullable=False)
+    menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_item.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price = db.Column(db.Float, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    special_request = db.Column(db.String(200))
+    
+    # Relationships
+    menu_item = db.relationship('MenuItem', backref='order_items')
+    
+    def __init__(self, **kwargs):
+        super(FoodOrderItem, self).__init__(**kwargs)

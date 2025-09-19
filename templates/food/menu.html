@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{{ restaurant.name }} Menu - RailServe{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-utensils text-primary me-2"></i>{{ restaurant.name }}</h2>
+                <div>
+                    <a href="{{ url_for('food.view_cart', booking_id=booking.id, restaurant_id=restaurant.id) }}" 
+                       class="btn btn-success me-2">
+                        <i class="fas fa-shopping-cart me-2"></i>View Cart
+                        <span class="badge bg-light text-dark ms-1" id="cart-count">0</span>
+                    </a>
+                    <a href="{{ url_for('food.restaurants_for_booking', booking_id=booking.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card bg-light-dark mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-store me-2"></i>Restaurant Info</h5>
+                            <p class="mb-1"><strong>Location:</strong> {{ restaurant.station.name }} Station</p>
+                            <p class="mb-1"><strong>Cuisine:</strong> {{ restaurant.cuisine_type }}</p>
+                            <p class="mb-1"><strong>Rating:</strong> 
+                                <span class="text-warning">
+                                    {% for i in range(restaurant.rating|int) %}★{% endfor %}
+                                </span> {{ "%.1f"|format(restaurant.rating) }}
+                            </p>
+                            <p class="mb-0"><strong>Delivery Time:</strong> {{ restaurant.delivery_time }} minutes</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-ticket-alt me-2"></i>Journey Details</h5>
+                            <p class="mb-1"><strong>PNR:</strong> {{ booking.pnr }}</p>
+                            <p class="mb-1"><strong>Train:</strong> {{ booking.train.name }}</p>
+                            <p class="mb-0"><strong>Date:</strong> {{ booking.journey_date.strftime('%d %b %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if restaurant.minimum_order > 0 or restaurant.delivery_charge > 0 %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                {% if restaurant.minimum_order > 0 %}
+                    Minimum order: ₹{{ "%.0f"|format(restaurant.minimum_order) }}
+                {% endif %}
+                {% if restaurant.delivery_charge > 0 %}
+                    {% if restaurant.minimum_order > 0 %} | {% endif %}
+                    Delivery charges: ₹{{ "%.0f"|format(restaurant.delivery_charge) }}
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if menu_by_category %}
+                {% for category, items in menu_by_category.items() %}
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">{{ category }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for item in items %}
+                            <div class="col-lg-6 col-xl-4 mb-4">
+                                <div class="card h-100 menu-item-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title">{{ item.name }}</h6>
+                                            <div class="text-end">
+                                                {% if item.food_type == 'Vegetarian' %}
+                                                    <span class="badge bg-success">🌱 Veg</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">🍖 Non-Veg</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        {% if item.description %}
+                                        <p class="card-text small text-muted">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                                        {% endif %}
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="h6 text-primary">₹{{ "%.0f"|format(item.price) }}</span>
+                                                {% if item.is_popular %}
+                                                    <small class="badge bg-warning text-dark">Popular</small>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="input-group" style="width: 120px;">
+                                                <input type="number" class="form-control form-control-sm quantity-input" 
+                                                       min="1" max="10" value="1" id="qty-{{ item.id }}">
+                                                <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                                                        onclick="addToCart({{ item.id }}, {{ booking.id }}, {{ restaurant.id }})">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No menu items available at this time.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function addToCart(itemId, bookingId, restaurantId) {
+    const quantity = document.getElementById(`qty-${itemId}`).value;
+    
+    fetch('/food/add_to_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `item_id=${itemId}&quantity=${quantity}&booking_id=${bookingId}&restaurant_id=${restaurantId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update cart count
+            document.getElementById('cart-count').textContent = data.item_count;
+            
+            // Show success message
+            const btn = event.target.closest('.add-to-cart-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.add('btn-success');
+            btn.classList.remove('btn-primary');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-success');
+            }, 1000);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding item to cart');
+    });
+}
+</script>
+
+<style>
+.menu-item-card {
+    transition: transform 0.2s;
+}
+.menu-item-card:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

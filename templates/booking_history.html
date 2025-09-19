@@ -125,6 +125,11 @@
                                            class="btn btn-primary btn-sm">
                                             <i class="fas fa-credit-card"></i> Complete Payment
                                         </a>
+                                    {% elif booking.status == 'confirmed' %}
+                                        <a href="{{ url_for('food.restaurants_for_booking', booking_id=booking.id) }}" 
+                                           class="btn btn-success btn-sm">
+                                            <i class="fas fa-utensils"></i> Order Food
+                                        </a>
                                     {% endif %}
                                     
                                     {% if booking.status in ['confirmed', 'waitlisted'] %}
