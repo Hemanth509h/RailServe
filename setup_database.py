@@ -72,7 +72,9 @@ class RailServeSetup:
         """Connect to the Replit PostgreSQL database"""
         try:
             logger.info("🔌 Connecting to Replit PostgreSQL database...")
-            self.engine = create_engine(self.database_url)
+            if self.database_url is None:
+                raise ValueError("DATABASE_URL cannot be None")
+            self.engine = create_engine(str(self.database_url))
             self.Session = sessionmaker(bind=self.engine)
             
             # Test connection
