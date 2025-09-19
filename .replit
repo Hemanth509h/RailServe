@@ -17,15 +17,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RailServe Frontend"
+args = "Railway Frontend"
 
 [[workflows.workflow]]
-name = "RailServe Frontend"
+name = "Railway Frontend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python init_app.py"
+args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload --workers 1 main:app"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -34,10 +34,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 37111
-externalPort = 3001
 
 [[ports]]
 localPort = 42945
