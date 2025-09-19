@@ -408,12 +408,16 @@ class GroupBooking(db.Model):
     @property
     def total_amount(self):
         """Calculate total amount for all bookings in the group"""
-        return sum(booking.total_amount for booking in self.individual_bookings)
+        if self.individual_bookings:
+            return sum(booking.total_amount for booking in self.individual_bookings)
+        return 0.0
     
     @property
     def confirmed_bookings(self):
         """Get confirmed bookings in the group"""
-        return [b for b in self.individual_bookings if b.status == 'confirmed']
+        if self.individual_bookings:
+            return [b for b in self.individual_bookings if b.status == 'confirmed']
+        return []
 
 class LoyaltyProgram(db.Model):
     """Frequent traveler loyalty program"""
