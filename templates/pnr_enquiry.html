@@ -2,6 +2,10 @@
 
 {% block title %}PNR Enquiry - RailServe{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pnr.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="pnr-enquiry-container">
@@ -37,77 +41,74 @@
                     </span>
                 </div>
                 
-                <div class="booking-info">
-                    <div class="info-section">
-                        <h3><i class="fas fa-train"></i> Train Information</h3>
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <span class="label">Train Number:</span>
-                                <span class="value">{{ booking.train.number }}</span>
+                <div class="booking-main-content">
+                    <div class="booking-left-column">
+                        <div class="info-section">
+                            <h3><i class="fas fa-train"></i> Train Information</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="label">Train Number</span>
+                                    <span class="value">{{ booking.train.number }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Train Name</span>
+                                    <span class="value">{{ booking.train.name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">PNR Number</span>
+                                    <span class="value pnr-highlight">{{ booking.pnr }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Journey Date</span>
+                                    <span class="value">{{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                                </div>
                             </div>
-                            <div class="info-item">
-                                <span class="label">Train Name:</span>
-                                <span class="value">{{ booking.train.name }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">PNR Number:</span>
-                                <span class="value pnr-highlight">{{ booking.pnr }}</span>
-                            </div>
-                            <div class="info-item">
-                                <span class="label">Journey Date:</span>
-                                <span class="value">{{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                        </div>
+                        
+                        <div class="info-section">
+                            <h3><i class="fas fa-route"></i> Journey Details</h3>
+                            <div class="journey-route">
+                                <div class="station-info">
+                                    <div class="station">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <div class="station-details">
+                                            <strong>{{ booking.from_station.name }}</strong>
+                                            <small>{{ booking.from_station.code }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="route-arrow">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                    <div class="station">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <div class="station-details">
+                                            <strong>{{ booking.to_station.name }}</strong>
+                                            <small>{{ booking.to_station.code }}</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="info-section">
-                        <h3><i class="fas fa-route"></i> Journey Details</h3>
-                        <div class="journey-route">
-                            <div class="station-info">
-                                <div class="station">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <div class="station-details">
-                                        <strong>{{ booking.from_station.name }}</strong>
-                                        <small>{{ booking.from_station.code }}</small>
-                                    </div>
-                                </div>
-                                <div class="route-arrow">
-                                    <i class="fas fa-arrow-right"></i>
-                                </div>
-                                <div class="station">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <div class="station-details">
-                                        <strong>{{ booking.to_station.name }}</strong>
-                                        <small>{{ booking.to_station.code }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-section">
-                        <h3><i class="fas fa-users"></i> Passenger Information</h3>
-                        <div class="info-grid">
+                    <div class="booking-right-column">
+                        <div class="info-section">
+                            <h3><i class="fas fa-users"></i> Passenger Information</h3>
                             <div class="info-item">
-                                <span class="label">Number of Passengers:</span>
-                                <span class="value">{{ booking.passengers }}</span>
+                                <span class="label">Number of Passengers</span>
+                                <span class="value">{{ booking.passengers|length }}</span>
                             </div>
                             <div class="info-item">
-                                <span class="label">Total Amount:</span>
-                                <span class="value amount">₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                                <span class="label">Total Amount</span>
+                                <span class="value">₹{{ "%.2f"|format(booking.total_amount) }}</span>
                             </div>
                             <div class="info-item">
-                                <span class="label">Booking Date:</span>
+                                <span class="label">Booking Date</span>
                                 <span class="value">{{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}</span>
                             </div>
-                            {% if booking.status == 'waitlisted' %}
-                                <div class="info-item">
-                                    <span class="label">Waitlist Status:</span>
-                                    <span class="value waitlist">Position in queue</span>
-                                </div>
-                            {% endif %}
                         </div>
                     </div>
+                </div>
                     
                     <!-- Passenger Details with Seat Assignments -->
                     {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
