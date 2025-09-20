@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results - RailServe{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/book_ticket.css') }}">
+<style>
+.search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.search-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.search-form {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.search-filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    padding: 12px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+}
+
+.train-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.train-card:hover {
+    transform: translateY(-3px);
+}
+
+.train-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 20px;
+}
+
+.train-body {
+    padding: 20px;
+}
+
+.train-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.book-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    text-decoration: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 15px;
+    transition: transform 0.3s;
+}
+
+.book-btn:hover {
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .search-filters {
+        grid-template-columns: 1fr;
+    }
+    
+    .train-info {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-header">
+        <h1><i class="fas fa-search"></i> Train Search</h1>
+        <p>Find trains by name, number, route, or station</p>
+    </div>
+    
+    <form method="POST" class="search-form">
+        <div class="search-filters">
+            <div class="form-group">
+                <label for="search_query">Search Query</label>
+                <input type="text" id="search_query" name="search_query" 
+                       class="form-control" placeholder="Enter train name, number, station, or city"
+                       value="{{ search_query }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="search_type">Search Type</label>
+                <select id="search_type" name="search_type" class="form-control">
+                    <option value="all" {{ 'selected' if search_type == 'all' else '' }}>All</option>
+                    <option value="number" {{ 'selected' if search_type == 'number' else '' }}>Train Number</option>
+                    <option value="name" {{ 'selected' if search_type == 'name' else '' }}>Train Name</option>
+                    <option value="route" {{ 'selected' if search_type == 'route' else '' }}>Route/Station</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+    </form>
+    
+    {% if search_query %}
+        <div class="search-results">
+            <h2>Search Results for "{{ search_query }}"</h2>
+            
+            {% if trains %}
+                <p>Found {{ trains|length }} train(s)</p>
+                
+                {% for train in trains %}
+                <div class="train-card">
+                    <div class="train-header">
+                        <h3>{{ train.number }} - {{ train.name }}</h3>
+                    </div>
+                    <div class="train-body">
+                        <div class="train-info">
+                            <div class="info-item">
+                                <div class="info-label">Total Seats</div>
+                                <div class="info-value">{{ train.total_seats }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Available Seats</div>
+                                <div class="info-value">{{ train.available_seats }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Fare per KM</div>
+                                <div class="info-value">₹{{ "%.2f"|format(train.fare_per_km) }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Tatkal Seats</div>
+                                <div class="info-value">{{ train.tatkal_seats or 0 }}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" class="book-btn">
+                                <i class="fas fa-ticket-alt"></i> Book Ticket
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-train" style="font-size: 64px; color: #ddd; margin-bottom: 20px;"></i>
+                    <h3>No trains found</h3>
+                    <p>Try adjusting your search criteria or search type</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

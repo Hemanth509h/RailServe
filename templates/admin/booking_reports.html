@@ -153,7 +153,7 @@
                     <tbody>
                         {% for stat in booking_stats %}
                             <tr>
-                                <td>{{ stat.date.strftime('%d %b %Y') if stat.date else 'N/A' }}</td>
+                                <td>{{ stat.date if stat.date else 'N/A' }}</td>
                                 <td>
                                     <span class="booking-type-badge {{ stat.booking_type }}">
                                         {% if stat.booking_type == 'tatkal' %}

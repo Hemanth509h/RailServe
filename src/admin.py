@@ -4,7 +4,7 @@ from functools import wraps
 from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride
 from sqlalchemy import and_
 from .app import db
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import csv
 import io
 
@@ -976,3 +976,105 @@ def tatkal_override_status():
         return jsonify({
             'active': False
         })
+
+@admin_bp.route('/waitlist-details')
+@admin_required
+def waitlist_details():
+    """Detailed waitlist management with search functionality"""
+    from .models import Waitlist
+    
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '').strip()
+    
+    # Base query for waitlisted bookings
+    query = Booking.query.filter_by(status='waitlisted')
+    
+    # Add search functionality
+    if search:
+        query = query.join(User).join(Train).filter(
+            db.or_(
+                Booking.pnr.ilike(f'%{search}%'),
+                User.username.ilike(f'%{search}%'),
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        )
+    
+    # Get paginated results
+    waitlist_bookings = query.order_by(Booking.booking_date.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    # Calculate statistics
+    total_waitlisted = Booking.query.filter_by(status='waitlisted').count()
+    confirmed_today = Booking.query.filter(
+        Booking.status == 'confirmed',
+        db.func.date(Booking.booking_date) == date.today()
+    ).count()
+    
+    trains_with_waitlist = db.session.query(Train.id).join(Booking).filter(
+        Booking.status == 'waitlisted'
+    ).distinct().count()
+    
+    # Calculate average confirmation rate (simplified)
+    total_bookings = Booking.query.count()
+    confirmed_bookings = Booking.query.filter_by(status='confirmed').count()
+    avg_confirmation_rate = int((confirmed_bookings / total_bookings * 100)) if total_bookings > 0 else 0
+    
+    return render_template('admin/waitlist_details.html',
+                         waitlist_bookings=waitlist_bookings,
+                         search=search,
+                         total_waitlisted=total_waitlisted,
+                         confirmed_today=confirmed_today,
+                         trains_with_waitlist=trains_with_waitlist,
+                         avg_confirmation_rate=avg_confirmation_rate)
+
+@admin_bp.route('/waitlist/<int:booking_id>/confirm', methods=['POST'])
+@admin_required
+def confirm_waitlist(booking_id):
+    """Confirm a waitlisted booking"""
+    booking = Booking.query.get_or_404(booking_id)
+    
+    if booking.status != 'waitlisted':
+        flash('This booking is not in waitlist status', 'error')
+        return redirect(url_for('admin.waitlist_details'))
+    
+    # Check if seats are available
+    train = booking.train
+    if train.available_seats >= booking.passengers:
+        booking.status = 'confirmed'
+        train.available_seats -= booking.passengers
+        
+        # Remove from waitlist
+        waitlist_entry = Waitlist.query.filter_by(booking_id=booking.id).first()
+        if waitlist_entry:
+            db.session.delete(waitlist_entry)
+        
+        db.session.commit()
+        flash(f'Booking {booking.pnr} confirmed successfully', 'success')
+    else:
+        flash('Insufficient seats available for confirmation', 'error')
+    
+    return redirect(url_for('admin.waitlist_details'))
+
+@admin_bp.route('/waitlist/<int:booking_id>/cancel', methods=['POST'])
+@admin_required
+def cancel_waitlist(booking_id):
+    """Cancel a waitlisted booking"""
+    booking = Booking.query.get_or_404(booking_id)
+    
+    if booking.status != 'waitlisted':
+        flash('This booking is not in waitlist status', 'error')
+        return redirect(url_for('admin.waitlist_details'))
+    
+    booking.status = 'cancelled'
+    
+    # Remove from waitlist
+    waitlist_entry = Waitlist.query.filter_by(booking_id=booking.id).first()
+    if waitlist_entry:
+        db.session.delete(waitlist_entry)
+    
+    db.session.commit()
+    flash(f'Booking {booking.pnr} cancelled successfully', 'success')
+    
+    return redirect(url_for('admin.waitlist_details'))

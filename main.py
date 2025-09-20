@@ -1,8 +1,8 @@
 import os
-from src.app import app
+from src.app import app, db
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
-from src.models import Train, Station, Booking
+from src.models import Train, Station, Booking, TrainRoute
 from src.utils import get_running_trains, search_trains
 from datetime import datetime
 
@@ -51,6 +51,57 @@ def pnr_enquiry():
                 flash('PNR not found', 'error')
     
     return render_template('pnr_enquiry.html', booking=booking)
+
+@app.route('/search', methods=['GET', 'POST'])
+def universal_search():
+    """Universal search for trains by name, number, ID, or route"""
+    trains = []
+    search_query = ""
+    search_type = ""
+    
+    if request.method == 'POST':
+        search_query = request.form.get('search_query', '').strip()
+        search_type = request.form.get('search_type', 'all')
+        
+        if search_query:
+            query = Train.query.filter(Train.active == True)
+            
+            if search_type == 'number':
+                query = query.filter(Train.number.ilike(f'%{search_query}%'))
+            elif search_type == 'name':
+                query = query.filter(Train.name.ilike(f'%{search_query}%'))
+            elif search_type == 'route':
+                # Search by stations in route
+                station_trains = db.session.query(Train.id).join(TrainRoute).join(Station).filter(
+                    Station.name.ilike(f'%{search_query}%') | 
+                    Station.city.ilike(f'%{search_query}%') |
+                    Station.code.ilike(f'%{search_query}%')
+                ).distinct()
+                query = query.filter(Train.id.in_(station_trains))
+            else:  # 'all' - search everything
+                station_trains = db.session.query(Train.id).join(TrainRoute).join(Station).filter(
+                    Station.name.ilike(f'%{search_query}%') | 
+                    Station.city.ilike(f'%{search_query}%') |
+                    Station.code.ilike(f'%{search_query}%')
+                ).distinct()
+                
+                query = query.filter(
+                    db.or_(
+                        Train.number.ilike(f'%{search_query}%'),
+                        Train.name.ilike(f'%{search_query}%'),
+                        Train.id.in_(station_trains)
+                    )
+                )
+            
+            trains = query.order_by(Train.name).limit(50).all()
+            
+            if not trains:
+                flash('No trains found matching your search criteria', 'info')
+    
+    return render_template('search_results.html', 
+                         trains=trains, 
+                         search_query=search_query,
+                         search_type=search_type)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Waitlist Details - RailServe Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+<style>
+.waitlist-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.waitlist-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.waitlist-table {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.table-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.search-btn {
+    padding: 10px 20px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.waitlist-item {
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: center;
+}
+
+.waitlist-item:last-child {
+    border-bottom: none;
+}
+
+.booking-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.pnr {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.train-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.position-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.position-badge.likely {
+    background: #51cf66;
+}
+
+.position-badge.medium {
+    background: #ffd43b;
+    color: #333;
+}
+
+.status-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-confirm, .btn-cancel {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-confirm {
+    background: #51cf66;
+    color: white;
+}
+
+.btn-cancel {
+    background: #ff6b6b;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .waitlist-item {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .waitlist-stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="waitlist-header">
+        <h1><i class="fas fa-list-ol"></i> Waitlist Management</h1>
+        <p>Monitor and manage passenger waitlists across all trains</p>
+    </div>
+    
+    <!-- Waitlist Statistics -->
+    <div class="waitlist-stats">
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #ff6b6b;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ total_waitlisted or 0 }}</div>
+            <div class="stat-label">Total Waitlisted</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #51cf66;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-number">{{ confirmed_today or 0 }}</div>
+            <div class="stat-label">Confirmed Today</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #ffd43b;">
+                <i class="fas fa-train"></i>
+            </div>
+            <div class="stat-number">{{ trains_with_waitlist or 0 }}</div>
+            <div class="stat-label">Trains with Waitlist</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon" style="color: #667eea;">
+                <i class="fas fa-percentage"></i>
+            </div>
+            <div class="stat-number">{{ avg_confirmation_rate or 0 }}%</div>
+            <div class="stat-label">Avg Confirmation Rate</div>
+        </div>
+    </div>
+    
+    <!-- Waitlist Details Table -->
+    <div class="waitlist-table">
+        <div class="table-header">
+            <h3><i class="fas fa-list"></i> Waitlist Details</h3>
+            
+            <!-- Search Box -->
+            <form method="GET" class="search-box">
+                <input type="text" name="search" class="search-input" 
+                       placeholder="Search by PNR, train number, or passenger name"
+                       value="{{ search or '' }}">
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </form>
+        </div>
+        
+        {% if waitlist_bookings %}
+            {% for booking in waitlist_bookings %}
+            <div class="waitlist-item">
+                <div class="booking-info">
+                    <div class="pnr">PNR: {{ booking.pnr }}</div>
+                    <div class="train-info">{{ booking.train.number }} - {{ booking.train.name }}</div>
+                    <div class="train-info">{{ booking.passengers }} passenger(s) | {{ booking.journey_date.strftime('%d %b %Y') }}</div>
+                </div>
+                
+                <div>
+                    <strong>{{ booking.user.username }}</strong>
+                    <br>
+                    <small>{{ booking.booking_date.strftime('%d %b %Y') }}</small>
+                </div>
+                
+                <div>
+                    {% if booking.waitlist %}
+                        {% set position = booking.waitlist[0].position %}
+                        {% if position <= 10 %}
+                            <div class="position-badge likely">WL {{ position }}</div>
+                        {% elif position <= 50 %}
+                            <div class="position-badge medium">WL {{ position }}</div>
+                        {% else %}
+                            <div class="position-badge">WL {{ position }}</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="position-badge">No Position</div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <strong>₹{{ "%.2f"|format(booking.total_amount) }}</strong>
+                </div>
+                
+                <div>
+                    <span class="status-badge status-{{ booking.status }}">
+                        {{ booking.status.replace('_', ' ').title() }}
+                    </span>
+                </div>
+                
+                <div class="status-actions">
+                    {% if booking.status == 'waitlisted' %}
+                        <form method="POST" action="{{ url_for('admin.confirm_waitlist', booking_id=booking.id) }}" style="display: inline;">
+                            <button type="submit" class="btn-confirm" onclick="return confirm('Confirm this waitlist booking?')">
+                                <i class="fas fa-check"></i> Confirm
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin.cancel_waitlist', booking_id=booking.id) }}" style="display: inline;">
+                            <button type="submit" class="btn-cancel" onclick="return confirm('Cancel this waitlist booking?')">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 50px; color: #666;">
+                <i class="fas fa-list-ol" style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;"></i>
+                <h3>No waitlist bookings found</h3>
+                {% if search %}
+                    <p>No results for "{{ search }}"</p>
+                {% else %}
+                    <p>All passengers are confirmed or no bookings exist</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if waitlist_bookings and waitlist_bookings.pages > 1 %}
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <div class="pagination">
+            {% if waitlist_bookings.has_prev %}
+                <a href="{{ url_for('admin.waitlist_details', page=waitlist_bookings.prev_num, search=search) }}" class="page-link">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            {% endif %}
+            
+            {% for page_num in waitlist_bookings.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != waitlist_bookings.page %}
+                        <a href="{{ url_for('admin.waitlist_details', page=page_num, search=search) }}" class="page-link">{{ page_num }}</a>
+                    {% else %}
+                        <span class="page-link active">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="page-link">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if waitlist_bookings.has_next %}
+                <a href="{{ url_for('admin.waitlist_details', page=waitlist_bookings.next_num, search=search) }}" class="page-link">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
