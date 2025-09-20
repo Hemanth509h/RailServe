@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Railway Frontend"
+args = "RailServe App"
 
 [[workflows.workflow]]
-name = "Railway Frontend"
+name = "RailServe App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -36,8 +36,8 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 40791
-externalPort = 3001
+localPort = 41431
+externalPort = 3003
 
 [[ports]]
 localPort = 42945
@@ -49,4 +49,4 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port", "main:app"]
