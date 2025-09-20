@@ -239,7 +239,7 @@
                 
                 <div>
                     {% if booking.waitlist %}
-                        {% set position = booking.waitlist[0].position %}
+                        {% set position = booking.waitlist.position %}
                         {% if position <= 10 %}
                             <div class="position-badge likely">WL {{ position }}</div>
                         {% elif position <= 50 %}

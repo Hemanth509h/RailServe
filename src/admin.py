@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from functools import wraps
-from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride
+from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, Waitlist
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta, date
