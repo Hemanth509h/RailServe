@@ -5,8 +5,17 @@
 {% block content %}
 <div class="admin-container">
     <div class="admin-header">
-        <h1><i class="fas fa-list-ol"></i> Waitlist Management</h1>
-        <p>Monitor and manage passenger waitlists across all trains</p>
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-list-ol"></i> Waitlist Management</h1>
+                <p>Monitor and manage passenger waitlists across all trains</p>
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('admin.waitlist_details') }}" class="btn btn-primary">
+                    <i class="fas fa-chart-line"></i> View All Details
+                </a>
+            </div>
+        </div>
     </div>
     
     <div class="waitlist-summary">
@@ -154,6 +163,44 @@
 </div>
 
 <style>
+/* Header Layout */
+.admin-header .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+}
+
+.admin-header .header-info {
+    flex: 1;
+}
+
+.admin-header .header-actions {
+    flex-shrink: 0;
+}
+
+.admin-header .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.admin-header .btn-primary {
+    background: var(--btn-primary, #3b82f6);
+    color: white;
+    border: none;
+}
+
+.admin-header .btn-primary:hover {
+    background: var(--btn-primary-hover, #2563eb);
+    transform: translateY(-1px);
+}
+
 .waitlist-summary {
     margin-bottom: 2rem;
 }
@@ -184,10 +231,11 @@
 }
 
 .waitlist-card {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
     overflow: hidden;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .waitlist-card h3 {
@@ -211,13 +259,15 @@
 .waitlist-table td {
     padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-color);
+    transition: border-color 0.3s ease;
 }
 
 .waitlist-table th {
-    background: #f9fafb;
+    background: var(--bg-table-header);
     font-weight: 600;
-    color: #374151;
+    color: var(--text-table-header);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .train-info {
@@ -226,12 +276,14 @@
 }
 
 .train-info strong {
-    color: #1f2937;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .train-info small {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 0.8rem;
+    transition: color 0.3s ease;
 }
 
 .waitlist-count {
@@ -291,11 +343,12 @@
 }
 
 .activity-item {
-    background: #f9fafb;
+    background: var(--bg-table-header);
     border-left: 4px solid #f59e0b;
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 4px;
+    transition: background-color 0.3s ease;
 }
 
 .activity-header {
@@ -305,12 +358,14 @@
 }
 
 .activity-header strong {
-    color: #1f2937;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .activity-time {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 0.85rem;
+    transition: color 0.3s ease;
 }
 
 .activity-details {
@@ -327,13 +382,15 @@
 
 .train {
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
     font-size: 0.9rem;
+    transition: color 0.3s ease;
 }
 
 .route {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 0.85rem;
+    transition: color 0.3s ease;
 }
 
 .passenger-info {
@@ -343,8 +400,9 @@
 }
 
 .passengers {
-    color: #374151;
+    color: var(--text-primary);
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .amount {
@@ -393,9 +451,10 @@
 }
 
 .insight-card {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .insight-card h3 {
@@ -429,13 +488,15 @@
 .tip-item strong {
     display: block;
     margin-bottom: 0.5rem;
-    color: #1f2937;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .tip-item p {
     margin: 0;
-    color: #6b7280;
+    color: var(--text-secondary);
     line-height: 1.5;
+    transition: color 0.3s ease;
 }
 
 .text-info { color: #3b82f6; }
@@ -467,7 +528,7 @@ function processWaitlist(trainNumber) {
 
 function viewDetails(trainNumber) {
     // Navigate to detailed view
-    window.location.href = `/admin/trains/${trainNumber}/waitlist-details`;
+    window.location.href = `/admin/waitlist-details?search=${trainNumber}`;
 }
 
 function confirmBooking(bookingId) {
