@@ -476,6 +476,7 @@ def create_stations(session):
     
     stations = []
     station_codes_used = set()
+    station_names_used = set()
     
     for state, cities in indian_states_cities:
         for city in cities:
@@ -488,10 +489,29 @@ def create_stations(session):
                         station_codes_used.add(code)
                         break
                 
-                # Station name variations
+                # Generate unique station name
                 suffixes = ['Junction', 'Central', 'City', 'Cantt', 'Town', 'Terminal', 'Road', 'East', 'West', 'South', 'North', '']
-                suffix = random.choice(suffixes)
-                station_name = f"{city} {suffix}".strip()
+                station_name = None
+                attempts = 0
+                while station_name is None and attempts < 20:
+                    suffix = random.choice(suffixes)
+                    candidate_name = f"{city} {suffix}".strip()
+                    if candidate_name not in station_names_used:
+                        station_name = candidate_name
+                        station_names_used.add(station_name)
+                    else:
+                        # If name exists, try with a number suffix
+                        for num in range(1, 10):
+                            numbered_name = f"{candidate_name} {num}"
+                            if numbered_name not in station_names_used:
+                                station_name = numbered_name
+                                station_names_used.add(station_name)
+                                break
+                    attempts += 1
+                
+                # Skip if we couldn't generate a unique name
+                if station_name is None:
+                    continue
                 
                 if len(stations) >= 1500:
                     break
