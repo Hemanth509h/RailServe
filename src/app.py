@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-# CSRF protection removed per user request
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -17,7 +17,7 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
-# CSRF protection disabled
+csrf = CSRFProtect()
 
 # Create the app with correct template and static paths
 app = Flask(__name__, 
@@ -26,7 +26,7 @@ app = Flask(__name__,
 
 # Load configuration
 # Load configuration - require SESSION_SECRET for security
-app.secret_key =os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+app.secret_key = os.environ.get("SESSION_SECRET")
 if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
@@ -48,7 +48,7 @@ app.config['SESSION_COOKIE_SECURE'] = (flask_env == 'production')  # Secure cook
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600
-app.config['WTF_CSRF_ENABLED'] = False  # CSRF disabled per user request
+app.config['WTF_CSRF_ENABLED'] = True  # CSRF protection enabled for security
 
 
 # Proxy support for Replit environment
@@ -61,7 +61,7 @@ if flask_env == 'production':
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)
-# CSRF initialization removed
+csrf.init_app(app)
 login_manager.login_view = 'auth.login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
 

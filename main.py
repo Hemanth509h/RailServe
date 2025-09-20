@@ -59,9 +59,10 @@ def universal_search():
     search_query = ""
     search_type = ""
     
-    if request.method == 'POST':
-        search_query = request.form.get('search_query', '').strip()
-        search_type = request.form.get('search_type', 'all')
+    if request.method == 'POST' or request.method == 'GET':
+        search_query = request.form.get('search_query', '') if request.method == 'POST' else request.args.get('search_query', '')
+        search_query = search_query.strip()
+        search_type = request.form.get('search_type', 'all') if request.method == 'POST' else request.args.get('search_type', 'all')
         
         if search_query:
             query = Train.query.filter(Train.active == True)

@@ -26,6 +26,7 @@
             integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" 
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     {% block head %}{% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
@@ -47,9 +48,14 @@
                 <a href="{{ url_for('pnr_enquiry') }}" class="nav-link">
                     <i class="fas fa-search"></i> PNR Enquiry
                 </a>
-                <a href="{{ url_for('universal_search') }}" class="nav-link">
-                    <i class="fas fa-train"></i> Train Search
-                </a>
+                <div class="nav-search">
+                    <form method="GET" action="{{ url_for('universal_search') }}" class="search-form">
+                        <input type="text" name="search_query" placeholder="Search trains..." class="search-input" value="{{ request.args.get('search_query', '') }}">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
                 <button id="toggleTheme" class="nav-link toggle-theme" type="button" 
                         title="Toggle Dark/Light Theme" aria-pressed="false" 
                         aria-label="Switch to dark theme">
