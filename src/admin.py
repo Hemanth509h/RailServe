@@ -758,7 +758,11 @@ def waitlist_management():
         db.func.count(Booking.id).label('waitlist_count'),
         db.func.min(Waitlist.position).label('min_position'),
         db.func.max(Waitlist.position).label('max_position')
-    ).join(Booking).join(Waitlist).filter(
+    ).select_from(Train).join(
+        Booking, Train.id == Booking.train_id
+    ).join(
+        Waitlist, Booking.id == Waitlist.booking_id
+    ).filter(
         Booking.status == 'waitlisted'
     ).group_by(Train.id, Train.number, Train.name).all()
     
@@ -832,7 +836,7 @@ def booking_reports():
         start_date = end_date - timedelta(days=90)
     
     # Booking statistics
-    booking_stats = db.session.query(
+    booking_stats_raw = db.session.query(
         db.func.date(Booking.booking_date).label('date'),
         Booking.status,
         Booking.booking_type,
@@ -847,20 +851,42 @@ def booking_reports():
         Booking.booking_type
     ).all()
     
+    # Convert to JSON-serializable format
+    booking_stats = []
+    for row in booking_stats_raw:
+        booking_stats.append({
+            'date': row.date.strftime('%Y-%m-%d') if row.date else None,
+            'status': row.status,
+            'booking_type': row.booking_type,
+            'count': row.count,
+            'revenue': float(row.revenue) if row.revenue else 0.0
+        })
+    
     # Popular routes
     from sqlalchemy.orm import aliased
     Station2 = aliased(Station)
-    popular_routes = db.session.query(
+    popular_routes_raw = db.session.query(
         Station.name.label('from_station'),
         Station2.name.label('to_station'),
         db.func.count(Booking.id).label('bookings')
-    ).join(Station, Booking.from_station_id == Station.id
-    ).join(Station2, Booking.to_station_id == Station2.id
+    ).select_from(Booking).join(
+        Station, Booking.from_station_id == Station.id
+    ).join(
+        Station2, Booking.to_station_id == Station2.id
     ).filter(
         Booking.booking_date >= start_date
     ).group_by(
         Station.name, Station2.name
     ).order_by(db.func.count(Booking.id).desc()).limit(10).all()
+    
+    # Convert to JSON-serializable format
+    popular_routes = []
+    for row in popular_routes_raw:
+        popular_routes.append({
+            'from_station': row.from_station,
+            'to_station': row.to_station,
+            'bookings': row.bookings
+        })
     
     return render_template('admin/booking_reports.html',
                          booking_stats=booking_stats,
