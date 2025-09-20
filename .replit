@@ -25,7 +25,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "uv run gunicorn --bind 0.0.0.0:5000 --reuse-port --workers 2 --timeout 120 src.app:app"
+args = "uv run gunicorn --bind 0.0.0.0:5000 --reuse-port --workers 2 --reload main:app"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -36,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 40869
+localPort = 36453
 externalPort = 3001
 
 [[ports]]
