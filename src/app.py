@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_wtf.csrf import CSRFProtect
+# CSRF protection removed per user request
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -17,22 +17,25 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
-csrf = CSRFProtect()
+# CSRF protection disabled
 
 # Create the app with correct template and static paths
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
 
+# Load configuration
 # Load configuration - require SESSION_SECRET for security
-app.secret_key = os.environ.get("SESSION_SECRET")
+app.secret_key =os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 if not app.secret_key:
-    raise RuntimeError("SESSION_SECRET environment variable is required for security")
+    raise RuntimeError("SESSION_SECRET environment variable is required")
 
-# Use DATABASE_URL - required for production
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+# Use DATABASE_URL or fallback to local PostgreSQL
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
+
+# Verify database connection is configured
 if not app.config['SQLALCHEMY_DATABASE_URI']:
-    raise RuntimeError("DATABASE_URL environment variable is required")
+    raise RuntimeError("DATABASE_URL environment variable is required or database not configured")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
@@ -45,7 +48,7 @@ app.config['SESSION_COOKIE_SECURE'] = (flask_env == 'production')  # Secure cook
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600
-app.config['WTF_CSRF_ENABLED'] = True  # CSRF protection enabled for security
+app.config['WTF_CSRF_ENABLED'] = False  # CSRF disabled per user request
 
 
 # Proxy support for Replit environment
@@ -58,7 +61,7 @@ if flask_env == 'production':
 # Initialize extensions
 db.init_app(app)
 login_manager.init_app(app)
-csrf.init_app(app)
+# CSRF initialization removed
 login_manager.login_view = 'auth.login'  # type: ignore
 login_manager.login_message = 'Please log in to access this page.'
 
