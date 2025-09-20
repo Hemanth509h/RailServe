@@ -44,6 +44,7 @@ import random
 import string
 import logging
 from datetime import datetime, date, time, timedelta
+from decimal import Decimal
 from typing import List, Dict, Any, Optional, Tuple
 import json
 
@@ -1454,7 +1455,7 @@ def insert_comprehensive_data(conn):
             order_items.append((item_id, quantity, price, total_price))
         
         delivery_charge = random.randint(20, 50)
-        tax_amount = item_total * 0.05  # 5% tax
+        tax_amount = item_total * Decimal('0.05')  # 5% tax
         final_amount = item_total + delivery_charge + tax_amount
         
         status = random.choice(food_order_statuses)
