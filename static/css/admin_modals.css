@@ -1,0 +1,59 @@
+/* Inline styles extracted from admin templates */
+.modal {
+    display: none;
+}
+
+.text-transform-uppercase {
+    text-transform: uppercase;
+}
+
+.occupancy-fill {
+    /* Dynamic width will be set by template */
+}
+
+.utilization-fill {
+    /* Dynamic width and background will be set by template */
+}
+
+/* Seat allocation progress bars */
+.seat-progress-bar {
+    /* Dynamic width will be set by template */
+}
+
+/* Card details toggle */
+.card-details {
+    display: none;
+}
+
+/* Form warnings */
+.tatkal-warning {
+    display: none;
+}
+
+/* Buttons that can be hidden */
+.conditional-button {
+    display: none;
+}
+
+/* Inline display elements */
+.inline-form {
+    display: inline;
+}
+
+/* Text alignment utilities */
+.text-center {
+    text-align: center;
+}
+
+/* Waitlist details styles */
+.waitlist-empty-state {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+}
+
+.waitlist-empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}

@@ -1,0 +1,10 @@
+/* Inline styles extracted from search_results.html */
+.empty-results {
+    text-align: center;
+}
+
+.empty-results i {
+    font-size: 64px;
+    color: #ddd;
+    margin-bottom: 20px;
+}

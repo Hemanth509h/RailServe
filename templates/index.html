@@ -205,19 +205,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/three-hero.js') }}"></script>
-<script>
-    function swapStations() {
-        const fromSelect = document.getElementById('from_station');
-        const toSelect = document.getElementById('to_station');
-
-        const fromValue = fromSelect.value;
-        const toValue = toSelect.value;
-
-        fromSelect.value = toValue;
-        toSelect.value = fromValue;
-    }
-
-    // Set minimum date to today
-    document.getElementById('journey_date').min = new Date().toISOString().split('T')[0];
-</script>
+<script src="{{ url_for('static', filename='js/train_search.js') }}"></script>
 {% endblock %}

@@ -2,6 +2,15 @@
 
 {% block title %}{{ restaurant.name }} Menu - RailServe{% endblock %}
 
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/food_menu.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/food_menu.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-4 py-5">
     <div class="row">
@@ -120,52 +129,4 @@
     </div>
 </div>
 
-<script>
-function addToCart(itemId, bookingId, restaurantId) {
-    const quantity = document.getElementById(`qty-${itemId}`).value;
-    
-    fetch('/food/add_to_cart', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `item_id=${itemId}&quantity=${quantity}&booking_id=${bookingId}&restaurant_id=${restaurantId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update cart count
-            document.getElementById('cart-count').textContent = data.item_count;
-            
-            // Show success message
-            const btn = event.target.closest('.add-to-cart-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            btn.classList.add('btn-success');
-            btn.classList.remove('btn-primary');
-            
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.classList.add('btn-primary');
-                btn.classList.remove('btn-success');
-            }, 1000);
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error adding item to cart');
-    });
-}
-</script>
-
-<style>
-.menu-item-card {
-    transition: transform 0.2s;
-}
-.menu-item-card:hover {
-    transform: translateY(-2px);
-}
-</style>
 {% endblock %}

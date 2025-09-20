@@ -1,0 +1,20 @@
+/* Inline styles extracted from tatkal_booking.html */
+.tatkal-status-open {
+    color: #10b981;
+}
+
+.tatkal-status-closed {
+    color: #dc2626;
+}
+
+.tatkal-form-section {
+    display: none;
+}
+
+.tatkal-fare-calculator {
+    display: none;
+}
+
+.tatkal-timer {
+    display: none;
+}
