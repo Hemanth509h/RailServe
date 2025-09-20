@@ -298,10 +298,7 @@ def tatkal_booking(train_id):
             TrainRoute.train_id == train_id
         ).order_by(TrainRoute.sequence).all()
         
-        # Check if user has Aadhaar verification (simulated)
-        user_verified = hasattr(current_user, 'aadhaar_verified') and current_user.aadhaar_verified
-        if not user_verified:
-            flash('Aadhaar verification is required for Tatkal bookings. Please complete your profile.', 'warning')
+        # Aadhaar verification requirement removed for simplified booking process
         
         # Get current tatkal booking status
         from datetime import datetime, time
