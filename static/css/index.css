@@ -44,7 +44,7 @@
 }
 
 /* Train Search Form */
-.search-form {
+#search-form {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
     padding: 2rem;
@@ -53,12 +53,39 @@
     box-shadow: var(--card-shadow);
     backdrop-filter: blur(10px);
 }
-
-.search-form .form-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr 1fr 1fr;
-    gap: 1rem;
-    align-items: end;
+form.search-form{
+        padding: 6px;
+}
+input.search-input{
+        border-radius: 6px;
+    border: transparent;
+}
+button.search-btn {
+    color: var(--accent-color);
+    border: transparent;
+}
+form.search-form {
+    width: 220px;
+}
+.form-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#form-select {
+    display: flex;
+    width: 100%;
+    justify-content: space-evenly;
+}
+.search-form {
+    width: 850px;
+}
+div#form-select2 {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 5%;
+    justify-content: center;
 }
 
 .swap-btn {
@@ -77,8 +104,8 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1rem;
+    margin-top: 28px;
 }
-
 .swap-btn button:hover {
     background: var(--accent-hover);
     transform: rotate(180deg);
