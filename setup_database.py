@@ -1068,23 +1068,24 @@ def insert_comprehensive_data(conn):
         latitude = round(random.uniform(8.0, 37.0), 6)  # India's latitude range
         longitude = round(random.uniform(68.0, 97.0), 6)  # India's longitude range
         
-        cursor.execute("""
-            INSERT INTO station (name, code, city, state, zone, division, 
-                               latitude, longitude, platforms, electric_traction, facilities)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
-            ON CONFLICT (code) DO UPDATE SET 
-                name = EXCLUDED.name,
-                city = EXCLUDED.city,
-                state = EXCLUDED.state,
-                zone = EXCLUDED.zone,
-                division = EXCLUDED.division
-            RETURNING id
-        """, (name, code, city, state, zone, division, latitude, longitude,
-              random.randint(1, 12),  # platforms
-              random.choice([True, False]),  # electric traction
-              'Waiting Room, Food Court, WiFi, Parking'))
+        # Check if station already exists by name or code
+        cursor.execute("SELECT id FROM station WHERE name = %s OR code = %s", (name, code))
+        existing = cursor.fetchone()
         
-        station_id = cursor.fetchone()[0]
+        if existing:
+            station_id = existing[0]
+        else:
+            cursor.execute("""
+                INSERT INTO station (name, code, city, state, zone, division, 
+                                   latitude, longitude, platforms, electric_traction, facilities)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                RETURNING id
+            """, (name, code, city, state, zone, division, latitude, longitude,
+                  random.randint(1, 12),  # platforms
+                  random.choice([True, False]),  # electric traction
+                  'Waiting Room, Food Court, WiFi, Parking'))
+            
+            station_id = cursor.fetchone()[0]
         station_ids[code] = station_id
     
     # 3. Insert comprehensive trains data
