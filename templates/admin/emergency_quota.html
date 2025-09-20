@@ -91,6 +91,7 @@
         </div>
         
         <form id="emergencyForm" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="modal-body">
                 <div class="emergency-warning">
                     <i class="fas fa-exclamation-triangle"></i>

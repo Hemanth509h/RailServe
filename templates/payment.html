@@ -63,6 +63,7 @@
             
             <form method="POST" action="{% if from_session %}{{ url_for('payment.process_session_payment') }}{% else %}{{ url_for('payment.process_payment', booking_id=booking.id) }}{% endif %}" 
                   class="payment-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 
                 <div class="payment-methods">
                     <h3>Select Payment Method</h3>

@@ -16,6 +16,7 @@
         </div>
         
         <form method="POST" class="auth-form" id="registerForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="username">
                     <i class="fas fa-user"></i> Username

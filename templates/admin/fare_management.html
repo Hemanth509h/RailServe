@@ -79,6 +79,7 @@
         </div>
         
         <form id="fareForm" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="modal-body">
                 <div class="form-group">
                     <label for="base_fare">Base Fare per KM (₹)</label>

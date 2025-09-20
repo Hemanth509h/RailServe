@@ -165,6 +165,7 @@
     </div>
     
     <form method="POST" class="search-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="search-filters">
             <div class="form-group">
                 <label for="search_query">Search Query</label>

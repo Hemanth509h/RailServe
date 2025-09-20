@@ -86,6 +86,7 @@
                             </div>
                             
                             <form method="POST" action="{{ url_for('food.place_food_order') }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <input type="hidden" name="booking_id" value="{{ booking.id }}">
                                 <input type="hidden" name="restaurant_id" value="{{ restaurant.id }}">
                                 
