@@ -589,13 +589,13 @@ def create_train_routes(session):
         selected_stations.sort(key=lambda x: x.id)
         
         total_distance = 0
-        base_time = time(hour=random.randint(5, 22), minute=random.randint(0, 59))
+        current_time = datetime.combine(date.today(), time(hour=random.randint(5, 22), minute=random.randint(0, 59)))
         
         for seq, station in enumerate(selected_stations, 1):
             if seq == 1:
                 # First station - only departure
                 arrival_time = None
-                departure_time = base_time
+                departure_time = current_time.time()
                 distance = 0
             else:
                 # Add 50-300 km between stations
@@ -605,10 +605,9 @@ def create_train_routes(session):
                 # Calculate travel time (assume 60-80 km/h average speed)
                 travel_hours = distance_increment / random.randint(60, 80)
                 
-                # Convert previous departure to current arrival
-                prev_departure = datetime.combine(date.today(), departure_time)
-                arrival_datetime = prev_departure + timedelta(hours=travel_hours)
-                arrival_time = arrival_datetime.time()
+                # Calculate arrival time from previous departure
+                current_time = current_time + timedelta(hours=travel_hours)
+                arrival_time = current_time.time()
                 
                 if seq == len(selected_stations):
                     # Last station - only arrival
@@ -616,8 +615,8 @@ def create_train_routes(session):
                 else:
                     # Stop for 2-10 minutes
                     stop_minutes = random.randint(2, 10)
-                    departure_datetime = arrival_datetime + timedelta(minutes=stop_minutes)
-                    departure_time = departure_datetime.time()
+                    current_time = current_time + timedelta(minutes=stop_minutes)
+                    departure_time = current_time.time()
                 
                 distance = total_distance
             
