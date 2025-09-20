@@ -1,0 +1,103 @@
+sqlalchemy.exc.ProgrammingError
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column tatkal_override.is_enabled does not exist
+LINE 1: SELECT tatkal_override.id AS tatkal_override_id, tatkal_over...
+                                                         ^
+
+[SQL: SELECT tatkal_override.id AS tatkal_override_id, tatkal_override.is_enabled AS tatkal_override_is_enabled, tatkal_override.enabled_by AS tatkal_override_enabled_by, tatkal_override.enabled_at AS tatkal_override_enabled_at, tatkal_override.override_message AS tatkal_override_override_message, tatkal_override.coach_classes AS tatkal_override_coach_classes, tatkal_override.valid_until AS tatkal_override_valid_until 
+FROM tatkal_override 
+WHERE tatkal_override.is_enabled = true ORDER BY tatkal_override.enabled_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+Traceback (most recent call last)
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+self.dialect.do_execute(
+^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above exception was the direct cause of the following exception:
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\werkzeug\middleware\proxy_fix.py", line 183, in __call__
+return self.app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\admin.py", line 20, in decorated_function
+return f(*args, **kwargs)
+       ^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\admin.py", line 878, in tatkal_override
+active_override = TatkalOverride.get_active_override()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "c:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\models.py", line 535, in get_active_override
+return cls.query.filter_by(is_enabled=True).order_by(cls.enabled_at.desc()).first()
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+return self.limit(1)._iter().first()  # type: ignore
+       ^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\query.py", line 2858, in _iter
+result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                              
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line 2365, in execute
+return self._execute_internal(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line 2251, in _execute_internal
+result: Result[Any] = compile_state_cls.orm_execute_statement(
+                      
+File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+result = conn.execute(
+         
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+return meth(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+return connection._execute_clauseelement(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1638, in _execute_clauseelement
+ret = self._execute_context(
+      
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+return self._exec_single_context(
+       
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+self._handle_dbapi_exception(
+^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+self.dialect.do_execute(
+^
+File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column tatkal_override.is_enabled does not exist
+LINE 1: SELECT tatkal_override.id AS tatkal_override_id, tatkal_over...
+^
+
+[SQL: SELECT tatkal_override.id AS tatkal_override_id, tatkal_override.is_enabled AS tatkal_override_is_enabled, tatkal_override.enabled_by AS tatkal_override_enabled_by, tatkal_override.enabled_at AS tatkal_override_enabled_at, tatkal_override.override_message AS tatkal_override_override_message, tatkal_override.coach_classes AS tatkal_override_coach_classes, tatkal_override.valid_until AS tatkal_override_valid_until
+FROM tatkal_override
+WHERE tatkal_override.is_enabled = true ORDER BY tatkal_override.enabled_at DESC
+LIMIT %(param_1)s]
+[parameters: {'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "Traceback" headline. From the text traceback you can also create a paste of it.
+
+Brought to you by DON'T PANIC, your friendly Werkzeug powered traceback interpreter.
