@@ -1,0 +1,26 @@
+/* Food Cart Page Styles */
+.cart-container {
+    padding: 20px;
+}
+
+.cart-summary {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-summary {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}

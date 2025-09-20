@@ -1,0 +1,24 @@
+/* Admin Fare Management Page Styles */
+.fare-container {
+    padding: 20px;
+}
+
+.fare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.fare-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.fare-preview {
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+}

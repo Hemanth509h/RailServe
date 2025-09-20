@@ -1,0 +1,22 @@
+/* Food Restaurants Page Styles */
+.restaurants-container {
+    padding: 20px;
+}
+
+.restaurants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.restaurant-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.restaurant-card:hover {
+    transform: translateY(-4px);
+}

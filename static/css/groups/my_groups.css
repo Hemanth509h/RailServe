@@ -1,0 +1,29 @@
+/* My Groups Page Styles */
+.my-groups-container {
+    padding: 20px;
+}
+
+.groups-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.group-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.group-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
