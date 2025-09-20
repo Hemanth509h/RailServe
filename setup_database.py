@@ -1462,11 +1462,11 @@ def insert_comprehensive_data(conn):
         
         cursor.execute("""
             INSERT INTO food_order (booking_id, user_id, restaurant_id, delivery_station_id,
-                                  order_number, item_total, delivery_charge, tax_amount,
+                                  order_number, total_amount, item_total, delivery_charge, tax_amount,
                                   final_amount, status, contact_number, coach_number, seat_number)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """, (booking_id, random.choice(list(user_ids.values())), restaurant_id, delivery_station_id,
-              order_number, item_total, delivery_charge, tax_amount, final_amount, status,
+              order_number, final_amount, item_total, delivery_charge, tax_amount, final_amount, status,
               '9876543210', f"S{random.randint(1, 12)}", str(random.randint(1, 72))))
         
         food_order_id = cursor.fetchone()[0]
