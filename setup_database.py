@@ -32,8 +32,8 @@ from typing import List, Dict, Any, Optional
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-# Database connection
-DATABASE_URL = os.environ.get("DATABASE_URL")
+# Database connection with fallback
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/railserve")
 
 if not DATABASE_URL:
     logger.error("❌ DATABASE_URL environment variable is required")
@@ -87,15 +87,25 @@ def insert_users(cursor):
     user_ids = {}
     for username, email, password, role in users_data:
         password_hash = generate_password_hash(password)
-        cursor.execute("""
-            INSERT INTO "user" (username, email, password_hash, role, active, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
-        """, (username, email, password_hash, role, True, datetime.utcnow()))
-        
-        user_id = cursor.fetchone()[0]
-        user_ids[username] = user_id
+        try:
+            cursor.execute("""
+                INSERT INTO "user" (username, email, password_hash, role, active, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+            """, (username, email, password_hash, role, True, datetime.utcnow()))
+            
+            result = cursor.fetchone()
+            if result:
+                user_id = result[0]
+                user_ids[username] = user_id
+        except psycopg2.IntegrityError as e:
+            logger.warning(f"User {username} already exists, skipping...")
+            # Get existing user ID
+            cursor.execute("SELECT id FROM \"user\" WHERE username = %s", (username,))
+            result = cursor.fetchone()
+            if result:
+                user_ids[username] = result[0]
     
-    logger.info(f"✅ Created {len(users_data)} users")
+    logger.info(f"✅ Processed {len(users_data)} users")
     return user_ids
 
 def insert_stations(cursor):
@@ -130,7 +140,6 @@ def insert_stations(cursor):
         ('Coimbatore', 'CBE', 'Coimbatore', 'Tamil Nadu'),
         ('Madurai', 'MDU', 'Madurai', 'Tamil Nadu'),
         ('Vijayawada', 'BZA', 'Vijayawada', 'Andhra Pradesh'),
-        ('Thiruvananthapuram', 'TVC', 'Thiruvananthapuram', 'Kerala'),
         ('Mangalore Central', 'MAQ', 'Mangalore', 'Karnataka'),
         ('Mysuru', 'MYS', 'Mysuru', 'Karnataka'),
         ('Hubli', 'UBL', 'Hubli', 'Karnataka'),
@@ -163,8 +172,10 @@ def insert_stations(cursor):
                 VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
             """, (name, code, city, state, True, datetime.utcnow()))
             
-            station_id = cursor.fetchone()[0]
-            station_ids[code] = station_id
+            result = cursor.fetchone()
+            if result:
+                station_id = result[0]
+                station_ids[code] = station_id
         except psycopg2.IntegrityError:
             # Station already exists, get its ID
             cursor.execute("SELECT id FROM station WHERE code = %s", (code,))
@@ -172,7 +183,7 @@ def insert_stations(cursor):
             if result:
                 station_ids[code] = result[0]
     
-    logger.info(f"✅ Created {len(station_ids)} stations")
+    logger.info(f"✅ Processed {len(station_ids)} stations")
     return station_ids
 
 def insert_trains(cursor):
@@ -209,17 +220,26 @@ def insert_trains(cursor):
     
     train_ids = {}
     for number, name, total_seats, available_seats, fare_per_km, tatkal_seats, tatkal_fare_per_km in trains_data:
-        cursor.execute("""
-            INSERT INTO train (number, name, total_seats, available_seats, fare_per_km, 
-                             tatkal_seats, tatkal_fare_per_km, active, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
-        """, (number, name, total_seats, available_seats, fare_per_km, 
-              tatkal_seats, tatkal_fare_per_km, True, datetime.utcnow()))
-        
-        train_id = cursor.fetchone()[0]
-        train_ids[number] = train_id
+        try:
+            cursor.execute("""
+                INSERT INTO train (number, name, total_seats, available_seats, fare_per_km, 
+                                 tatkal_seats, tatkal_fare_per_km, active, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            """, (number, name, total_seats, available_seats, fare_per_km, 
+                  tatkal_seats, tatkal_fare_per_km, True, datetime.utcnow()))
+            
+            result = cursor.fetchone()
+            if result:
+                train_id = result[0]
+                train_ids[number] = train_id
+        except psycopg2.IntegrityError:
+            # Train already exists, get its ID
+            cursor.execute("SELECT id FROM train WHERE number = %s", (number,))
+            result = cursor.fetchone()
+            if result:
+                train_ids[number] = result[0]
     
-    logger.info(f"✅ Created {len(trains_data)} trains")
+    logger.info(f"✅ Processed {len(train_ids)} trains")
     return train_ids
 
 def insert_train_routes(cursor, train_ids, station_ids):
@@ -250,21 +270,27 @@ def insert_train_routes(cursor, train_ids, station_ids):
         ('12840', [('BCT', 1, '21:25', '21:25', 0), ('KOAA', 2, '10:40', '10:45', 1968)])
     ]
     
+    route_count = 0
     for train_number, stations in routes_data:
         if train_number in train_ids:
             train_id = train_ids[train_number]
             for station_code, sequence, arrival, departure, distance in stations:
                 if station_code in station_ids:
                     station_id = station_ids[station_code]
-                    cursor.execute("""
-                        INSERT INTO train_route (train_id, station_id, sequence, arrival_time, 
-                                               departure_time, distance_from_start, halt_duration,
-                                               commercial_stop, meal_stop)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """, (train_id, station_id, sequence, arrival, departure, distance, 
-                          5 if sequence > 1 else 0, True, sequence > 1))
+                    try:
+                        cursor.execute("""
+                            INSERT INTO train_route (train_id, station_id, sequence, arrival_time, 
+                                                   departure_time, distance_from_start, halt_duration,
+                                                   commercial_stop, meal_stop)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (train_id, station_id, sequence, arrival, departure, distance, 
+                              5 if sequence > 1 else 0, True, sequence > 1))
+                        route_count += 1
+                    except psycopg2.IntegrityError:
+                        # Route already exists
+                        pass
     
-    logger.info("✅ Created train routes")
+    logger.info(f"✅ Created {route_count} train routes")
 
 def insert_bookings(cursor, user_ids, train_ids, station_ids):
     """Insert sample bookings"""
@@ -280,11 +306,10 @@ def insert_bookings(cursor, user_ids, train_ids, station_ids):
     
     for i in range(100):  # Create 100 bookings
         # Generate unique PNR
-        while True:
+        pnr = generate_pnr()
+        while pnr in used_pnrs:
             pnr = generate_pnr()
-            if pnr not in used_pnrs:
-                used_pnrs.add(pnr)
-                break
+        used_pnrs.add(pnr)
         
         user_id = random.choice(list(user_ids.values()))
         train_id = random.choice(list(train_ids.values()))
@@ -312,17 +337,23 @@ def insert_bookings(cursor, user_ids, train_ids, station_ids):
         if booking_type == 'tatkal':
             total_amount *= 1.4  # Tatkal surcharge
         
-        cursor.execute("""
-            INSERT INTO booking (pnr, user_id, train_id, from_station_id, to_station_id,
-                               journey_date, passengers, total_amount, booking_type, quota,
-                               coach_class, status, booking_date, cancellation_charges)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
-        """, (pnr, user_id, train_id, from_station_id, to_station_id, journey_date,
-              passengers, total_amount, booking_type, quota, coach_class, status,
-              datetime.utcnow(), 0.0))
-        
-        booking_id = cursor.fetchone()[0]
-        booking_ids.append(booking_id)
+        try:
+            cursor.execute("""
+                INSERT INTO booking (pnr, user_id, train_id, from_station_id, to_station_id,
+                                   journey_date, passengers, total_amount, booking_type, quota,
+                                   coach_class, status, booking_date, cancellation_charges)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            """, (pnr, user_id, train_id, from_station_id, to_station_id, journey_date,
+                  passengers, total_amount, booking_type, quota, coach_class, status,
+                  datetime.utcnow(), 0.0))
+            
+            result = cursor.fetchone()
+            if result:
+                booking_id = result[0]
+                booking_ids.append(booking_id)
+        except psycopg2.IntegrityError:
+            # PNR conflict, skip this booking
+            continue
     
     logger.info(f"✅ Created {len(booking_ids)} bookings")
     return booking_ids
@@ -335,6 +366,7 @@ def insert_passengers(cursor, booking_ids):
              'Meera Nair', 'Rahul Jain', 'Anita Roy', 'Suresh Malhotra', 'Kavya Reddy',
              'Arjun Mehta', 'Deepika Iyer', 'Rohit Agarwal', 'Sneha Verma', 'Manoj Yadav']
     
+    passenger_count = 0
     for booking_id in booking_ids[:50]:  # Add passengers to first 50 bookings
         # Get booking details
         cursor.execute("SELECT passengers FROM booking WHERE id = %s", (booking_id,))
@@ -342,21 +374,27 @@ def insert_passengers(cursor, booking_ids):
         if not result:
             continue
         
-        passenger_count = result[0]
+        num_passengers = result[0]
         
-        for i in range(passenger_count):
+        for i in range(num_passengers):
             name = random.choice(names)
             age = random.randint(18, 70)
             gender = random.choice(['M', 'F'])
             seat_number = f"{random.choice(['S', 'A', 'B'])}{random.randint(1, 72)}"
-            berth_preference = random.choice(['Lower', 'Middle', 'Upper', 'No Preference'])
+            seat_preference = random.choice(['Lower', 'Middle', 'Upper', 'Window', 'Aisle', 'No Preference'])
+            coach_class = random.choice(['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC'])
             
-            cursor.execute("""
-                INSERT INTO passenger (booking_id, name, age, gender, seat_number, berth_preference)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (booking_id, name, age, gender, seat_number, berth_preference))
+            try:
+                cursor.execute("""
+                    INSERT INTO passenger (booking_id, name, age, gender, seat_number, seat_preference, coach_class)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (booking_id, name, age, gender, seat_number, seat_preference, coach_class))
+                passenger_count += 1
+            except psycopg2.IntegrityError:
+                # Passenger already exists
+                pass
     
-    logger.info("✅ Created passenger details")
+    logger.info(f"✅ Created {passenger_count} passenger details")
 
 def insert_payments(cursor, booking_ids):
     """Insert payment records"""
@@ -365,6 +403,7 @@ def insert_payments(cursor, booking_ids):
     payment_methods = ['credit_card', 'debit_card', 'net_banking', 'upi', 'wallet']
     payment_statuses = ['successful', 'failed', 'pending', 'refunded']
     
+    payment_count = 0
     for booking_id in booking_ids[:70]:  # Create payments for first 70 bookings
         # Get booking amount
         cursor.execute("SELECT total_amount FROM booking WHERE id = %s", (booking_id,))
@@ -378,14 +417,19 @@ def insert_payments(cursor, booking_ids):
         transaction_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
         gateway_response = f"Payment {status} via {payment_method}"
         
-        cursor.execute("""
-            INSERT INTO payment (booking_id, amount, payment_method, status, transaction_id,
-                               gateway_response, payment_date)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (booking_id, amount, payment_method, status, transaction_id,
-              gateway_response, datetime.utcnow()))
+        try:
+            cursor.execute("""
+                INSERT INTO payment (booking_id, amount, payment_method, status, transaction_id,
+                                   gateway_response, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (booking_id, amount, payment_method, status, transaction_id,
+                  gateway_response, datetime.utcnow()))
+            payment_count += 1
+        except psycopg2.IntegrityError:
+            # Payment already exists
+            pass
     
-    logger.info("✅ Created payment records")
+    logger.info(f"✅ Created {payment_count} payment records")
 
 def insert_restaurants(cursor, station_ids):
     """Insert restaurants and food data"""
@@ -408,15 +452,21 @@ def insert_restaurants(cursor, station_ids):
     for name, cuisine, station_code in restaurants_data:
         if station_code in station_ids:
             station_id = station_ids[station_code]
-            cursor.execute("""
-                INSERT INTO restaurant (name, cuisine_type, station_id, contact_number, 
-                                      rating, active, delivery_time)
-                VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
-            """, (name, cuisine, station_id, '9876543210', 
-                  round(random.uniform(3.5, 5.0), 1), True, random.randint(15, 45)))
-            
-            restaurant_id = cursor.fetchone()[0]
-            restaurant_ids.append(restaurant_id)
+            try:
+                cursor.execute("""
+                    INSERT INTO restaurant (name, cuisine_type, station_id, contact_number, 
+                                          rating, active, delivery_time)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+                """, (name, cuisine, station_id, '9876543210', 
+                      round(random.uniform(3.5, 5.0), 1), True, random.randint(15, 45)))
+                
+                result = cursor.fetchone()
+                if result:
+                    restaurant_id = result[0]
+                    restaurant_ids.append(restaurant_id)
+            except psycopg2.IntegrityError:
+                # Restaurant already exists
+                pass
     
     # Insert menu items
     logger.info("📜 Creating menu items...")
@@ -426,20 +476,26 @@ def insert_restaurants(cursor, station_ids):
         'Fried Rice', 'Noodles', 'Fresh Orange Juice', 'Lassi', 'Coke'
     ]
     
+    menu_count = 0
     for restaurant_id in restaurant_ids:
         for _ in range(random.randint(5, 10)):  # 5-10 items per restaurant
             item_name = random.choice(menu_items)
             price = round(random.uniform(50, 500), 2)
             category = random.choice(['Main Course', 'Beverage', 'Snacks', 'Dessert'])
             
-            cursor.execute("""
-                INSERT INTO menu_item (restaurant_id, name, price, category, description, 
-                                     available, veg, preparation_time)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (restaurant_id, item_name, price, category, f"Delicious {item_name}",
-                  True, random.choice([True, False]), random.randint(5, 30)))
+            try:
+                cursor.execute("""
+                    INSERT INTO menu_item (restaurant_id, name, price, category, description, 
+                                         available, food_type, preparation_time)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (restaurant_id, item_name, price, category, f"Delicious {item_name}",
+                      True, random.choice(['Veg', 'Non-Veg']), random.randint(5, 30)))
+                menu_count += 1
+            except psycopg2.IntegrityError:
+                # Menu item already exists
+                pass
     
-    logger.info("✅ Created restaurants and menu items")
+    logger.info(f"✅ Created restaurants and {menu_count} menu items")
 
 def insert_comprehensive_data(cursor):
     """Insert all comprehensive test data"""
@@ -490,23 +546,28 @@ def main():
         
         # Show statistics
         cursor.execute("SELECT COUNT(*) FROM \"user\"")
-        user_count = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        user_count = result[0] if result else 0
         logger.info(f"   👥 {user_count} users")
         
         cursor.execute("SELECT COUNT(*) FROM station")
-        station_count = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        station_count = result[0] if result else 0
         logger.info(f"   🚉 {station_count} stations")
         
         cursor.execute("SELECT COUNT(*) FROM train")
-        train_count = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        train_count = result[0] if result else 0
         logger.info(f"   🚂 {train_count} trains")
         
         cursor.execute("SELECT COUNT(*) FROM booking")
-        booking_count = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        booking_count = result[0] if result else 0
         logger.info(f"   🎫 {booking_count} bookings")
         
         cursor.execute("SELECT COUNT(*) FROM restaurant")
-        restaurant_count = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        restaurant_count = result[0] if result else 0
         logger.info(f"   🍽️ {restaurant_count} restaurants")
         
         logger.info("")
