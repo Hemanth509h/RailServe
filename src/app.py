@@ -90,7 +90,13 @@ app.register_blueprint(pdf_bp, url_prefix='/pdf')
 with app.app_context():
     # Import models to ensure tables are created
     from . import models
-    db.create_all()
+    
+    # Create tables safely - handle existing tables/sequences
+    try:
+        db.create_all()
+    except Exception as e:
+        # Log the error but don't crash the app if tables already exist
+        logging.warning(f"Database tables may already exist: {e}")
     
     # Note: Admin users should be created securely through proper CLI commands or setup scripts
     # Never create default admin users with hard-coded passwords in production
