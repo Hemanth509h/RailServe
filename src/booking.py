@@ -310,7 +310,6 @@ def tatkal_booking(train_id):
                              train=train, 
                              stations=stations,
                              train_stations=train_stations,
-                             user_verified=user_verified,
                              is_ac_open=is_ac_open,
                              is_non_ac_open=is_non_ac_open,
                              current_time=now.strftime('%H:%M'))
