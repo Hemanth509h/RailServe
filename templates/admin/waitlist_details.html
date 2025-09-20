@@ -265,11 +265,13 @@
                 <div class="status-actions">
                     {% if booking.status == 'waitlisted' %}
                         <form method="POST" action="{{ url_for('admin.confirm_waitlist', booking_id=booking.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn-confirm" onclick="return confirm('Confirm this waitlist booking?')">
                                 <i class="fas fa-check"></i> Confirm
                             </button>
                         </form>
                         <form method="POST" action="{{ url_for('admin.cancel_waitlist', booking_id=booking.id) }}" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn-cancel" onclick="return confirm('Cancel this waitlist booking?')">
                                 <i class="fas fa-times"></i> Cancel
                             </button>

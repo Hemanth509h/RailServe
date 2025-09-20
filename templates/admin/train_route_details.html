@@ -161,6 +161,7 @@
         </div>
         
         <form id="stationForm" method="POST" action="{{ url_for('admin.add_station_to_route', train_id=train.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="modal-body">
                 <div class="form-group">
                     <label for="station_select">Select Station</label>

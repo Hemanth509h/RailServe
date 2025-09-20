@@ -63,6 +63,7 @@
                         {% if group.status in ['pending'] %}
                         <form method="POST" action="{{ url_for('groups.cancel_group_booking', group_id=group.id) }}" 
                               class="d-inline" onsubmit="return confirm('Cancel entire group booking?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn btn-danger btn-sm">
                                 <i class="fas fa-times me-1"></i>Cancel Group
                             </button>

@@ -56,6 +56,7 @@
             </div>
             
             <form method="POST" action="{{ url_for('admin.update_quota', train_id=train.id) }}" class="quota-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-row">
                     <label>Total Seats:</label>
                     <input type="number" name="total_seats" value="{{ train.total_seats }}" min="50" max="2000" required>
