@@ -17,27 +17,23 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RailServe Web App"
+args = "RailServe Frontend"
 
 [[workflows.workflow]]
-name = "RailServe Web App"
+name = "RailServe Frontend"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uv run gunicorn --bind 0.0.0.0:5000 --reuse-port --workers 2 --reload main:app"
 waitForPort = 5000
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 41799
-externalPort = 3001
 
 [[ports]]
 localPort = 45949

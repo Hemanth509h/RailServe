@@ -53,20 +53,7 @@
     box-shadow: var(--card-shadow);
     backdrop-filter: blur(10px);
 }
-form.search-form{
-        padding: 6px;
-}
-input.search-input{
-        border-radius: 6px;
-    border: transparent;
-}
-button.search-btn {
-    color: var(--accent-color);
-    border: transparent;
-}
-form.search-form {
-    width: 220px;
-}
+/* Search form styling - removed width constraint */
 .form-row {
     display: flex;
     flex-direction: column;
@@ -75,23 +62,55 @@ form.search-form {
 #form-select {
     display: flex;
     width: 100%;
-    justify-content: space-evenly;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
 }
 .search-form {
-    width: 850px;
+    max-width: 850px;
+    width: 100%;
 }
 div#form-select2 {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     width: 100%;
-    gap: 5%;
+    gap: 1rem;
     justify-content: center;
+    margin-top: 1rem;
 }
 
 .swap-btn {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group select,
+.form-group input {
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .swap-btn button {
