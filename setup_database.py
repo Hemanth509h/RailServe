@@ -631,19 +631,25 @@ def create_tables(conn):
 
 def generate_pnr() -> str:
     """Generate a unique 10-digit PNR"""
-    return ''.join(random.choices(string.digits, k=10))
+    timestamp = datetime.now()
+    # Use timestamp + random to ensure uniqueness
+    base = timestamp.strftime('%Y%m%d%H%M%S')
+    return (base + str(random.randint(10, 99)))[-10:]  # Take last 10 digits
 
 def generate_tdr_number() -> str:
     """Generate a unique TDR number"""
-    return f"TDR{datetime.now().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+    timestamp = datetime.now()
+    return f"TDR{timestamp.strftime('%Y%m%d')}{timestamp.strftime('%H%M%S')}{random.randint(100, 999)}"
 
 def generate_order_number() -> str:
     """Generate a unique food order number"""
-    return f"FD{datetime.now().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+    timestamp = datetime.now()
+    return f"FD{timestamp.strftime('%Y%m%d')}{timestamp.strftime('%H%M%S')}{random.randint(100, 999)}"
 
 def generate_membership_number() -> str:
     """Generate a unique loyalty membership number"""
-    return f"RL{datetime.now().strftime('%Y')}{random.randint(100000, 999999)}"
+    timestamp = datetime.now()
+    return f"RL{timestamp.strftime('%Y')}{timestamp.strftime('%m%d%H%M%S')}{random.randint(100, 999)}"
 
 def get_comprehensive_stations_data() -> List[Tuple[str, str, str, str, str, str]]:
     """Generate comprehensive stations data for all major Indian railway stations"""
@@ -1202,8 +1208,17 @@ def insert_comprehensive_data(conn):
     quotas = ['general', 'tatkal', 'ladies', 'handicapped', 'senior_citizen', 'defense', 'parliament']
     coach_classes = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC']
     
+    # Track used PNRs to avoid duplicates
+    used_pnrs = set()
+    
     for i in range(2000):  # Create 2000 bookings
-        pnr = generate_pnr()
+        # Generate unique PNR
+        while True:
+            pnr = generate_pnr()
+            if pnr not in used_pnrs:
+                used_pnrs.add(pnr)
+                break
+        
         user_id = random.choice(list(user_ids.values()))
         train_id = random.choice(list(train_ids.values()))
         
@@ -1430,12 +1445,20 @@ def insert_comprehensive_data(conn):
     
     food_order_statuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']
     
+    # Track used order numbers to avoid duplicates
+    used_order_numbers = set()
+    
     for i in range(200):  # Create 200 food orders
         booking_id = random.choice(confirmed_booking_ids)
         restaurant_id = random.choice(restaurant_ids)
         delivery_station_id = random.choice(list(station_ids.values()))
         
-        order_number = generate_order_number()
+        # Generate unique order number
+        while True:
+            order_number = generate_order_number()
+            if order_number not in used_order_numbers:
+                used_order_numbers.add(order_number)
+                break
         
         # Get random menu items for this order
         cursor.execute("SELECT id, price FROM menu_item WHERE restaurant_id = %s", (restaurant_id,))
@@ -1483,11 +1506,19 @@ def insert_comprehensive_data(conn):
     
     tiers = ['Silver', 'Gold', 'Platinum', 'Diamond']
     
+    # Track used membership numbers to avoid duplicates
+    used_membership_numbers = set()
+    
     for username, user_id in user_ids.items():
         if username in ['admin', 'railway_admin', 'station_master']:
             continue  # Skip admin users
         
-        membership_number = generate_membership_number()
+        # Generate unique membership number
+        while True:
+            membership_number = generate_membership_number()
+            if membership_number not in used_membership_numbers:
+                used_membership_numbers.add(membership_number)
+                break
         tier = random.choice(tiers)
         points_earned = random.randint(1000, 50000)
         points_redeemed = random.randint(0, points_earned // 2)
