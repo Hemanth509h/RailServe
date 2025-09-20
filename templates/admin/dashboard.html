@@ -99,13 +99,16 @@
     </div>
     
     <div class="quick-actions">
-        <h3><i class="fas fa-bolt"></i> Railway Management System</h3>
+        <div class="section-header">
+            <h3><i class="fas fa-bolt"></i> Railway Management System</h3>
+            <p class="section-description">Comprehensive tools for managing your railway operations</p>
+        </div>
         <div class="actions-grid">
             <!-- Core Train Management -->
             <a href="{{ url_for('admin.trains') }}" class="action-card core">
                 <i class="fas fa-train"></i>
                 <h4>Manage Trains</h4>
-                <p>Add, edit, or remove trains</p>
+                <p>Add, edit, or remove trains and schedules</p>
             </a>
             
             <a href="{{ url_for('admin.stations') }}" class="action-card core">
@@ -224,126 +227,206 @@
 </div>
 
 <style>
+.section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.section-header h3 {
+    color: var(--admin-text-primary);
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.025em;
+}
+
+.section-header p.section-description {
+    color: var(--admin-text-secondary);
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
 .actions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.75rem;
+    margin-top: 2rem;
 }
 
 .action-card {
-    padding: 1.5rem;
-    border-radius: 8px;
+    padding: 2rem;
+    border-radius: 16px;
     text-decoration: none;
     color: white;
-    transition: all 0.3s ease;
-    border-left: 4px solid;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    box-shadow: var(--admin-shadow-md);
+    position: relative;
+    overflow: hidden;
 }
 
 .action-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--admin-shadow-lg);
     color: white;
     text-decoration: none;
 }
 
 .action-card.core {
     background: linear-gradient(135deg, #1e40af, #3b82f6);
-    border-left-color: #1d4ed8;
+}
+
+.action-card.core::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #1d4ed8, #2563eb);
 }
 
 .action-card.operations {
     background: linear-gradient(135deg, #059669, #10b981);
-    border-left-color: #047857;
+}
+
+.action-card.operations::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #047857, #059669);
 }
 
 .action-card.emergency {
     background: linear-gradient(135deg, #dc2626, #ef4444);
-    border-left-color: #b91c1c;
+}
+
+.action-card.emergency::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #b91c1c, #dc2626);
 }
 
 .action-card.reports {
     background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-    border-left-color: #6d28d9;
+}
+
+.action-card.reports::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #6d28d9, #7c3aed);
 }
 
 .action-card.admin {
     background: linear-gradient(135deg, #374151, #4b5563);
-    border-left-color: #1f2937;
+}
+
+.action-card.admin::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #1f2937, #374151);
 }
 
 .action-card i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+    font-size: 2.25rem;
+    margin-bottom: 1.25rem;
     display: block;
 }
 
 .action-card h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 
 .action-card p {
     margin: 0;
-    opacity: 0.9;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    opacity: 0.95;
+    font-size: 0.925rem;
+    line-height: 1.5;
+    font-weight: 400;
 }
 
 .system-status {
     margin-top: 3rem;
-    background: white;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border-light);
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: var(--admin-shadow-md);
 }
 
 .system-status h3 {
-    margin: 0 0 1.5rem 0;
-    color: #1f2937;
-    font-size: 1.3rem;
+    margin: 0 0 1.75rem 0;
+    color: var(--admin-text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    letter-spacing: -0.025em;
 }
 
 .status-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
 }
 
 .status-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: #f9fafb;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--admin-bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--admin-border-light);
+    transition: all 0.3s ease;
+}
+
+.status-item:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--admin-shadow-sm);
 }
 
 .status-indicator {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     position: relative;
+    flex-shrink: 0;
 }
 
 .status-indicator.active {
     background: #22c55e;
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
 }
 
 .status-indicator.warning {
     background: #f59e0b;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
 .status-indicator.error {
     background: #ef4444;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 .status-indicator.active::after {
@@ -359,8 +442,9 @@
 }
 
 .status-item span {
-    font-weight: 500;
-    color: #374151;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    font-size: 0.95rem;
 }
 
 @media (max-width: 768px) {

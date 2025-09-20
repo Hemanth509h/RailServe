@@ -3,18 +3,18 @@
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-accent: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-    --bg-table-header: #f8fafc;
+    --bg-table-header: #f1f5f9;
     --bg-table-hover: #f8fafc;
     --bg-nav-mobile: #1e40af;
-    --text-primary: #333333;
+    --text-primary: #1f2937;
     --text-secondary: #6b7280;
     --text-inverse: #ffffff;
     --text-table-header: #374151;
     --border-color: #e5e7eb;
     --btn-primary: #3b82f6;
     --btn-primary-hover: #2563eb;
-    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+    --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08);
     --hero-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
     --status-confirmed-bg: #dcfce7;
     --status-confirmed-text: #166534;
@@ -47,6 +47,25 @@
     --alert-info-bg: #dbeafe;
     --alert-info-text: #1e40af;
     --alert-info-border: #bfdbfe;
+    
+    /* Enhanced Admin Colors */
+    --admin-bg-primary: #f8fafc;
+    --admin-bg-secondary: #ffffff;
+    --admin-card-bg: #ffffff;
+    --admin-header-bg: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    --admin-sidebar-bg: #f8fafc;
+    --admin-accent-blue: #3b82f6;
+    --admin-accent-green: #10b981;
+    --admin-accent-orange: #f59e0b;
+    --admin-accent-red: #ef4444;
+    --admin-accent-purple: #8b5cf6;
+    --admin-text-primary: #1f2937;
+    --admin-text-secondary: #6b7280;
+    --admin-border-light: #e5e7eb;
+    --admin-border-medium: #d1d5db;
+    --admin-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --admin-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Dark Theme */
