@@ -26,16 +26,14 @@ app = Flask(__name__,
 
 # Load configuration
 # Load configuration - require SESSION_SECRET for security
-app.secret_key = os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+app.secret_key = os.environ.get("SESSION_SECRET")
 if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
-# Use DATABASE_URL or fallback to local PostgreSQL
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
-
-# Verify database connection is configured
+# Use DATABASE_URL - required for production security
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 if not app.config['SQLALCHEMY_DATABASE_URI']:
-    raise RuntimeError("DATABASE_URL environment variable is required or database not configured")
+    raise RuntimeError("DATABASE_URL environment variable is required")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
