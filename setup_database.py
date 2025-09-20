@@ -51,12 +51,60 @@ except ImportError as e:
     logger.error("Install with: pip install psycopg2-binary werkzeug")
     sys.exit(1)
 
+def create_database_if_not_exists():
+    """Create the railserve database if it doesn't exist"""
+    try:
+        # Parse the DATABASE_URL to get connection details
+        from urllib.parse import urlparse
+        result = urlparse(DATABASE_URL)
+        
+        # Connect to default postgres database first
+        default_db_url = f"postgresql://{result.username}:{result.password}@{result.hostname}:{result.port}/postgres"
+        
+        logger.info("🔗 Connecting to default database to check/create railserve database...")
+        conn = psycopg2.connect(default_db_url)
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cursor = conn.cursor()
+        
+        # Check if railserve database exists
+        cursor.execute("SELECT 1 FROM pg_database WHERE datname='railserve'")
+        exists = cursor.fetchone()
+        
+        if not exists:
+            logger.info("🗄️ Creating 'railserve' database...")
+            cursor.execute("CREATE DATABASE railserve")
+            logger.info("✅ Database 'railserve' created successfully")
+        else:
+            logger.info("✅ Database 'railserve' already exists")
+        
+        conn.close()
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to create database: {e}")
+        logger.error("Please ensure PostgreSQL is running and you have proper permissions")
+        sys.exit(1)
+
 def get_db_connection():
     """Get database connection"""
     try:
         conn = psycopg2.connect(DATABASE_URL)
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         return conn
+    except psycopg2.OperationalError as e:
+        if "does not exist" in str(e):
+            logger.info("📝 Database doesn't exist, creating it now...")
+            create_database_if_not_exists()
+            # Try connecting again
+            try:
+                conn = psycopg2.connect(DATABASE_URL)
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                return conn
+            except Exception as retry_error:
+                logger.error(f"❌ Database connection failed after creation: {retry_error}")
+                sys.exit(1)
+        else:
+            logger.error(f"❌ Database connection failed: {e}")
+            sys.exit(1)
     except Exception as e:
         logger.error(f"❌ Database connection failed: {e}")
         sys.exit(1)
