@@ -1,4 +1,4 @@
-modules = ["web", "python-3.11", "nodejs-20", "postgresql-16"]
+modules = ["web", "python-3.11", "nodejs-20"]
 [agent]
 expertMode = true
 integrations = ["python_database:1.0.0"]
@@ -49,4 +49,4 @@ externalPort = 3002
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
