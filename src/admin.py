@@ -1189,7 +1189,7 @@ def allocate_all_tomorrow():
     return redirect(url_for('admin.waitlist_allocation'))
 
 @admin_bp.route('/waitlist-allocation/auto-schedule', methods=['POST'])
-@admin_required  
+@admin_required
 def schedule_auto_allocation():
     """Schedule or enable automatic waitlist allocation"""
     auto_enabled = request.form.get('auto_enabled') == 'on'
