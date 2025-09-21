@@ -139,7 +139,7 @@ def add_group_train_booking(group_id):
                 return redirect(url_for('groups.add_group_train_booking', group_id=group_id))
             
             # Validate journey date is not in the past
-            parsed_journey_date = datetime.strptime(journey_date, '%Y-%m-%d').date()
+            parsed_journey_date = datetime.strptime(journey_date or '', '%Y-%m-%d').date()
             tomorrow = (datetime.now() + timedelta(days=1)).date()
             if parsed_journey_date < tomorrow:
                 flash('Journey date must be at least tomorrow', 'error')
