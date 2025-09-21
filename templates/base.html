@@ -130,15 +130,64 @@
                 <ul>
                     <li><a href="{{ url_for('index') }}">Home</a></li>
                     <li><a href="{{ url_for('pnr_enquiry') }}">PNR Enquiry</a></li>
+                    <li><a href="{{ url_for('universal_search') }}">Search Trains</a></li>
                     {% if current_user.is_authenticated %}
                         <li><a href="{{ url_for('auth.profile') }}">My Profile</a></li>
                     {% endif %}
                 </ul>
             </div>
+            
+            <div class="footer-section">
+                <h4>
+                    <i class="fas fa-sitemap"></i>
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                        Admin Sitemap
+                    {% else %}
+                        Site Map
+                    {% endif %}
+                </h4>
+                <ul>
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                        <!-- Admin-specific links -->
+                        <li><a href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a></li>
+                        <li><a href="{{ url_for('admin.analytics') }}"><i class="fas fa-chart-line"></i> Analytics & Reports</a></li>
+                        <li><a href="{{ url_for('admin.trains') }}"><i class="fas fa-train"></i> Train Management</a></li>
+                        <li><a href="{{ url_for('admin.stations') }}"><i class="fas fa-map-marker-alt"></i> Station Management</a></li>
+                        <li><a href="{{ url_for('admin.users') }}"><i class="fas fa-users"></i> User Management</a></li>
+                        <li><a href="{{ url_for('admin.booking_reports') }}"><i class="fas fa-file-alt"></i> Booking Reports</a></li>
+                        <li><a href="{{ url_for('admin.waitlist_management') }}"><i class="fas fa-list"></i> Waitlist Management</a></li>
+                        <li><a href="{{ url_for('admin.tatkal_management') }}"><i class="fas fa-clock"></i> Tatkal Management</a></li>
+                    {% elif current_user.is_authenticated %}
+                        <!-- Regular user links -->
+                        <li><a href="{{ url_for('booking.book_ticket') }}"><i class="fas fa-ticket-alt"></i> Book Ticket</a></li>
+                        <li><a href="{{ url_for('booking.booking_history') }}"><i class="fas fa-history"></i> My Bookings</a></li>
+                        <li><a href="{{ url_for('groups.my_groups') }}"><i class="fas fa-users"></i> My Groups</a></li>
+                        <li><a href="{{ url_for('groups.create') }}"><i class="fas fa-plus-circle"></i> Create Group</a></li>
+                        <li><a href="{{ url_for('food.restaurants') }}"><i class="fas fa-utensils"></i> Food Ordering</a></li>
+                        <li><a href="{{ url_for('booking.tatkal_booking') }}"><i class="fas fa-bolt"></i> Tatkal Booking</a></li>
+                        <li><a href="{{ url_for('auth.profile') }}"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    {% else %}
+                        <!-- Guest user links -->
+                        <li><a href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                        <li><a href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                        <li><a href="{{ url_for('pnr_enquiry') }}"><i class="fas fa-search"></i> Track PNR</a></li>
+                        <li><a href="{{ url_for('universal_search') }}"><i class="fas fa-search"></i> Search Trains</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            
             <div class="footer-section">
                 <h4>Support</h4>
                 <p><i class="fas fa-phone"></i> 1800-111-139</p>
                 <p><i class="fas fa-envelope"></i> support@railserve.com</p>
+                <div class="social-links">
+                    <h5>Follow Us</h5>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                </div>
             </div>
         </div>
         <div class="footer-bottom">
