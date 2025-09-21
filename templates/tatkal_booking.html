@@ -8,20 +8,15 @@
         <!-- Tatkal Header with Warning -->
         <div class="tatkal-header">
             <h1><i class="fas fa-bolt text-warning"></i> Tatkal Booking</h1>
-            {% if not user_verified %}
-            <div class="aadhaar-alert">
+            <div class="tatkal-info-alert">
                 <div class="alert-icon">
-                    <i class="fas fa-id-card"></i>
+                    <i class="fas fa-bolt"></i>
                 </div>
                 <div class="alert-content">
-                    <h3>Aadhaar Verification Required</h3>
-                    <p>As per new rules from 2025, Aadhaar authentication is mandatory for Tatkal bookings. Please verify your Aadhaar to proceed.</p>
-                    <a href="{{ url_for('auth.profile') }}" class="btn btn-info btn-sm">
-                        <i class="fas fa-user-check"></i> Complete Verification
-                    </a>
+                    <h3>Tatkal Booking</h3>
+                    <p>Fast-track booking with higher fare for confirmed seats. Limited time window available.</p>
                 </div>
             </div>
-            {% endif %}
             
             <div class="tatkal-alert">
                 <div class="alert-icon">
@@ -42,7 +37,7 @@
                         </li>
                         <li><strong>Advance Booking:</strong> Only 1 day before journey date</li>
                         <li><strong>Premium Charges:</strong> Up to ₹400 for AC classes, ₹200 for Non-AC classes</li>
-                        <li><strong>Anti-Bot Protection:</strong> Only Aadhaar-verified users can book in priority window</li>
+                        <li><strong>Anti-Bot Protection:</strong> Captcha verification for secure booking</li>
                         <li><strong>No Refund:</strong> Cancellation charges are 100% of fare</li>
                         <li><strong>ID Proof Mandatory:</strong> Must carry valid ID during travel</li>
                         <li><strong>Payment:</strong> Must be completed within 5 minutes</li>
@@ -256,7 +251,7 @@
                         <button type="button" class="btn btn-secondary" disabled>
                             <i class="fas fa-lock"></i> 
                             {% if not user_verified %}
-                                Aadhaar Verification Required
+                                Fast Booking Process
                             {% else %}
                                 Tatkal Booking Closed
                             {% endif %}
@@ -338,9 +333,9 @@
     font-weight: bold;
 }
 
-.aadhaar-alert {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    border: 2px solid #3b82f6;
+.tatkal-info-alert {
+    background: linear-gradient(135deg, #fef3c7, #fffbeb);
+    border: 2px solid #fbbf24;
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
@@ -349,37 +344,37 @@
     gap: 15px;
 }
 
-.aadhaar-alert .alert-icon {
+.tatkal-info-alert .alert-icon {
     font-size: 2rem;
-    color: #2563eb;
+    color: #d97706;
     margin-top: 5px;
 }
 
-.aadhaar-alert .alert-content h3 {
-    color: #1e3a8a;
+.tatkal-info-alert .alert-content h3 {
+    color: #92400e;
     margin-bottom: 10px;
 }
 
-.aadhaar-alert .alert-content p {
-    color: #1e40af;
+.tatkal-info-alert .alert-content p {
+    color: #92400e;
     margin-bottom: 15px;
 }
 
-[data-theme="dark"] .aadhaar-alert {
-    background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-    border-color: #4338ca;
+[data-theme="dark"] .tatkal-info-alert {
+    background: linear-gradient(135deg, #451a03 0%, #92400e 100%);
+    border-color: #d97706;
 }
 
-[data-theme="dark"] .aadhaar-alert .alert-icon {
-    color: #93c5fd;
+[data-theme="dark"] .tatkal-info-alert .alert-icon {
+    color: #fbbf24;
 }
 
-[data-theme="dark"] .aadhaar-alert .alert-content h3 {
-    color: #bfdbfe;
+[data-theme="dark"] .tatkal-info-alert .alert-content h3 {
+    color: #fde68a;
 }
 
-[data-theme="dark"] .aadhaar-alert .alert-content p {
-    color: #cbd5e1;
+[data-theme="dark"] .tatkal-info-alert .alert-content p {
+    color: #fde68a;
 }
 
 .coach-selection {
