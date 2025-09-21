@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Waitlist Seat Allocation - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-users-cog"></i> Waitlist Seat Allocation</h1>
+        <nav class="admin-breadcrumb">
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a> > 
+            <span>Waitlist Allocation</span>
+        </nav>
+    </div>
+
+    <div class="admin-content">
+        <!-- Quick Actions Section -->
+        <div class="admin-section">
+            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <div class="action-buttons">
+                <form method="POST" action="{{ url_for('admin.allocate_all_tomorrow') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('Allocate seats for all trains departing tomorrow?')">
+                        <i class="fas fa-calendar-check"></i> Allocate All Tomorrow's Trains
+                    </button>
+                </form>
+                <a href="{{ url_for('admin.waitlist_details') }}" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> View Detailed Waitlist
+                </a>
+            </div>
+        </div>
+
+        <!-- Automatic Allocation Settings -->
+        <div class="admin-section">
+            <h2><i class="fas fa-clock"></i> Automatic Allocation Schedule</h2>
+            <div class="form-container">
+                <form method="POST" action="{{ url_for('admin.schedule_auto_allocation') }}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-checkbox">
+                                <input type="checkbox" name="auto_enabled" {% if session.get('auto_waitlist_enabled') %}checked{% endif %}>
+                                <span class="checkmark"></span>
+                                Enable automatic waitlist allocation
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="allocation_time">Daily allocation time:</label>
+                            <input type="time" id="allocation_time" name="allocation_time" 
+                                   value="{{ session.get('auto_waitlist_time', '18:00') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% if session.get('auto_waitlist_enabled') %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Automatic allocation is enabled for {{ session.get('auto_waitlist_time', '18:00') }} daily.
+                This will process all waitlists for trains departing the next day.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Trains Departing Tomorrow -->
+        <div class="admin-section">
+            <h2><i class="fas fa-calendar-day"></i> Trains Departing Tomorrow ({{ tomorrow.strftime('%d %B %Y') }})</h2>
+            {% if trains_tomorrow %}
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Waitlisted Passengers</th>
+                            <th>Available Seats</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for train in trains_tomorrow %}
+                        <tr>
+                            <td>{{ train.number }}</td>
+                            <td>{{ train.name }}</td>
+                            <td>
+                                <span class="badge badge-warning">{{ train.waitlist_count }}</span>
+                            </td>
+                            <td>
+                                <span class="badge {% if train.available_seats > 0 %}badge-success{% else %}badge-danger{% endif %}">
+                                    {{ train.available_seats }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if train.available_seats > 0 %}
+                                <form method="POST" action="{{ url_for('admin.allocate_train_waitlist', train_id=train.id, journey_date=tomorrow.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-primary"
+                                            onclick="return confirm('Allocate available seats for {{ train.number }}?')">
+                                        <i class="fas fa-check"></i> Allocate Seats
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">No seats available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No trains with waitlisted passengers found for tomorrow.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Allocation History -->
+        <div class="admin-section">
+            <h2><i class="fas fa-history"></i> Recent Allocation Activity (Last 7 Days)</h2>
+            {% if recent_allocations %}
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Train Number</th>
+                            <th>Train Name</th>
+                            <th>Confirmed Bookings</th>
+                            <th>Last Confirmation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in recent_allocations %}
+                        <tr>
+                            <td>{{ allocation.number }}</td>
+                            <td>{{ allocation.name }}</td>
+                            <td>
+                                <span class="badge badge-success">{{ allocation.confirmed_count }}</span>
+                            </td>
+                            <td>{{ allocation.last_confirmation.strftime('%d %b %Y %H:%M') if allocation.last_confirmation else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No recent allocation activity found.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Help Section -->
+        <div class="admin-section">
+            <h2><i class="fas fa-question-circle"></i> How It Works</h2>
+            <div class="help-content">
+                <div class="help-item">
+                    <h4><i class="fas fa-clock"></i> Automatic Allocation</h4>
+                    <p>When enabled, the system automatically processes waitlists daily at the specified time for all trains departing the next day. This ensures timely confirmation of available seats.</p>
+                </div>
+                <div class="help-item">
+                    <h4><i class="fas fa-hand-pointer"></i> Manual Allocation</h4>
+                    <p>You can manually trigger allocation for specific trains or all trains departing tomorrow. This is useful for immediate processing or handling special cases.</p>
+                </div>
+                <div class="help-item">
+                    <h4><i class="fas fa-sort-numeric-up"></i> Allocation Order</h4>
+                    <p>Seats are allocated based on waitlist position (FIFO - First In, First Out). Passengers with lower position numbers get priority.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.help-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.help-item {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.help-item h4 {
+    margin-bottom: 0.5rem;
+    color: var(--accent-color);
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-warning {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.badge-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.text-muted {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+</style>
+{% endblock %}
