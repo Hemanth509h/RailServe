@@ -30,10 +30,41 @@ app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
-# Use DATABASE_URL - required for production security
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DATABASE_URL", "postgresql://postgres:[YOUR-PASSWORD]@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres")
-if not app.config['SQLALCHEMY_DATABASE_URI']:
-    raise RuntimeError("DATABASE_URL environment variable is required")
+# Use DATABASE_URL with fallback to local database
+database_url = os.environ.get("DATABASE_URL")
+use_local_db = False
+
+if database_url:
+    # Check if DATABASE_URL is just a password (from user input) and construct full URL
+    if not database_url.startswith('postgresql://') and not database_url.startswith('sqlite://'):
+        # Treat it as password and construct full Supabase URL
+        password = database_url
+        database_url = f"postgresql://postgres:{password}@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres"
+        logging.info("Constructed Supabase connection string from provided password")
+    else:
+        logging.info("Using provided DATABASE_URL")
+    
+    # Test connection to online database
+    try:
+        import sqlalchemy
+        test_engine = sqlalchemy.create_engine(database_url)
+        with test_engine.connect() as conn:
+            conn.execute(sqlalchemy.text("SELECT 1"))
+        logging.info("Online database connection successful")
+    except Exception as e:
+        logging.warning(f"Online database connection failed: {e}")
+        logging.info("Falling back to local SQLite database")
+        use_local_db = True
+else:
+    logging.info("No DATABASE_URL provided, using local SQLite database")
+    use_local_db = True
+
+if use_local_db:
+    # Use local SQLite database
+    database_url = "sqlite:///local_railway.db"
+    logging.info("Using local SQLite database: local_railway.db")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
