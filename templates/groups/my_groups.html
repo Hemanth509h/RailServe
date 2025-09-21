@@ -2,70 +2,74 @@
 
 {% block title %}My Group Bookings - RailServe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/groups/my_groups.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid px-4 py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-users text-primary me-2"></i>My Group Bookings</h2>
-        <a href="{{ url_for('groups.create_group_booking') }}" class="btn btn-success">
-            <i class="fas fa-plus me-2"></i>Create New Group
+<div class="groups-container">
+    <div class="groups-header">
+        <h2><i class="fas fa-users header-icon"></i>My Group Bookings</h2>
+        <a href="{{ url_for('groups.create_group_booking') }}" class="success-button">
+            <i class="fas fa-plus icon-left"></i>Create New Group
         </a>
     </div>
     
     {% if led_groups or member_groups %}
         
         {% if led_groups %}
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-crown me-2"></i>Groups I Lead</h5>
+        <div class="groups-card">
+            <div class="groups-card-header led-groups-header">
+                <h5><i class="fas fa-crown icon-left"></i>Groups I Lead</h5>
             </div>
-            <div class="card-body">
+            <div class="groups-card-body">
                 {% for group in led_groups %}
-                <div class="group-item border rounded p-3 mb-3">
-                    <div class="row align-items-center">
-                        <div class="col-md-4">
-                            <h6 class="text-primary">{{ group.group_name }}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>Created: {{ group.created_at.strftime('%d %b %Y') }}
+                <div class="group-item">
+                    <div class="group-row">
+                        <div class="group-col-info">
+                            <h6 class="group-name">{{ group.group_name }}</h6>
+                            <small class="group-meta">
+                                <i class="fas fa-calendar icon-left"></i>Created: {{ group.created_at.strftime('%d %b %Y') }}
                             </small>
                         </div>
-                        <div class="col-md-2">
-                            <span class="badge bg-{% if group.status == 'confirmed' %}success{% elif group.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                        <div class="group-col-status">
+                            <span class="status-badge status-{{ group.status }}">
                                 {{ group.status.title() }}
                             </span>
                         </div>
-                        <div class="col-md-2">
-                            <small class="text-muted">Type:</small><br>
-                            <span class="badge bg-info">{{ group.booking_type.title() }}</span>
+                        <div class="group-col-type">
+                            <small class="label-text">Type:</small><br>
+                            <span class="type-badge">{{ group.booking_type.title() }}</span>
                         </div>
-                        <div class="col-md-2">
-                            <small class="text-muted">Passengers:</small><br>
+                        <div class="group-col-passengers">
+                            <small class="label-text">Passengers:</small><br>
                             <strong>{{ group.confirmed_bookings|length }}/{{ group.total_passengers }}</strong>
                         </div>
-                        <div class="col-md-2">
+                        <div class="group-col-amount">
                             {% if group.group_discount_rate > 0 %}
-                                <small class="text-success">
-                                    <i class="fas fa-percentage me-1"></i>{{ group.group_discount_rate }}% discount
+                                <small class="discount-text">
+                                    <i class="fas fa-percentage icon-left"></i>{{ group.group_discount_rate }}% discount
                                 </small><br>
                             {% endif %}
-                            <strong class="text-success">₹{{ "%.0f"|format(group.total_amount) }}</strong>
+                            <strong class="amount-text">₹{{ "%.0f"|format(group.total_amount) }}</strong>
                         </div>
                     </div>
                     
-                    <div class="mt-3">
+                    <div class="group-actions">
                         <a href="{{ url_for('groups.manage_group', group_id=group.id) }}" 
-                           class="btn btn-primary btn-sm">
-                            <i class="fas fa-cog me-1"></i>Manage
+                           class="primary-button small-button">
+                            <i class="fas fa-cog icon-left"></i>Manage
                         </a>
                         <a href="{{ url_for('groups.add_group_train_booking', group_id=group.id) }}" 
-                           class="btn btn-success btn-sm">
-                            <i class="fas fa-plus me-1"></i>Add Booking
+                           class="success-button small-button">
+                            <i class="fas fa-plus icon-left"></i>Add Booking
                         </a>
                         {% if group.status in ['pending'] %}
                         <form method="POST" action="{{ url_for('groups.cancel_group_booking', group_id=group.id) }}" 
-                              class="d-inline" onsubmit="return confirm('Cancel entire group booking?')">
+                              class="inline-form" onsubmit="return confirm('Cancel entire group booking?')">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="fas fa-times me-1"></i>Cancel Group
+                            <button type="submit" class="danger-button small-button">
+                                <i class="fas fa-times icon-left"></i>Cancel Group
                             </button>
                         </form>
                         {% endif %}
@@ -77,49 +81,49 @@
         {% endif %}
         
         {% if member_groups %}
-        <div class="card">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-user-friends me-2"></i>Groups I'm Part Of</h5>
+        <div class="groups-card">
+            <div class="groups-card-header member-groups-header">
+                <h5><i class="fas fa-user-friends icon-left"></i>Groups I'm Part Of</h5>
             </div>
-            <div class="card-body">
+            <div class="groups-card-body">
                 {% for group in member_groups %}
-                <div class="group-item border rounded p-3 mb-3">
-                    <div class="row align-items-center">
-                        <div class="col-md-4">
-                            <h6 class="text-success">{{ group.group_name }}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-user me-1"></i>Led by: {{ group.group_leader.username }}
+                <div class="group-item">
+                    <div class="group-row">
+                        <div class="group-col-info">
+                            <h6 class="group-name member-group">{{ group.group_name }}</h6>
+                            <small class="group-meta">
+                                <i class="fas fa-user icon-left"></i>Led by: {{ group.group_leader.username }}
                             </small>
                         </div>
-                        <div class="col-md-2">
-                            <span class="badge bg-{% if group.status == 'confirmed' %}success{% elif group.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                        <div class="group-col-status">
+                            <span class="status-badge status-{{ group.status }}">
                                 {{ group.status.title() }}
                             </span>
                         </div>
-                        <div class="col-md-2">
-                            <small class="text-muted">Type:</small><br>
-                            <span class="badge bg-info">{{ group.booking_type.title() }}</span>
+                        <div class="group-col-type">
+                            <small class="label-text">Type:</small><br>
+                            <span class="type-badge">{{ group.booking_type.title() }}</span>
                         </div>
-                        <div class="col-md-2">
-                            <small class="text-muted">My Bookings:</small><br>
+                        <div class="group-col-passengers">
+                            <small class="label-text">My Bookings:</small><br>
                             {% set my_bookings = group.individual_bookings|selectattr('user_id', 'equalto', current_user.id)|list %}
                             <strong>{{ my_bookings|length }}</strong>
                         </div>
-                        <div class="col-md-2">
+                        <div class="group-col-amount">
                             {% if group.group_discount_rate > 0 %}
-                                <small class="text-success">
-                                    <i class="fas fa-percentage me-1"></i>{{ group.group_discount_rate }}% discount
+                                <small class="discount-text">
+                                    <i class="fas fa-percentage icon-left"></i>{{ group.group_discount_rate }}% discount
                                 </small><br>
                             {% endif %}
                             {% set my_total = my_bookings|sum(attribute='total_amount') %}
-                            <strong class="text-success">₹{{ "%.0f"|format(my_total) }}</strong>
+                            <strong class="amount-text">₹{{ "%.0f"|format(my_total) }}</strong>
                         </div>
                     </div>
                     
-                    <div class="mt-3">
+                    <div class="group-actions">
                         <a href="{{ url_for('groups.manage_group', group_id=group.id) }}" 
-                           class="btn btn-outline-success btn-sm">
-                            <i class="fas fa-eye me-1"></i>View Details
+                           class="secondary-button small-button">
+                            <i class="fas fa-eye icon-left"></i>View Details
                         </a>
                     </div>
                 </div>
@@ -129,26 +133,16 @@
         {% endif %}
         
     {% else %}
-        <div class="text-center py-5">
-            <div class="display-1 text-muted">
+        <div class="empty-state">
+            <div class="empty-icon">
                 <i class="fas fa-users"></i>
             </div>
-            <h4 class="text-muted mt-3">No Group Bookings Yet</h4>
-            <p class="lead text-muted">Create your first group booking to get started with discounted group travel!</p>
-            <a href="{{ url_for('groups.create_group_booking') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-plus me-2"></i>Create Your First Group
+            <h4 class="empty-title">No Group Bookings Yet</h4>
+            <p class="empty-description">Create your first group booking to get started with discounted group travel!</p>
+            <a href="{{ url_for('groups.create_group_booking') }}" class="primary-button large-button">
+                <i class="fas fa-plus icon-left"></i>Create Your First Group
             </a>
         </div>
     {% endif %}
 </div>
-
-<style>
-.group-item {
-    background-color: var(--bs-light);
-    transition: box-shadow 0.2s;
-}
-.group-item:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-</style>
 {% endblock %}
