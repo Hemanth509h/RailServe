@@ -33,7 +33,7 @@ def create_group_booking():
             return render_template('groups/create.html')
         
         try:
-            total_passengers = int(total_passengers)
+            total_passengers = int(total_passengers) if total_passengers else 0
             if total_passengers < 4:  # Minimum for group booking
                 flash('Group bookings require minimum 4 passengers', 'error')
                 return render_template('groups/create.html')
@@ -127,8 +127,8 @@ def add_group_train_booking(group_id):
             return redirect(url_for('groups.add_group_train_booking', group_id=group_id))
         
         try:
-            passengers = int(passengers)
-            train_id = int(train_id)
+            passengers = int(passengers) if passengers else 0
+            train_id = int(train_id) if train_id else 0
             
             # Verify remaining capacity in group
             current_bookings = Booking.query.filter_by(group_booking_id=group_id).all()
@@ -149,9 +149,9 @@ def add_group_train_booking(group_id):
             booking = Booking(
                 user_id=current_user.id,
                 train_id=train_id,
-                from_station_id=int(from_station),
-                to_station_id=int(to_station),
-                journey_date=datetime.strptime(journey_date, '%Y-%m-%d').date(),
+                from_station_id=int(from_station) if from_station else 0,
+                to_station_id=int(to_station) if to_station else 0,
+                journey_date=datetime.strptime(journey_date, '%Y-%m-%d').date() if journey_date else datetime.now().date(),
                 passengers=passengers,
                 total_amount=total_amount,
                 coach_class=coach_class,
