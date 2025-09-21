@@ -2,6 +2,13 @@
 .nav-dropdown {
     position: relative;
     display: inline-block;
+    z-index: 1000;
+}
+
+/* Ensure nav container doesn't interfere with dropdown */
+.nav-menu {
+    position: relative;
+    z-index: 999;
 }
 
 .dropdown-toggle {
@@ -14,19 +21,28 @@
 .dropdown-menu {
     display: none;
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px);
     right: 0;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     min-width: 200px;
-    z-index: 1000;
+    max-width: 280px;
+    z-index: 9999;
     padding: 8px 0;
+    white-space: nowrap;
+    transform: translateY(-5px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease-in-out;
 }
 
 .dropdown-menu.show {
     display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .dropdown-item {
@@ -138,5 +154,48 @@
         left: 10px;
         width: auto;
         min-width: auto;
+        max-width: none;
+        transform: translateY(0);
+        border-radius: 12px;
+    }
+    
+    .dropdown-menu.show {
+        transform: translateY(0);
+    }
+}
+
+/* Ensure dropdown doesn't overflow viewport */
+@media (max-width: 1024px) {
+    .dropdown-menu {
+        right: 0;
+        left: auto;
+        max-width: 250px;
+    }
+}
+
+/* Fix any potential overflow issues */
+.navbar {
+    overflow: visible;
+}
+
+.nav-container {
+    overflow: visible;
+}
+
+/* Ensure dropdown is above all other content */
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 9999 !important;
+}
+
+/* Fix dropdown positioning edge cases */
+@media (max-width: 480px) {
+    .dropdown-menu {
+        position: fixed !important;
+        top: 65px !important;
+        right: 5px !important;
+        left: 5px !important;
+        max-width: none !important;
+        min-width: auto !important;
     }
 }
