@@ -13,6 +13,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), default='user')  # user, admin, super_admin
     active = db.Column(db.Boolean, default=True)
+    reset_token = db.Column(db.String(100))  # For password reset
+    reset_token_expiry = db.Column(db.DateTime)  # Token expiry time
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships

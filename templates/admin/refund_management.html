@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}Refund Management - Admin - RailServe{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-money-bill-wave"></i> Refund Management</h1>
+        <nav class="admin-breadcrumb">
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a> > 
+            <span>Refunds</span>
+        </nav>
+    </div>
+
+    <div class="admin-content">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ pending_count }}</h3>
+                    <p>Pending Requests</p>
+                </div>
+            </div>
+            <div class="stat-card approved">
+                <div class="stat-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ approved_count }}</h3>
+                    <p>Approved</p>
+                </div>
+            </div>
+            <div class="stat-card rejected">
+                <div class="stat-icon">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ rejected_count }}</h3>
+                    <p>Rejected</p>
+                </div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>₹{{ "%.2f"|format(total_refund_amount) }}</h3>
+                    <p>Total Refunded</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="admin-section">
+            <div class="filters-row">
+                <form method="GET" class="filter-form">
+                    <div class="filter-group">
+                        <label for="status">Status:</label>
+                        <select name="status" id="status" onchange="this.form.submit()">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="search">Search:</label>
+                        <input type="text" name="search" id="search" placeholder="TDR Number, PNR, or Username" value="{{ search }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Refund Requests Table -->
+        <div class="admin-section">
+            <h2><i class="fas fa-list"></i> Refund Requests</h2>
+            {% if refund_requests %}
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>TDR Number</th>
+                            <th>User</th>
+                            <th>PNR</th>
+                            <th>Reason</th>
+                            <th>Amount Paid</th>
+                            <th>Refund Amount</th>
+                            <th>Status</th>
+                            <th>Filed Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for refund in refund_requests %}
+                        <tr>
+                            <td>
+                                <strong>{{ refund.tdr_number }}</strong>
+                            </td>
+                            <td>
+                                {% if refund.user %}
+                                    {{ refund.user.username }}
+                                    <br><small>{{ refund.user.email }}</small>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if refund.booking %}
+                                    <strong>{{ refund.booking.pnr }}</strong>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="reason-text">{{ refund.reason[:50] }}{% if refund.reason|length > 50 %}...{% endif %}</div>
+                                {% if refund.reason|length > 50 %}
+                                <small class="text-muted cursor-pointer" onclick="showFullReason('{{ refund.id }}')">Click to see full reason</small>
+                                <div id="full-reason-{{ refund.id }}" style="display: none;">{{ refund.reason }}</div>
+                                {% endif %}
+                            </td>
+                            <td>₹{{ "%.2f"|format(refund.amount_paid) }}</td>
+                            <td>₹{{ "%.2f"|format(refund.refund_amount) }}</td>
+                            <td>
+                                <span class="status-badge status-{{ refund.status }}">
+                                    {% if refund.status == 'pending' %}
+                                        <i class="fas fa-clock"></i>
+                                    {% elif refund.status == 'approved' %}
+                                        <i class="fas fa-check"></i>
+                                    {% elif refund.status == 'rejected' %}
+                                        <i class="fas fa-times"></i>
+                                    {% elif refund.status == 'completed' %}
+                                        <i class="fas fa-check-double"></i>
+                                    {% endif %}
+                                    {{ refund.status.title() }}
+                                </span>
+                            </td>
+                            <td>{{ refund.filed_at.strftime('%d %b %Y %H:%M') if refund.filed_at else 'N/A' }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    {% if refund.status == 'pending' %}
+                                        <form method="POST" action="{{ url_for('admin.approve_refund', refund_id=refund.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-success" 
+                                                    onclick="return confirm('Approve this refund request?')">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="showRejectModal({{ refund.id }}, '{{ refund.tdr_number }}')">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    {% elif refund.status == 'approved' %}
+                                        <form method="POST" action="{{ url_for('admin.complete_refund', refund_id=refund.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-primary" 
+                                                    onclick="return confirm('Mark this refund as completed (money transferred)?')">
+                                                <i class="fas fa-dollar-sign"></i> Complete
+                                            </button>
+                                        </form>
+                                    {% elif refund.status == 'completed' %}
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle"></i> Completed
+                                        </span>
+                                    {% elif refund.status == 'rejected' %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-ban"></i> Rejected
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                No refund requests found{% if search %} for "{{ search }}"{% endif %}{% if status_filter != 'all' %} with status "{{ status_filter }}"{% endif %}.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reject Refund Request</h3>
+            <span class="close" onclick="hideRejectModal()">&times;</span>
+        </div>
+        <form id="rejectForm" method="POST">
+            <div class="modal-body">
+                <p>Rejecting refund request: <strong id="rejectTdrNumber"></strong></p>
+                <div class="form-group">
+                    <label for="rejection_reason">Rejection Reason (Required):</label>
+                    <textarea name="rejection_reason" id="rejection_reason" required 
+                              placeholder="Please provide a clear reason for rejection"
+                              rows="4" style="width: 100%;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="hideRejectModal()">Cancel</button>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Reject Request
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-card.pending { border-left: 4px solid #f59e0b; }
+.stat-card.approved { border-left: 4px solid #10b981; }
+.stat-card.rejected { border-left: 4px solid #ef4444; }
+.stat-card.completed { border-left: 4px solid #3b82f6; }
+
+.stat-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pending .stat-icon { background: #fef3c7; color: #d97706; }
+.approved .stat-icon { background: #d1fae5; color: #059669; }
+.rejected .stat-icon { background: #fee2e2; color: #dc2626; }
+.completed .stat-icon { background: #dbeafe; color: #2563eb; }
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.stat-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.filters-row {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-form {
+    display: flex;
+    gap: 2rem;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.filter-group input, .filter-group select {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.status-pending { background: #fef3c7; color: #d97706; }
+.status-approved { background: #d1fae5; color: #059669; }
+.status-rejected { background: #fee2e2; color: #dc2626; }
+.status-completed { background: #dbeafe; color: #2563eb; }
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.reason-text {
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.close {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-body {
+    padding: 1rem;
+}
+
+.modal-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-pointer:hover {
+    text-decoration: underline;
+}
+</style>
+
+<script>
+function showRejectModal(refundId, tdrNumber) {
+    document.getElementById('rejectTdrNumber').textContent = tdrNumber;
+    document.getElementById('rejectForm').action = `/admin/refunds/${refundId}/reject`;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function hideRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+    document.getElementById('rejection_reason').value = '';
+}
+
+function showFullReason(refundId) {
+    const fullReasonDiv = document.getElementById(`full-reason-${refundId}`);
+    if (fullReasonDiv.style.display === 'none') {
+        fullReasonDiv.style.display = 'block';
+    } else {
+        fullReasonDiv.style.display = 'none';
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById('rejectModal').onclick = function(event) {
+    if (event.target === this) {
+        hideRejectModal();
+    }
+}
+</script>
+{% endblock %}

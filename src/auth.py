@@ -118,14 +118,25 @@ def forgot_password():
         user = User.query.filter_by(email=email).first()
         
         if user and user.active:
-            # Generate reset token (in production, this should be sent via email)
+            # Generate reset token
             reset_token = secrets.token_urlsafe(32)
-            # Store token in user record (you'd need to add reset_token field to User model)
-            # For now, we'll create a simple reset link
             
-            # In production, send email with reset link
-            flash(f'Password reset instructions have been sent to {email}. '
-                  f'For demo purposes, your reset link is: /auth/reset-password/{reset_token}', 'info')
+            # Store token with expiry (24 hours)
+            from datetime import datetime, timedelta
+            user.reset_token = reset_token
+            user.reset_token_expiry = datetime.utcnow() + timedelta(hours=24)
+            db.session.commit()
+            
+            # Send email with reset link
+            from .email_service import email_service
+            reset_url = url_for('auth.reset_password', token=reset_token, _external=True)
+            
+            if email_service.send_password_reset(user.email, user.username, reset_token, reset_url):
+                flash(f'Password reset instructions have been sent to {email}.', 'info')
+            else:
+                # Fallback for demo purposes when email is not configured
+                flash(f'Password reset instructions have been sent to {email}. '
+                      f'For demo purposes, your reset link is: {reset_url}', 'info')
         else:
             # Don't reveal if email exists or not for security
             flash(f'If an account with email {email} exists, password reset instructions have been sent.', 'info')

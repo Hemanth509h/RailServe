@@ -1206,3 +1206,122 @@ def schedule_auto_allocation():
         flash('Automatic waitlist allocation disabled', 'info')
     
     return redirect(url_for('admin.waitlist_allocation'))
+
+@admin_bp.route('/refunds')
+@admin_required
+def refund_management():
+    """Admin refund management dashboard"""
+    from .models import RefundRequest
+    
+    # Get all refund requests with filtering
+    status_filter = request.args.get('status', 'all')
+    search = request.args.get('search', '').strip()
+    
+    query = RefundRequest.query
+    
+    if status_filter != 'all':
+        query = query.filter_by(status=status_filter)
+    
+    if search:
+        query = query.join(Booking).join(User).filter(
+            db.or_(
+                RefundRequest.tdr_number.ilike(f'%{search}%'),
+                User.username.ilike(f'%{search}%'),
+                Booking.pnr.ilike(f'%{search}%')
+            )
+        )
+    
+    refund_requests = query.order_by(RefundRequest.filed_at.desc()).all()
+    
+    # Calculate statistics
+    pending_count = RefundRequest.query.filter_by(status='pending').count()
+    approved_count = RefundRequest.query.filter_by(status='approved').count()
+    rejected_count = RefundRequest.query.filter_by(status='rejected').count()
+    completed_count = RefundRequest.query.filter_by(status='completed').count()
+    
+    total_refund_amount = db.session.query(
+        db.func.sum(RefundRequest.refund_amount)
+    ).filter_by(status='completed').scalar() or 0
+    
+    return render_template('admin/refund_management.html',
+                         refund_requests=refund_requests,
+                         status_filter=status_filter,
+                         search=search,
+                         pending_count=pending_count,
+                         approved_count=approved_count,
+                         rejected_count=rejected_count,
+                         completed_count=completed_count,
+                         total_refund_amount=total_refund_amount)
+
+@admin_bp.route('/refunds/<int:refund_id>/approve', methods=['POST'])
+@admin_required
+def approve_refund(refund_id):
+    """Approve a refund request"""
+    from .models import RefundRequest
+    
+    refund_request = RefundRequest.query.get_or_404(refund_id)
+    
+    if refund_request.status != 'pending':
+        flash('Refund request is not in pending status', 'error')
+        return redirect(url_for('admin.refund_management'))
+    
+    # Update refund request
+    refund_request.status = 'approved'
+    refund_request.processed_at = datetime.utcnow()
+    
+    # Update booking status if needed
+    booking = Booking.query.get(refund_request.booking_id)
+    if booking:
+        booking.status = 'cancelled'
+    
+    db.session.commit()
+    
+    flash(f'Refund request {refund_request.tdr_number} approved successfully', 'success')
+    return redirect(url_for('admin.refund_management'))
+
+@admin_bp.route('/refunds/<int:refund_id>/reject', methods=['POST'])
+@admin_required
+def reject_refund(refund_id):
+    """Reject a refund request"""
+    from .models import RefundRequest
+    
+    refund_request = RefundRequest.query.get_or_404(refund_id)
+    rejection_reason = request.form.get('rejection_reason', '').strip()
+    
+    if refund_request.status != 'pending':
+        flash('Refund request is not in pending status', 'error')
+        return redirect(url_for('admin.refund_management'))
+    
+    if not rejection_reason:
+        flash('Please provide a rejection reason', 'error')
+        return redirect(url_for('admin.refund_management'))
+    
+    # Update refund request
+    refund_request.status = 'rejected'
+    refund_request.processed_at = datetime.utcnow()
+    refund_request.reason = f"{refund_request.reason} | REJECTED: {rejection_reason}"
+    
+    db.session.commit()
+    
+    flash(f'Refund request {refund_request.tdr_number} rejected', 'success')
+    return redirect(url_for('admin.refund_management'))
+
+@admin_bp.route('/refunds/<int:refund_id>/complete', methods=['POST'])
+@admin_required
+def complete_refund(refund_id):
+    """Mark refund as completed (money transferred)"""
+    from .models import RefundRequest
+    
+    refund_request = RefundRequest.query.get_or_404(refund_id)
+    
+    if refund_request.status != 'approved':
+        flash('Refund request must be approved before completion', 'error')
+        return redirect(url_for('admin.refund_management'))
+    
+    # Update refund request
+    refund_request.status = 'completed'
+    
+    db.session.commit()
+    
+    flash(f'Refund {refund_request.tdr_number} marked as completed', 'success')
+    return redirect(url_for('admin.refund_management'))
