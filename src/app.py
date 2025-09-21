@@ -31,7 +31,7 @@ if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
 # Use DATABASE_URL - required for production security
-app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
+app.config['SQLALCHEMY_DATABASE_URI'] =  os.environ.get("DATABASE_URL", "postgresql://postgres:[YOUR-PASSWORD]@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres")
 if not app.config['SQLALCHEMY_DATABASE_URI']:
     raise RuntimeError("DATABASE_URL environment variable is required")
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
