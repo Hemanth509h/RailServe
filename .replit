@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RailServe Web Server"
+args = "RailServe Flask App"
 
 [[workflows.workflow]]
-name = "RailServe Web Server"
+name = "RailServe Flask App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -34,10 +34,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 45959
-externalPort = 3000
 
 [[ports]]
 localPort = 46545
