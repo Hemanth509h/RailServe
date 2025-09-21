@@ -1,6 +1,6 @@
 from .app import db
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import event
 import string
 import random
@@ -510,6 +510,7 @@ class FoodOrder(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
     delivery_station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    group_food_order_id = db.Column(db.Integer, db.ForeignKey('group_food_order.id'))  # Link to group food order
     order_number = db.Column(db.String(20), unique=True, nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
     delivery_charge = db.Column(db.Float, default=0.0)
@@ -754,8 +755,9 @@ class GroupBooking(db.Model):
     def get_all_passengers(self):
         """Get all passengers in the group"""
         passengers = []
-        for booking in self.individual_bookings:
-            passengers.extend(booking.passengers)
+        bookings = Booking.query.filter_by(group_booking_id=self.id).all()
+        for booking in bookings:
+            passengers.extend(booking.passengers_details)
         return passengers
     
     def get_seat_coordination_info(self):
@@ -772,7 +774,8 @@ class GroupBooking(db.Model):
                 parts = passenger.seat_number.split('-')
                 if len(parts) == 2:
                     coach = parts[0]
-                    booking = next((b for b in self.individual_bookings if passenger in b.passengers), None)
+                    bookings = Booking.query.filter_by(group_booking_id=self.id).all()
+                    booking = next((b for b in bookings if passenger in b.passengers_details), None)
                     if booking and booking.train:
                         train_key = f"{booking.train.name}"
                         if train_key not in train_coaches:
