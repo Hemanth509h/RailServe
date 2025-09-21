@@ -159,12 +159,12 @@
                         <li><a href="{{ url_for('admin.tatkal_management') }}"><i class="fas fa-clock"></i> Tatkal Management</a></li>
                     {% elif current_user.is_authenticated %}
                         <!-- Regular user links -->
-                        <li><a href="{{ url_for('booking.book_ticket') }}"><i class="fas fa-ticket-alt"></i> Book Ticket</a></li>
+                        <li><a href="{{ url_for('universal_search') }}"><i class="fas fa-ticket-alt"></i> Book Ticket</a></li>
                         <li><a href="{{ url_for('booking.booking_history') }}"><i class="fas fa-history"></i> My Bookings</a></li>
                         <li><a href="{{ url_for('groups.my_groups') }}"><i class="fas fa-users"></i> My Groups</a></li>
                         <li><a href="{{ url_for('groups.create') }}"><i class="fas fa-plus-circle"></i> Create Group</a></li>
                         <li><a href="{{ url_for('food.restaurants') }}"><i class="fas fa-utensils"></i> Food Ordering</a></li>
-                        <li><a href="{{ url_for('booking.tatkal_booking') }}"><i class="fas fa-bolt"></i> Tatkal Booking</a></li>
+                        <li><a href="{{ url_for('universal_search') }}"><i class="fas fa-bolt"></i> Tatkal Booking</a></li>
                         <li><a href="{{ url_for('auth.profile') }}"><i class="fas fa-user-circle"></i> My Profile</a></li>
                         <li><a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                     {% else %}
