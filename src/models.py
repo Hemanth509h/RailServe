@@ -440,6 +440,68 @@ class MenuItem(db.Model):
     
     def __init__(self, **kwargs):
         super(MenuItem, self).__init__(**kwargs)
+    
+    def get_dietary_tags(self):
+        """Get dietary restriction tags for the menu item"""
+        tags = []
+        if self.food_type == 'Vegetarian':
+            tags.append('Vegetarian')
+        elif self.food_type == 'Non-Vegetarian':
+            tags.append('Non-Vegetarian')
+        
+        # Parse ingredients for common dietary restrictions
+        if self.ingredients:
+            ingredients_lower = self.ingredients.lower()
+            if 'dairy' not in ingredients_lower and 'milk' not in ingredients_lower and 'cheese' not in ingredients_lower:
+                tags.append('Dairy-Free')
+            if 'gluten' not in ingredients_lower and 'wheat' not in ingredients_lower:
+                tags.append('Gluten-Free')
+            if 'nuts' not in ingredients_lower and 'peanut' not in ingredients_lower:
+                tags.append('Nut-Free')
+            if 'jain' in ingredients_lower or ('onion' not in ingredients_lower and 'garlic' not in ingredients_lower):
+                tags.append('Jain-Friendly')
+        
+        return tags
+    
+    def matches_dietary_preferences(self, preferences):
+        """Check if menu item matches user dietary preferences"""
+        if not preferences:
+            return True
+        
+        item_tags = self.get_dietary_tags()
+        for preference in preferences:
+            if preference not in item_tags:
+                return False
+        return True
+    
+    def get_average_rating(self):
+        """Get average rating for this menu item"""
+        reviews = FoodReview.query.filter_by(menu_item_id=self.id).all()
+        if not reviews:
+            return 0.0
+        return sum(review.rating for review in reviews) / len(reviews)
+    
+    def get_recommendation_score(self, time_of_day=None):
+        """Get recommendation score based on various factors"""
+        base_score = self.get_average_rating() * 2  # Rating component (0-10)
+        
+        # Time-based scoring
+        time_bonus = 0
+        if time_of_day:
+            hour = time_of_day.hour
+            if self.category == 'Breakfast' and 6 <= hour <= 10:
+                time_bonus = 3
+            elif self.category == 'Lunch' and 11 <= hour <= 15:
+                time_bonus = 3
+            elif self.category == 'Dinner' and 18 <= hour <= 22:
+                time_bonus = 3
+            elif self.category == 'Snacks' and (hour < 6 or hour > 22 or 15 < hour < 18):
+                time_bonus = 2
+        
+        # Popularity bonus
+        popularity_bonus = 2 if self.is_popular else 0
+        
+        return min(10, base_score + time_bonus + popularity_bonus)
 
 class FoodOrder(db.Model):
     """Food orders linked to train bookings"""
@@ -486,6 +548,157 @@ class FoodOrderItem(db.Model):
     
     def __init__(self, **kwargs):
         super(FoodOrderItem, self).__init__(**kwargs)
+
+class UserDietaryPreference(db.Model):
+    """User dietary preferences and restrictions"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
+    dietary_restrictions = db.Column(db.Text)  # JSON array of restrictions
+    allergies = db.Column(db.Text)  # JSON array of allergies
+    cuisine_preferences = db.Column(db.Text)  # JSON array of preferred cuisines
+    spice_level = db.Column(db.String(20), default='Medium')  # Mild, Medium, Spicy, Very Spicy
+    preferred_meal_times = db.Column(db.Text)  # JSON object with meal time preferences
+    special_notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='dietary_preference')
+    
+    def __init__(self, **kwargs):
+        super(UserDietaryPreference, self).__init__(**kwargs)
+        if not self.dietary_restrictions:
+            self.dietary_restrictions = '[]'
+        if not self.allergies:
+            self.allergies = '[]'
+        if not self.cuisine_preferences:
+            self.cuisine_preferences = '[]'
+        if not self.preferred_meal_times:
+            self.preferred_meal_times = '{"breakfast": "07:00", "lunch": "12:00", "dinner": "19:00"}'
+    
+    def get_dietary_restrictions(self):
+        """Get dietary restrictions as list"""
+        import json
+        return json.loads(self.dietary_restrictions) if self.dietary_restrictions else []
+    
+    def get_allergies(self):
+        """Get allergies as list"""
+        import json
+        return json.loads(self.allergies) if self.allergies else []
+    
+    def get_cuisine_preferences(self):
+        """Get cuisine preferences as list"""
+        import json
+        return json.loads(self.cuisine_preferences) if self.cuisine_preferences else []
+
+class FoodReview(db.Model):
+    """Customer reviews and ratings for restaurants and menu items"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
+    menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_item.id'))  # Optional, for item-specific reviews
+    food_order_id = db.Column(db.Integer, db.ForeignKey('food_order.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
+    review_text = db.Column(db.Text)
+    food_quality = db.Column(db.Integer)  # 1-5 rating for food quality
+    delivery_speed = db.Column(db.Integer)  # 1-5 rating for delivery speed
+    packaging_quality = db.Column(db.Integer)  # 1-5 rating for packaging
+    would_recommend = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', backref='food_reviews')
+    restaurant = db.relationship('Restaurant', backref='reviews')
+    menu_item = db.relationship('MenuItem', backref='reviews')
+    food_order = db.relationship('FoodOrder', backref='review')
+    
+    def __init__(self, **kwargs):
+        super(FoodReview, self).__init__(**kwargs)
+
+class GroupFoodOrder(db.Model):
+    """Coordinated food orders for group bookings"""
+    id = db.Column(db.Integer, primary_key=True)
+    group_booking_id = db.Column(db.Integer, db.ForeignKey('group_booking.id'), nullable=False)
+    coordinator_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Who is coordinating
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
+    delivery_station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    group_order_number = db.Column(db.String(20), unique=True, nullable=False)
+    total_amount = db.Column(db.Float, default=0.0)
+    status = db.Column(db.String(20), default='collecting')  # collecting, confirmed, preparing, dispatched, delivered, cancelled
+    deadline_for_orders = db.Column(db.DateTime)  # Deadline for group members to place orders
+    special_instructions = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    group_booking = db.relationship('GroupBooking', backref='group_food_orders')
+    coordinator = db.relationship('User', backref='coordinated_food_orders')
+    restaurant = db.relationship('Restaurant', backref='group_orders')
+    delivery_station = db.relationship('Station', foreign_keys=[delivery_station_id])
+    individual_orders = db.relationship('FoodOrder', backref='group_food_order', lazy=True)
+    
+    def __init__(self, **kwargs):
+        super(GroupFoodOrder, self).__init__(**kwargs)
+        if not self.group_order_number:
+            self.group_order_number = f"GFD{datetime.utcnow().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+        if not self.deadline_for_orders:
+            # Default deadline: 2 hours from creation
+            self.deadline_for_orders = datetime.utcnow() + timedelta(hours=2)
+    
+    def get_order_summary(self):
+        """Get summary of all orders in this group food order"""
+        orders = FoodOrder.query.filter_by(group_food_order_id=self.id).all()
+        total_orders = len(orders)
+        total_amount = sum(order.total_amount for order in orders)
+        
+        # Count by status
+        status_counts = {}
+        for order in orders:
+            status_counts[order.status] = status_counts.get(order.status, 0) + 1
+        
+        return {
+            'total_orders': total_orders,
+            'total_amount': total_amount,
+            'status_counts': status_counts,
+            'average_order_value': total_amount / total_orders if total_orders > 0 else 0
+        }
+
+class FoodOrderTracking(db.Model):
+    """Detailed tracking for food order status updates"""
+    id = db.Column(db.Integer, primary_key=True)
+    food_order_id = db.Column(db.Integer, db.ForeignKey('food_order.id'), nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.String(500))
+    estimated_delivery_time = db.Column(db.DateTime)
+    actual_time = db.Column(db.DateTime)
+    location = db.Column(db.String(100))  # Current location for delivery tracking
+    updated_by = db.Column(db.String(50))  # System, Restaurant, Delivery Partner
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    food_order = db.relationship('FoodOrder', backref='tracking_updates')
+    
+    def __init__(self, **kwargs):
+        super(FoodOrderTracking, self).__init__(**kwargs)
+
+class FoodRecommendation(db.Model):
+    """AI-powered food recommendations for users"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    menu_item_id = db.Column(db.Integer, db.ForeignKey('menu_item.id'), nullable=False)
+    recommendation_score = db.Column(db.Float, nullable=False)  # 0-10 score
+    recommendation_reason = db.Column(db.Text)  # Why this was recommended
+    context = db.Column(db.String(50))  # time_of_day, popular, dietary_match, etc.
+    shown_at = db.Column(db.DateTime, default=datetime.utcnow)
+    clicked = db.Column(db.Boolean, default=False)
+    ordered = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    user = db.relationship('User', backref='food_recommendations')
+    menu_item = db.relationship('MenuItem', backref='recommendations')
+    
+    def __init__(self, **kwargs):
+        super(FoodRecommendation, self).__init__(**kwargs)
 
 class GroupBooking(db.Model):
     """Group booking for multiple passengers (families, tour groups)"""

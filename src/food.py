@@ -8,7 +8,8 @@ from sqlalchemy import and_
 from datetime import datetime, timedelta
 from .models import (
     Restaurant, MenuItem, FoodOrder, FoodOrderItem, 
-    Booking, Station, TrainRoute, db
+    Booking, Station, TrainRoute, UserDietaryPreference,
+    FoodReview, GroupFoodOrder, FoodOrderTracking, FoodRecommendation, db
 )
 from .app import app
 
@@ -356,3 +357,394 @@ def admin_menu(restaurant_id):
     return render_template('food/admin_menu.html', 
                          restaurant=restaurant, 
                          menu_items=menu_items)
+
+# Enhanced Food Booking Features
+
+@food_bp.route('/dietary_preferences', methods=['GET', 'POST'])
+@login_required
+def dietary_preferences():
+    """Manage user dietary preferences and restrictions"""
+    user_prefs = UserDietaryPreference.query.filter_by(user_id=current_user.id).first()
+    
+    if request.method == 'POST':
+        dietary_restrictions = request.form.getlist('dietary_restrictions')
+        allergies = request.form.getlist('allergies')
+        cuisine_preferences = request.form.getlist('cuisine_preferences')
+        spice_level = request.form.get('spice_level', 'Medium')
+        special_notes = request.form.get('special_notes', '')
+        
+        import json
+        
+        try:
+            if user_prefs:
+                # Update existing preferences
+                user_prefs.dietary_restrictions = json.dumps(dietary_restrictions)
+                user_prefs.allergies = json.dumps(allergies)
+                user_prefs.cuisine_preferences = json.dumps(cuisine_preferences)
+                user_prefs.spice_level = spice_level
+                user_prefs.special_notes = special_notes
+                user_prefs.updated_at = datetime.utcnow()
+            else:
+                # Create new preferences
+                user_prefs = UserDietaryPreference(
+                    user_id=current_user.id,
+                    dietary_restrictions=json.dumps(dietary_restrictions),
+                    allergies=json.dumps(allergies),
+                    cuisine_preferences=json.dumps(cuisine_preferences),
+                    spice_level=spice_level,
+                    special_notes=special_notes
+                )
+                db.session.add(user_prefs)
+            
+            db.session.commit()
+            flash('Dietary preferences updated successfully!', 'success')
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Error updating preferences. Please try again.', 'error')
+    
+    return render_template('food/dietary_preferences.html', user_prefs=user_prefs)
+
+@food_bp.route('/enhanced_restaurants/<int:booking_id>')
+@login_required
+def enhanced_restaurants(booking_id):
+    """Enhanced restaurant browsing with search and filtering"""
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Verify user owns this booking
+    if booking.user_id != current_user.id and not current_user.is_admin():
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    # Get search and filter parameters
+    search_query = request.args.get('search', '')
+    cuisine_filter = request.args.get('cuisine', '')
+    min_rating = request.args.get('min_rating', 0, type=float)
+    dietary_filter = request.args.get('dietary', '')
+    sort_by = request.args.get('sort', 'rating')  # rating, delivery_time, popularity
+    
+    # Get user dietary preferences
+    user_prefs = UserDietaryPreference.query.filter_by(user_id=current_user.id).first()
+    user_dietary_restrictions = user_prefs.get_dietary_restrictions() if user_prefs else []
+    
+    # Get route stations and restaurants (same logic as original)
+    train_routes = TrainRoute.query.filter_by(train_id=booking.train_id).order_by(TrainRoute.sequence).all()
+    from_sequence = to_sequence = None
+    
+    for route in train_routes:
+        if route.station_id == booking.from_station_id:
+            from_sequence = route.sequence
+        if route.station_id == booking.to_station_id:
+            to_sequence = route.sequence
+    
+    if from_sequence is None or to_sequence is None:
+        flash('Route information not found', 'error')
+        return redirect(url_for('booking.booking_history'))
+    
+    route_stations = TrainRoute.query.filter(
+        and_(
+            TrainRoute.train_id == booking.train_id,
+            TrainRoute.sequence > from_sequence,
+            TrainRoute.sequence <= to_sequence
+        )
+    ).order_by(TrainRoute.sequence).all()
+    
+    station_ids = [route.station_id for route in route_stations]
+    
+    # Build query with filters
+    query = Restaurant.query.filter(
+        and_(
+            Restaurant.station_id.in_(station_ids),
+            Restaurant.active == True
+        )
+    )
+    
+    # Apply filters
+    if search_query:
+        query = query.filter(Restaurant.name.contains(search_query))
+    if cuisine_filter:
+        query = query.filter(Restaurant.cuisine_type.contains(cuisine_filter))
+    if min_rating > 0:
+        query = query.filter(Restaurant.rating >= min_rating)
+    
+    # Apply sorting
+    if sort_by == 'rating':
+        query = query.order_by(Restaurant.rating.desc())
+    elif sort_by == 'delivery_time':
+        query = query.order_by(Restaurant.delivery_time.asc())
+    else:
+        query = query.order_by(Restaurant.rating.desc())
+    
+    restaurants = query.all()
+    
+    # Get recommendations for this user
+    recommendations = get_smart_recommendations(current_user.id, booking_id)
+    
+    return render_template('food/enhanced_restaurants.html', 
+                         booking=booking, 
+                         restaurants=restaurants,
+                         route_stations=route_stations,
+                         recommendations=recommendations,
+                         user_dietary_restrictions=user_dietary_restrictions)
+
+@food_bp.route('/smart_menu/<int:restaurant_id>/<int:booking_id>')
+@login_required
+def smart_menu(restaurant_id, booking_id):
+    """Enhanced menu with smart recommendations and dietary filtering"""
+    restaurant = Restaurant.query.get_or_404(restaurant_id)
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Verify user owns this booking
+    if booking.user_id != current_user.id and not current_user.is_admin():
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    # Get user dietary preferences
+    user_prefs = UserDietaryPreference.query.filter_by(user_id=current_user.id).first()
+    dietary_restrictions = user_prefs.get_dietary_restrictions() if user_prefs else []
+    
+    # Get menu items with filtering
+    dietary_filter = request.args.get('dietary_filter', 'all')
+    category_filter = request.args.get('category', '')
+    
+    query = MenuItem.query.filter(
+        and_(
+            MenuItem.restaurant_id == restaurant_id,
+            MenuItem.available == True
+        )
+    )
+    
+    if category_filter:
+        query = query.filter(MenuItem.category == category_filter)
+    
+    menu_items = query.order_by(MenuItem.category, MenuItem.is_popular.desc(), MenuItem.name).all()
+    
+    # Filter by dietary preferences if requested
+    if dietary_filter == 'compatible' and dietary_restrictions:
+        menu_items = [item for item in menu_items if item.matches_dietary_preferences(dietary_restrictions)]
+    
+    # Group items by category and add recommendations
+    menu_by_category = {}
+    current_time = datetime.now()
+    
+    for item in menu_items:
+        category = item.category or 'Other'
+        if category not in menu_by_category:
+            menu_by_category[category] = []
+        
+        # Add recommendation score
+        item.recommendation_score = item.get_recommendation_score(current_time)
+        item.average_rating = item.get_average_rating()
+        item.dietary_tags = item.get_dietary_tags()
+        
+        menu_by_category[category].append(item)
+    
+    # Sort items within each category by recommendation score
+    for category in menu_by_category:
+        menu_by_category[category].sort(key=lambda x: x.recommendation_score, reverse=True)
+    
+    return render_template('food/smart_menu.html',
+                         restaurant=restaurant,
+                         booking=booking,
+                         menu_by_category=menu_by_category,
+                         user_dietary_restrictions=dietary_restrictions)
+
+@food_bp.route('/group_food_order/<int:group_booking_id>', methods=['GET', 'POST'])
+@login_required
+def group_food_order(group_booking_id):
+    """Coordinate food orders for group bookings"""
+    from .models import GroupBooking
+    
+    group_booking = GroupBooking.query.get_or_404(group_booking_id)
+    
+    # Verify access
+    is_member = any(booking.user_id == current_user.id for booking in group_booking.individual_bookings)
+    if group_booking.group_leader_id != current_user.id and not is_member:
+        flash('Access denied', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    if request.method == 'POST':
+        restaurant_id = request.form.get('restaurant_id')
+        delivery_station_id = request.form.get('delivery_station_id')
+        special_instructions = request.form.get('special_instructions', '')
+        deadline_hours = request.form.get('deadline_hours', 2, type=int)
+        
+        if not restaurant_id or not delivery_station_id:
+            flash('Please select restaurant and delivery station', 'error')
+            return redirect(request.url)
+        
+        try:
+            # Create group food order
+            deadline = datetime.utcnow() + timedelta(hours=deadline_hours)
+            
+            group_food_order = GroupFoodOrder(
+                group_booking_id=group_booking_id,
+                coordinator_id=current_user.id,
+                restaurant_id=int(restaurant_id),
+                delivery_station_id=int(delivery_station_id),
+                deadline_for_orders=deadline,
+                special_instructions=special_instructions
+            )
+            
+            db.session.add(group_food_order)
+            db.session.commit()
+            
+            flash(f'Group food order #{group_food_order.group_order_number} created! Deadline: {deadline.strftime("%Y-%m-%d %H:%M")}', 'success')
+            return redirect(url_for('food.manage_group_food_order', group_order_id=group_food_order.id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Error creating group food order. Please try again.', 'error')
+    
+    # Get available restaurants and stations
+    restaurants = Restaurant.query.filter_by(active=True).order_by(Restaurant.rating.desc()).all()
+    stations = Station.query.order_by(Station.name).all()
+    
+    return render_template('food/group_food_order.html',
+                         group_booking=group_booking,
+                         restaurants=restaurants,
+                         stations=stations)
+
+@food_bp.route('/enhanced_tracking/<int:order_id>')
+@login_required
+def enhanced_tracking(order_id):
+    """Enhanced real-time order tracking"""
+    order = FoodOrder.query.get_or_404(order_id)
+    
+    # Verify user owns this order
+    if order.user_id != current_user.id and not current_user.is_admin():
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    # Get detailed tracking updates
+    tracking_updates = FoodOrderTracking.query.filter_by(food_order_id=order_id)\
+                                               .order_by(FoodOrderTracking.created_at.desc()).all()
+    
+    # Calculate progress percentage
+    status_progress = {
+        'pending': 10,
+        'confirmed': 25,
+        'preparing': 50,
+        'dispatched': 75,
+        'delivered': 100,
+        'cancelled': 0
+    }
+    
+    progress_percentage = status_progress.get(order.status, 0)
+    
+    return render_template('food/enhanced_tracking.html',
+                         order=order,
+                         tracking_updates=tracking_updates,
+                         progress_percentage=progress_percentage)
+
+@food_bp.route('/review_order/<int:order_id>', methods=['GET', 'POST'])
+@login_required
+def review_order(order_id):
+    """Submit review and rating for completed food order"""
+    order = FoodOrder.query.get_or_404(order_id)
+    
+    # Verify user owns this order and it's completed
+    if order.user_id != current_user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('index'))
+    
+    if order.status != 'delivered':
+        flash('You can only review completed orders', 'error')
+        return redirect(url_for('food.order_status', order_id=order_id))
+    
+    # Check if already reviewed
+    existing_review = FoodReview.query.filter_by(food_order_id=order_id).first()
+    if existing_review:
+        flash('You have already reviewed this order', 'info')
+        return redirect(url_for('food.order_status', order_id=order_id))
+    
+    if request.method == 'POST':
+        rating = request.form.get('rating', type=int)
+        review_text = request.form.get('review_text', '')
+        food_quality = request.form.get('food_quality', type=int)
+        delivery_speed = request.form.get('delivery_speed', type=int)
+        packaging_quality = request.form.get('packaging_quality', type=int)
+        would_recommend = request.form.get('would_recommend') == 'on'
+        
+        if not rating or rating < 1 or rating > 5:
+            flash('Please provide a valid rating (1-5 stars)', 'error')
+            return render_template('food/review_order.html', order=order)
+        
+        try:
+            review = FoodReview(
+                user_id=current_user.id,
+                restaurant_id=order.restaurant_id,
+                food_order_id=order_id,
+                rating=rating,
+                review_text=review_text,
+                food_quality=food_quality,
+                delivery_speed=delivery_speed,
+                packaging_quality=packaging_quality,
+                would_recommend=would_recommend
+            )
+            
+            db.session.add(review)
+            db.session.commit()
+            
+            flash('Thank you for your review!', 'success')
+            return redirect(url_for('food.order_status', order_id=order_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Error submitting review. Please try again.', 'error')
+    
+    return render_template('food/review_order.html', order=order)
+
+def get_smart_recommendations(user_id, booking_id):
+    """Generate smart food recommendations for user"""
+    current_time = datetime.now()
+    
+    # Get user preferences
+    user_prefs = UserDietaryPreference.query.filter_by(user_id=user_id).first()
+    dietary_restrictions = user_prefs.get_dietary_restrictions() if user_prefs else []
+    
+    # Get popular items from user's past orders
+    past_orders = FoodOrder.query.filter_by(user_id=user_id).all()
+    past_item_ids = []
+    for order in past_orders:
+        past_item_ids.extend([item.menu_item_id for item in order.items])
+    
+    # Get menu items that match dietary preferences and have high recommendation scores
+    recommendations = []
+    
+    # Time-based recommendations
+    hour = current_time.hour
+    if 6 <= hour <= 10:
+        category_filter = 'Breakfast'
+    elif 11 <= hour <= 15:
+        category_filter = 'Lunch'
+    elif 18 <= hour <= 22:
+        category_filter = 'Dinner'
+    else:
+        category_filter = 'Snacks'
+    
+    # Get top-rated items in appropriate category
+    menu_items = MenuItem.query.filter(
+        and_(
+            MenuItem.category == category_filter,
+            MenuItem.available == True
+        )
+    ).limit(5).all()
+    
+    for item in menu_items:
+        if item.matches_dietary_preferences(dietary_restrictions):
+            score = item.get_recommendation_score(current_time)
+            
+            # Boost score if user hasn't tried this item
+            if item.id not in past_item_ids:
+                score += 1
+            
+            recommendations.append({
+                'item': item,
+                'score': score,
+                'reason': f'Perfect for {category_filter.lower()} time!'
+            })
+    
+    # Sort by score and return top 3
+    recommendations.sort(key=lambda x: x['score'], reverse=True)
+    return recommendations[:3]
