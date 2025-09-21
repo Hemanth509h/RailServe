@@ -348,10 +348,46 @@ def generate_pnr(mapper, connection, target):
 def setup_database():
     """Initialize database with schema and test data"""
     
-    # Get database URL from environment
-    database_url = os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/")
+    # Use same database connection logic as main app
+    database_url = os.environ.get("DATABASE_URL")
+    use_local_db = False
+
+    if database_url:
+        # Check if DATABASE_URL is just a password (from user input) and construct full URL
+        if not database_url.startswith('postgresql://') and not database_url.startswith('sqlite://'):
+            # Treat it as password and construct full Supabase URL
+            password = database_url
+            database_url = f"postgresql://postgres:{password}@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres"
+            logger.info("Constructed Supabase connection string from provided password")
+        else:
+            logger.info("Using provided DATABASE_URL")
+        
+        # Test connection to online database
+        try:
+            test_engine = create_engine(database_url)
+            with test_engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            logger.info("Online database connection successful")
+        except Exception as e:
+            logger.warning(f"Online database connection failed: {e}")
+            logger.info("Falling back to offline database")
+            use_local_db = True
+    else:
+        logger.info("No DATABASE_URL provided, using offline database")
+        use_local_db = True
+
+    if use_local_db:
+        # First try Replit's built-in PostgreSQL database
+        replit_db_url = os.environ.get("DATABASE_URL")
+        if replit_db_url and replit_db_url.startswith('postgresql://'):
+            database_url = replit_db_url
+            logger.info("Using Replit's built-in PostgreSQL database")
+        else:
+            # Final fallback to SQLite for offline use
+            database_url = "sqlite:///local_railway.db"
+            logger.info("Using SQLite database for offline mode: local_railway.db")
     
-    logger.info(f"Connecting to database: {database_url.split('@')[0]}@...")
+    logger.info(f"Connecting to database...")
     
     try:
         # Create engine
