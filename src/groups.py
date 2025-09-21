@@ -138,6 +138,13 @@ def add_group_train_booking(group_id):
                 flash(f'Exceeds group capacity. Available slots: {group.total_passengers - current_passenger_count}', 'error')
                 return redirect(url_for('groups.add_group_train_booking', group_id=group_id))
             
+            # Validate journey date is not in the past
+            parsed_journey_date = datetime.strptime(journey_date, '%Y-%m-%d').date()
+            tomorrow = (datetime.now() + timedelta(days=1)).date()
+            if parsed_journey_date < tomorrow:
+                flash('Journey date must be at least tomorrow', 'error')
+                return redirect(url_for('groups.add_group_train_booking', group_id=group_id))
+            
             # Calculate fare (this would use your existing fare calculation logic)
             base_fare = passengers * 500  # Simplified calculation
             
@@ -151,7 +158,7 @@ def add_group_train_booking(group_id):
                 train_id=train_id,
                 from_station_id=int(from_station) if from_station else 0,
                 to_station_id=int(to_station) if to_station else 0,
-                journey_date=datetime.strptime(journey_date, '%Y-%m-%d').date() if journey_date else datetime.now().date(),
+                journey_date=parsed_journey_date,
                 passengers=passengers,
                 total_amount=total_amount,
                 coach_class=coach_class,
@@ -177,10 +184,14 @@ def add_group_train_booking(group_id):
     stations = Station.query.order_by(Station.name).all()
     trains = Train.query.filter_by(active=True).order_by(Train.name).all()
     
+    # Calculate minimum date (tomorrow)
+    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+    
     return render_template('groups/add_booking.html', 
                          group=group, 
                          stations=stations, 
-                         trains=trains)
+                         trains=trains,
+                         min_date=tomorrow)
 
 @groups_bp.route('/my_groups')
 @login_required
