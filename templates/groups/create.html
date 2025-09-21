@@ -7,19 +7,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-users text-primary me-2"></i>Create Group Booking</h2>
-                <a href="{{ url_for('groups.my_groups') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>My Groups
+<div class="page-container">
+    <div class="content-wrapper">
+        <div class="main-content">
+            <div class="page-header">
+                <h2><i class="fas fa-users header-icon"></i>Create Group Booking</h2>
+                <a href="{{ url_for('groups.my_groups') }}" class="secondary-button">
+                    <i class="fas fa-arrow-left icon-left"></i>My Groups
                 </a>
             </div>
             
-            <div class="alert alert-info">
-                <h6><i class="fas fa-info-circle me-2"></i>Group Booking Benefits</h6>
-                <ul class="mb-0">
+            <div class="info-alert">
+                <h6><i class="fas fa-info-circle icon-left"></i>Group Booking Benefits</h6>
+                <ul class="benefits-list">
                     <li><strong>6+ passengers:</strong> 5% group discount</li>
                     <li><strong>10+ passengers:</strong> 10% group discount</li>
                     <li><strong>20+ passengers:</strong> 15% group discount</li>
@@ -28,32 +28,32 @@
                 </ul>
             </div>
             
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Group Information</h5>
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h5 class="form-card-title">Group Information</h5>
                 </div>
-                <div class="card-body">
+                <div class="form-card-body">
                     <form method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Group Name *</label>
-                                <input type="text" name="group_name" class="form-control" 
+                        <div class="form-row">
+                            <div class="form-column">
+                                <label class="input-label">Group Name *</label>
+                                <input type="text" name="group_name" class="text-input" 
                                        placeholder="e.g., Kumar Family Trip, ABC Corporate Tour" required>
-                                <div class="form-text">Choose a memorable name for your group</div>
+                                <div class="input-help">Choose a memorable name for your group</div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Total Passengers *</label>
-                                <input type="number" name="total_passengers" class="form-control" 
+                            <div class="form-column">
+                                <label class="input-label">Total Passengers *</label>
+                                <input type="number" name="total_passengers" class="text-input" 
                                        min="4" max="50" placeholder="e.g., 8" required>
-                                <div class="form-text">Minimum 4 passengers for group booking</div>
+                                <div class="input-help">Minimum 4 passengers for group booking</div>
                             </div>
                         </div>
                         
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Booking Type *</label>
-                                <select name="booking_type" class="form-select" required>
+                        <div class="form-row">
+                            <div class="form-column">
+                                <label class="input-label">Booking Type *</label>
+                                <select name="booking_type" class="select-input" required>
                                     <option value="family">Family Trip</option>
                                     <option value="corporate">Corporate Travel</option>
                                     <option value="tour">Tour Group</option>
@@ -62,31 +62,31 @@
                                     <option value="other">Other</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Contact Phone *</label>
-                                <input type="tel" name="contact_phone" class="form-control" 
+                            <div class="form-column">
+                                <label class="input-label">Contact Phone *</label>
+                                <input type="tel" name="contact_phone" class="text-input" 
                                        placeholder="+91-9876543210" required>
-                                <div class="form-text">Primary contact number for the group</div>
+                                <div class="input-help">Primary contact number for the group</div>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Contact Email *</label>
-                            <input type="email" name="contact_email" class="form-control" 
+                        <div class="form-group">
+                            <label class="input-label">Contact Email *</label>
+                            <input type="email" name="contact_email" class="text-input" 
                                    value="{{ current_user.email }}" required>
-                            <div class="form-text">Email for group booking confirmations and updates</div>
+                            <div class="input-help">Email for group booking confirmations and updates</div>
                         </div>
                         
-                        <div class="mb-4">
-                            <label class="form-label">Special Requirements</label>
-                            <textarea name="special_requirements" class="form-control" rows="3" 
+                        <div class="form-group">
+                            <label class="input-label">Special Requirements</label>
+                            <textarea name="special_requirements" class="textarea-input" rows="3" 
                                       placeholder="Any special needs? (wheelchair access, dietary requirements, etc.)"></textarea>
-                            <div class="form-text">Optional: Mention any special accommodations needed</div>
+                            <div class="input-help">Optional: Mention any special accommodations needed</div>
                         </div>
                         
-                        <div class="alert alert-warning">
-                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Important Notes</h6>
-                            <ul class="mb-0">
+                        <div class="warning-alert">
+                            <h6><i class="fas fa-exclamation-triangle icon-left"></i>Important Notes</h6>
+                            <ul class="notes-list">
                                 <li>You will be the <strong>Group Leader</strong> responsible for coordinating all bookings</li>
                                 <li>Group discounts are automatically applied based on total passenger count</li>
                                 <li>All individual bookings must be made within 48 hours of creating the group</li>
@@ -94,10 +94,10 @@
                             </ul>
                         </div>
                         
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('groups.my_groups') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-plus me-2"></i>Create Group Booking
+                        <div class="form-actions">
+                            <a href="{{ url_for('groups.my_groups') }}" class="secondary-button">Cancel</a>
+                            <button type="submit" class="primary-button large-button">
+                                <i class="fas fa-plus icon-left"></i>Create Group Booking
                             </button>
                         </div>
                     </form>
