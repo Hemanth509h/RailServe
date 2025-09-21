@@ -1,0 +1,769 @@
+{% extends "base.html" %}
+
+{% block title %}Select Seats - {{ train.name }} - RailServe{% endblock %}
+
+{% block content %}
+<div class="seat-selection-container">
+    <div class="booking-header">
+        <div class="train-info">
+            <h1><i class="fas fa-train"></i> {{ train.name }} ({{ train.number }})</h1>
+            <div class="journey-details">
+                <span class="route">
+                    <strong>{{ from_station.name }}</strong> 
+                    <i class="fas fa-arrow-right"></i> 
+                    <strong>{{ to_station.name }}</strong>
+                </span>
+                <span class="date">
+                    <i class="fas fa-calendar"></i> {{ journey_date.strftime('%d %b %Y') }}
+                </span>
+                <span class="coach-class">
+                    <i class="fas fa-chair"></i> {{ coach_class_display }}
+                </span>
+            </div>
+        </div>
+        <div class="booking-summary">
+            <div class="passengers">
+                <i class="fas fa-users"></i> {{ passengers }} Passengers
+            </div>
+            <div class="total-fare">
+                <i class="fas fa-rupee-sign"></i> ₹{{ total_amount }}
+            </div>
+        </div>
+    </div>
+
+    <div class="seat-map-container">
+        <div class="coach-selection">
+            <h3><i class="fas fa-subway"></i> Select Coach</h3>
+            <div class="coach-tabs">
+                {% for coach in available_coaches %}
+                <button class="coach-tab {% if loop.first %}active{% endif %}" 
+                        onclick="selectCoach('{{ coach.id }}', '{{ coach.name }}')"
+                        data-coach="{{ coach.id }}">
+                    {{ coach.name }}
+                    <span class="availability">{{ coach.available }}/{{ coach.total }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="seat-map">
+            <div class="seat-map-header">
+                <h3 id="current-coach-name">{{ available_coaches[0].name if available_coaches else 'S1' }}</h3>
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="seat available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="seat occupied"></div>
+                        <span>Occupied</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="seat selected"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="seat ladies"></div>
+                        <span>Ladies</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seat Layout Container -->
+            <div class="seat-layout" id="seat-layout">
+                <!-- Seats will be dynamically generated here -->
+            </div>
+        </div>
+
+        <div class="passenger-assignment">
+            <h3><i class="fas fa-clipboard-list"></i> Passenger Seat Assignment</h3>
+            <div class="passenger-list" id="passenger-list">
+                {% for passenger in passenger_details %}
+                <div class="passenger-item" data-passenger="{{ loop.index0 }}">
+                    <div class="passenger-info">
+                        <strong>{{ passenger.name }}</strong>
+                        <span class="details">{{ passenger.age }}Y, {{ passenger.gender }}</span>
+                    </div>
+                    <div class="seat-assignment">
+                        <span class="assigned-seat" id="seat-{{ loop.index0 }}">
+                            Not assigned
+                        </span>
+                        <button class="btn btn-sm btn-secondary" onclick="autoAssignSeat({{ loop.index0 }})">
+                            Auto Assign
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="booking-actions">
+        <div class="preference-options">
+            <h4><i class="fas fa-sliders-h"></i> Seat Preferences</h4>
+            <div class="preference-buttons">
+                <button class="btn btn-outline-primary" onclick="autoAssignAll('lower')">
+                    <i class="fas fa-bed"></i> Prefer Lower Berths
+                </button>
+                <button class="btn btn-outline-primary" onclick="autoAssignAll('window')">
+                    <i class="fas fa-window-maximize"></i> Prefer Window Seats
+                </button>
+                <button class="btn btn-outline-primary" onclick="autoAssignAll('together')">
+                    <i class="fas fa-users"></i> Keep Together
+                </button>
+                <button class="btn btn-outline-secondary" onclick="clearAllSelections()">
+                    <i class="fas fa-eraser"></i> Clear All
+                </button>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('payment.pay_from_session') }}" id="booking-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="seat_selections" id="seat-selections" value="">
+            <div class="action-buttons">
+                <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Booking
+                </a>
+                <button type="submit" class="btn btn-primary" id="proceed-payment" disabled>
+                    <i class="fas fa-credit-card"></i> Proceed to Payment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.seat-selection-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.booking-header {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.train-info h1 {
+    margin: 0 0 1rem 0;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.journey-details {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.journey-details span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.booking-summary {
+    text-align: right;
+}
+
+.passengers, .total-fare {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.total-fare {
+    color: var(--success-color);
+    font-size: 1.3rem;
+}
+
+.seat-map-container {
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.coach-selection, .seat-map, .passenger-assignment {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.coach-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.coach-tab {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coach-tab:hover, .coach-tab.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.availability {
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+}
+
+.seat-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.seat-legend {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.seat {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    position: relative;
+}
+
+.seat.available {
+    background: #e5f3ff;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+
+.seat.available:hover {
+    background: #3b82f6;
+    color: white;
+    transform: scale(1.1);
+}
+
+.seat.occupied {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #dc2626;
+    cursor: not-allowed;
+}
+
+.seat.selected {
+    background: #10b981;
+    border-color: #059669;
+    color: white;
+    transform: scale(1.1);
+}
+
+.seat.ladies {
+    background: #fce7f3;
+    border-color: #ec4899;
+    color: #be185d;
+}
+
+.seat-layout {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 400px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.5rem;
+    align-content: start;
+}
+
+.passenger-item {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.passenger-info {
+    margin-bottom: 0.5rem;
+}
+
+.passenger-info strong {
+    display: block;
+    color: var(--text-primary);
+}
+
+.details {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.seat-assignment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.assigned-seat {
+    padding: 0.25rem 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.preference-options {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.preference-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+@media (max-width: 1200px) {
+    .seat-map-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .coach-tabs {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+    
+    .coach-tab {
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .seat-selection-container {
+        padding: 1rem;
+    }
+    
+    .booking-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .booking-summary {
+        text-align: center;
+    }
+    
+    .preference-buttons {
+        justify-content: center;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+        flex-direction: column;
+    }
+}
+
+/* Loading state */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Global variables
+let selectedSeats = {};
+let currentCoach = '{{ available_coaches[0].id if available_coaches else "S1" }}';
+let passengerCount = {{ passengers if passengers else 1 }};
+let seatLayout = {};
+
+// Mock seat data (in real app, this would come from API)
+const mockSeatData = {
+    'S1': generateSeatMap('SL'),
+    'S2': generateSeatMap('SL'),
+    'A1': generateSeatMap('AC3'),
+    'B1': generateSeatMap('AC3')
+};
+
+function generateSeatMap(coachType) {
+    const seats = {};
+    let totalSeats = coachType === 'SL' ? 72 : 64;
+    
+    for (let i = 1; i <= totalSeats; i++) {
+        let berth;
+        if (coachType === 'SL' || coachType === 'AC3') {
+            berth = ['Lower', 'Middle', 'Upper', 'Side Lower', 'Side Upper'][i % 5];
+        } else {
+            berth = ['Lower', 'Upper', 'Side Lower', 'Side Upper'][i % 4];
+        }
+        
+        seats[i] = {
+            number: i,
+            berth: berth,
+            status: Math.random() < 0.3 ? 'occupied' : 'available',
+            gender: Math.random() < 0.1 ? 'ladies' : null,
+            passenger: null
+        };
+    }
+    
+    return seats;
+}
+
+function selectCoach(coachId, coachName) {
+    // Update active coach tab
+    document.querySelectorAll('.coach-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelector(`[data-coach="${coachId}"]`).classList.add('active');
+    
+    // Update current coach
+    currentCoach = coachId;
+    document.getElementById('current-coach-name').textContent = coachName;
+    
+    // Load seat map for this coach
+    loadSeatMap(coachId);
+}
+
+function loadSeatMap(coachId) {
+    const seatLayoutContainer = document.getElementById('seat-layout');
+    seatLayoutContainer.innerHTML = '';
+    seatLayoutContainer.classList.add('loading');
+    
+    // Simulate API call delay
+    setTimeout(() => {
+        const seats = mockSeatData[coachId] || mockSeatData['S1'];
+        seatLayout = seats;
+        
+        // Generate seat elements
+        for (let seatNum in seats) {
+            const seat = seats[seatNum];
+            const seatElement = createSeatElement(seat, coachId);
+            seatLayoutContainer.appendChild(seatElement);
+        }
+        
+        seatLayoutContainer.classList.remove('loading');
+    }, 500);
+}
+
+function createSeatElement(seat, coachId) {
+    const seatEl = document.createElement('div');
+    seatEl.className = 'seat';
+    seatEl.textContent = seat.number;
+    seatEl.setAttribute('data-seat', seat.number);
+    seatEl.setAttribute('data-coach', coachId);
+    seatEl.setAttribute('data-berth', seat.berth);
+    
+    // Set seat status classes
+    if (seat.status === 'occupied') {
+        seatEl.classList.add('occupied');
+        seatEl.title = `Seat ${seat.number} - Occupied`;
+    } else if (seat.gender === 'ladies') {
+        seatEl.classList.add('ladies');
+        seatEl.title = `Seat ${seat.number} - ${seat.berth} (Ladies)`;
+    } else {
+        seatEl.classList.add('available');
+        seatEl.title = `Seat ${seat.number} - ${seat.berth}`;
+    }
+    
+    // Check if seat is already selected
+    const seatKey = `${coachId}-${seat.number}`;
+    if (selectedSeats[seatKey]) {
+        seatEl.classList.remove('available', 'ladies');
+        seatEl.classList.add('selected');
+    }
+    
+    // Add click handler for available seats
+    if (seat.status === 'available') {
+        seatEl.addEventListener('click', () => toggleSeat(seatEl, coachId, seat));
+    }
+    
+    return seatEl;
+}
+
+function toggleSeat(seatElement, coachId, seat) {
+    const seatKey = `${coachId}-${seat.number}`;
+    
+    if (selectedSeats[seatKey]) {
+        // Deselect seat
+        delete selectedSeats[seatKey];
+        seatElement.classList.remove('selected');
+        seatElement.classList.add('available');
+        
+        // Update passenger assignment
+        updatePassengerAssignment();
+    } else {
+        // Check if we have room for more selections
+        if (Object.keys(selectedSeats).length >= passengerCount) {
+            alert(`You can only select ${passengerCount} seats for ${passengerCount} passengers.`);
+            return;
+        }
+        
+        // Select seat
+        selectedSeats[seatKey] = {
+            coach: coachId,
+            seat: seat.number,
+            berth: seat.berth,
+            passenger: null
+        };
+        
+        seatElement.classList.remove('available', 'ladies');
+        seatElement.classList.add('selected');
+        
+        // Auto-assign to next unassigned passenger
+        autoAssignToNextPassenger(seatKey);
+    }
+    
+    updateUI();
+}
+
+function autoAssignToNextPassenger(seatKey) {
+    // Find first passenger without seat assignment
+    for (let i = 0; i < passengerCount; i++) {
+        const assignedSeatEl = document.getElementById(`seat-${i}`);
+        if (assignedSeatEl.textContent === 'Not assigned') {
+            assignPassengerToSeat(i, seatKey);
+            break;
+        }
+    }
+}
+
+function assignPassengerToSeat(passengerIndex, seatKey) {
+    const seatData = selectedSeats[seatKey];
+    seatData.passenger = passengerIndex;
+    
+    const assignedSeatEl = document.getElementById(`seat-${passengerIndex}`);
+    assignedSeatEl.textContent = `${seatData.coach}-${seatData.seat} (${seatData.berth})`;
+    assignedSeatEl.style.background = 'var(--success-color)';
+    assignedSeatEl.style.color = 'white';
+}
+
+function autoAssignSeat(passengerIndex) {
+    // Find first available seat in current coach
+    const availableSeats = Object.entries(seatLayout).filter(([num, seat]) => {
+        const seatKey = `${currentCoach}-${num}`;
+        return seat.status === 'available' && !selectedSeats[seatKey];
+    });
+    
+    if (availableSeats.length === 0) {
+        alert('No available seats in current coach. Please select a different coach.');
+        return;
+    }
+    
+    // Check if passenger already has a seat
+    const existingSeat = Object.entries(selectedSeats).find(([key, data]) => data.passenger === passengerIndex);
+    if (existingSeat) {
+        // Remove existing assignment
+        delete selectedSeats[existingSeat[0]];
+        const oldSeatEl = document.querySelector(`[data-seat="${existingSeat[1].seat}"][data-coach="${existingSeat[1].coach}"]`);
+        if (oldSeatEl) {
+            oldSeatEl.classList.remove('selected');
+            oldSeatEl.classList.add('available');
+        }
+    }
+    
+    // Assign first available seat
+    const [seatNum, seatData] = availableSeats[0];
+    const seatKey = `${currentCoach}-${seatNum}`;
+    
+    selectedSeats[seatKey] = {
+        coach: currentCoach,
+        seat: parseInt(seatNum),
+        berth: seatData.berth,
+        passenger: passengerIndex
+    };
+    
+    assignPassengerToSeat(passengerIndex, seatKey);
+    
+    // Update seat visual
+    const seatEl = document.querySelector(`[data-seat="${seatNum}"][data-coach="${currentCoach}"]`);
+    if (seatEl) {
+        seatEl.classList.remove('available');
+        seatEl.classList.add('selected');
+    }
+    
+    updateUI();
+}
+
+function autoAssignAll(preference) {
+    clearAllSelections();
+    
+    let availableSeats = Object.entries(seatLayout).filter(([num, seat]) => {
+        return seat.status === 'available';
+    });
+    
+    // Sort based on preference
+    if (preference === 'lower') {
+        availableSeats.sort(([a, seatA], [b, seatB]) => {
+            if (seatA.berth.includes('Lower') && !seatB.berth.includes('Lower')) return -1;
+            if (!seatA.berth.includes('Lower') && seatB.berth.includes('Lower')) return 1;
+            return 0;
+        });
+    } else if (preference === 'window') {
+        availableSeats.sort(([a, seatA], [b, seatB]) => {
+            const windowSeats = [1, 2, 5, 6]; // Typical window seat numbers in a compartment
+            const aIsWindow = windowSeats.includes(parseInt(a) % 8);
+            const bIsWindow = windowSeats.includes(parseInt(b) % 8);
+            if (aIsWindow && !bIsWindow) return -1;
+            if (!aIsWindow && bIsWindow) return 1;
+            return 0;
+        });
+    } else if (preference === 'together') {
+        // Group seats by compartment for keeping together
+        availableSeats.sort(([a], [b]) => {
+            const compA = Math.floor((parseInt(a) - 1) / 8);
+            const compB = Math.floor((parseInt(b) - 1) / 8);
+            return compA - compB;
+        });
+    }
+    
+    // Assign seats to passengers
+    for (let i = 0; i < Math.min(passengerCount, availableSeats.length); i++) {
+        const [seatNum, seatData] = availableSeats[i];
+        const seatKey = `${currentCoach}-${seatNum}`;
+        
+        selectedSeats[seatKey] = {
+            coach: currentCoach,
+            seat: parseInt(seatNum),
+            berth: seatData.berth,
+            passenger: i
+        };
+        
+        assignPassengerToSeat(i, seatKey);
+        
+        // Update seat visual
+        const seatEl = document.querySelector(`[data-seat="${seatNum}"][data-coach="${currentCoach}"]`);
+        if (seatEl) {
+            seatEl.classList.remove('available');
+            seatEl.classList.add('selected');
+        }
+    }
+    
+    updateUI();
+}
+
+function clearAllSelections() {
+    // Clear selected seats visually
+    document.querySelectorAll('.seat.selected').forEach(seat => {
+        seat.classList.remove('selected');
+        seat.classList.add('available');
+    });
+    
+    // Clear passenger assignments
+    for (let i = 0; i < passengerCount; i++) {
+        const assignedSeatEl = document.getElementById(`seat-${i}`);
+        assignedSeatEl.textContent = 'Not assigned';
+        assignedSeatEl.style.background = '';
+        assignedSeatEl.style.color = '';
+    }
+    
+    selectedSeats = {};
+    updateUI();
+}
+
+function updatePassengerAssignment() {
+    // Clear all assignments first
+    for (let i = 0; i < passengerCount; i++) {
+        const assignedSeatEl = document.getElementById(`seat-${i}`);
+        assignedSeatEl.textContent = 'Not assigned';
+        assignedSeatEl.style.background = '';
+        assignedSeatEl.style.color = '';
+    }
+    
+    // Reassign based on current selections
+    Object.entries(selectedSeats).forEach(([seatKey, seatData]) => {
+        if (seatData.passenger !== null) {
+            assignPassengerToSeat(seatData.passenger, seatKey);
+        }
+    });
+}
+
+function updateUI() {
+    const selectedCount = Object.keys(selectedSeats).length;
+    const proceedButton = document.getElementById('proceed-payment');
+    
+    // Update form data
+    document.getElementById('seat-selections').value = JSON.stringify(selectedSeats);
+    
+    // Enable/disable proceed button
+    if (selectedCount === passengerCount) {
+        proceedButton.disabled = false;
+        proceedButton.innerHTML = '<i class="fas fa-credit-card"></i> Proceed to Payment';
+    } else {
+        proceedButton.disabled = true;
+        proceedButton.innerHTML = `<i class="fas fa-clock"></i> Select ${passengerCount - selectedCount} more seats`;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSeatMap(currentCoach);
+});
+</script>
+{% endblock %}

@@ -146,6 +146,7 @@
                                 <div class="action-buttons">
                                     {% if refund.status == 'pending' %}
                                         <form method="POST" action="{{ url_for('admin.approve_refund', refund_id=refund.id) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <button type="submit" class="btn btn-sm btn-success" 
                                                     onclick="return confirm('Approve this refund request?')">
                                                 <i class="fas fa-check"></i> Approve
@@ -157,6 +158,7 @@
                                         </button>
                                     {% elif refund.status == 'approved' %}
                                         <form method="POST" action="{{ url_for('admin.complete_refund', refund_id=refund.id) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <button type="submit" class="btn btn-sm btn-primary" 
                                                     onclick="return confirm('Mark this refund as completed (money transferred)?')">
                                                 <i class="fas fa-dollar-sign"></i> Complete
@@ -196,6 +198,7 @@
             <span class="close" onclick="hideRejectModal()">&times;</span>
         </div>
         <form id="rejectForm" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="modal-body">
                 <p>Rejecting refund request: <strong id="rejectTdrNumber"></strong></p>
                 <div class="form-group">

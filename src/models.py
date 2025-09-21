@@ -138,6 +138,7 @@ class Passenger(db.Model):
     def __init__(self, **kwargs):
         super(Passenger, self).__init__(**kwargs)
 
+
 class Payment(db.Model):
     """Payment information"""
     id = db.Column(db.Integer, primary_key=True)
@@ -236,7 +237,7 @@ class RefundRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    reason = db.Column(db.String(100), nullable=False)  # Train cancelled, delay, AC failure, etc.
+    reason = db.Column(db.Text, nullable=False)  # Train cancelled, delay, AC failure, etc.
     amount_paid = db.Column(db.Float, nullable=False)
     refund_amount = db.Column(db.Float, nullable=False)
     cancellation_charges = db.Column(db.Float, default=0.0)
@@ -245,10 +246,18 @@ class RefundRequest(db.Model):
     filed_at = db.Column(db.DateTime, default=datetime.utcnow)
     processed_at = db.Column(db.DateTime)
     
+    # Relationships
+    booking = db.relationship('Booking', backref='refund_requests', lazy=True)
+    user = db.relationship('User', backref='refund_requests', lazy=True)
+    
     def __init__(self, **kwargs):
         super(RefundRequest, self).__init__(**kwargs)
         if not self.tdr_number:
             self.tdr_number = f"TDR{datetime.utcnow().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+    
+    def validate_refund_amount(self):
+        """Ensure refund amount doesn't exceed amount paid"""
+        return self.refund_amount <= self.amount_paid
 
 class TrainStatus(db.Model):
     """Live train status tracking"""
