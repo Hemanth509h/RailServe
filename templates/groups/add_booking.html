@@ -1,0 +1,583 @@
+{% extends "base.html" %}
+
+{% block title %}Add Booking to {{ group.group_name }} - RailServe{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern add booking styling */
+.add-booking-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.content-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.form-card {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-title {
+    color: #2d3748;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.page-subtitle {
+    color: #718096;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.group-info-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input, .form-select {
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.capacity-alert {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+
+.alert-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.train-search-results {
+    margin-top: 2rem;
+}
+
+.train-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.train-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.train-card.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.train-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.train-name {
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.train-number {
+    color: #718096;
+    font-weight: 600;
+}
+
+.train-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.train-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    color: #718096;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8fafc;
+    color: #718096;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #4a5568;
+    text-decoration: none;
+}
+
+.required-indicator {
+    color: #e53e3e;
+    margin-left: 0.25rem;
+}
+
+.form-help {
+    color: #718096;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 0.5rem;
+    }
+    
+    .form-card {
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .group-info-banner {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .train-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="add-booking-container">
+    <div class="content-wrapper">
+        <div class="form-card">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Add Booking to Group
+                </h1>
+                <p class="page-subtitle">
+                    Add a new train booking to "{{ group.group_name }}" and automatically receive 
+                    {{ group.group_discount_rate }}% group discount.
+                </p>
+            </div>
+
+            <!-- Group Information Banner -->
+            <div class="group-info-banner">
+                <div class="info-item">
+                    <div class="info-label">Group Name</div>
+                    <div class="info-value">{{ group.group_name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total Capacity</div>
+                    <div class="info-value">{{ group.total_passengers }} passengers</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Group Discount</div>
+                    <div class="info-value">{{ group.group_discount_rate }}% OFF</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Group Type</div>
+                    <div class="info-value">{{ group.booking_type.title() }}</div>
+                </div>
+            </div>
+
+            <!-- Capacity Alert -->
+            {% set current_bookings = group.individual_bookings or [] %}
+            {% set current_passenger_count = current_bookings|sum(attribute='passengers') or 0 %}
+            {% set remaining_capacity = group.total_passengers - current_passenger_count %}
+            
+            {% if remaining_capacity <= 5 %}
+            <div class="capacity-alert">
+                <p class="alert-content">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Only {{ remaining_capacity }} passenger slots remaining in this group!
+                </p>
+            </div>
+            {% endif %}
+
+            <form method="POST" id="bookingForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <!-- Journey Details Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-route"></i>
+                        Journey Details
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="from_station" class="form-label">
+                                From Station <span class="required-indicator">*</span>
+                            </label>
+                            <select id="from_station" name="from_station" class="form-select" required>
+                                <option value="">Select departure station</option>
+                                {% for station in stations %}
+                                <option value="{{ station.id }}">{{ station.name }} ({{ station.code }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-help">Choose your departure station</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="to_station" class="form-label">
+                                To Station <span class="required-indicator">*</span>
+                            </label>
+                            <select id="to_station" name="to_station" class="form-select" required>
+                                <option value="">Select arrival station</option>
+                                {% for station in stations %}
+                                <option value="{{ station.id }}">{{ station.name }} ({{ station.code }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-help">Choose your destination station</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="journey_date" class="form-label">
+                                Journey Date <span class="required-indicator">*</span>
+                            </label>
+                            <input type="date" 
+                                   id="journey_date" 
+                                   name="journey_date" 
+                                   class="form-input"
+                                   min="{{ (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d') }}"
+                                   required>
+                            <div class="form-help">Select your travel date</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-ticket-alt"></i>
+                        Booking Details
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="train_id" class="form-label">
+                                Select Train <span class="required-indicator">*</span>
+                            </label>
+                            <select id="train_id" name="train_id" class="form-select" required>
+                                <option value="">Choose a train</option>
+                                {% for train in trains %}
+                                <option value="{{ train.id }}">{{ train.number }} - {{ train.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-help">Select from available trains</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="passengers" class="form-label">
+                                Number of Passengers <span class="required-indicator">*</span>
+                            </label>
+                            <input type="number" 
+                                   id="passengers" 
+                                   name="passengers" 
+                                   class="form-input" 
+                                   min="1" 
+                                   max="{{ remaining_capacity }}"
+                                   placeholder="Enter number of travelers"
+                                   required>
+                            <div class="form-help">Maximum {{ remaining_capacity }} passengers available</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="coach_class" class="form-label">
+                                Class of Travel <span class="required-indicator">*</span>
+                            </label>
+                            <select id="coach_class" name="coach_class" class="form-select" required>
+                                <option value="SL">Sleeper (SL)</option>
+                                <option value="3A">AC 3 Tier (3A)</option>
+                                <option value="2A">AC 2 Tier (2A)</option>
+                                <option value="1A">AC 1 Tier (1A)</option>
+                                <option value="CC">AC Chair Car (CC)</option>
+                                <option value="2S">Second Sitting (2S)</option>
+                            </select>
+                            <div class="form-help">Choose your preferred class</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Summary (will be populated via JavaScript) -->
+                <div id="booking-summary" class="form-section" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-calculator"></i>
+                        Booking Summary
+                    </h2>
+                    <div class="group-info-banner">
+                        <div class="info-item">
+                            <div class="info-label">Base Fare</div>
+                            <div class="info-value" id="base-fare">₹0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Group Discount ({{ group.group_discount_rate }}%)</div>
+                            <div class="info-value" id="discount-amount">₹0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Final Amount</div>
+                            <div class="info-value" id="final-amount">₹0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Savings</div>
+                            <div class="info-value" id="savings-amount" style="color: #48bb78;">₹0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{{ url_for('groups.manage_group', group_id=group.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add Booking to Group
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enhanced form functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('bookingForm');
+    const passengersInput = document.getElementById('passengers');
+    const summarySection = document.getElementById('booking-summary');
+    
+    // Calculate and display booking summary
+    function updateBookingSummary() {
+        const passengers = parseInt(passengersInput.value) || 0;
+        const baseFarePerPassenger = 500; // Simplified calculation
+        
+        if (passengers > 0) {
+            const baseFare = passengers * baseFarePerPassenger;
+            const discountRate = {{ group.group_discount_rate }};
+            const discountAmount = (baseFare * discountRate) / 100;
+            const finalAmount = baseFare - discountAmount;
+            
+            document.getElementById('base-fare').textContent = `₹${baseFare}`;
+            document.getElementById('discount-amount').textContent = `₹${discountAmount}`;
+            document.getElementById('final-amount').textContent = `₹${finalAmount}`;
+            document.getElementById('savings-amount').textContent = `₹${discountAmount}`;
+            
+            summarySection.style.display = 'block';
+        } else {
+            summarySection.style.display = 'none';
+        }
+    }
+    
+    // Update summary on passenger count change
+    passengersInput.addEventListener('input', updateBookingSummary);
+    
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const fromStation = document.getElementById('from_station').value;
+        const toStation = document.getElementById('to_station').value;
+        const passengers = parseInt(passengersInput.value);
+        const maxCapacity = {{ remaining_capacity }};
+        
+        if (fromStation === toStation) {
+            e.preventDefault();
+            alert('Departure and arrival stations cannot be the same.');
+            return;
+        }
+        
+        if (passengers > maxCapacity) {
+            e.preventDefault();
+            alert(`Cannot exceed remaining group capacity of ${maxCapacity} passengers.`);
+            passengersInput.focus();
+            return;
+        }
+        
+        if (passengers < 1) {
+            e.preventDefault();
+            alert('Please enter a valid number of passengers.');
+            passengersInput.focus();
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}
