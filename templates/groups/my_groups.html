@@ -43,7 +43,7 @@
                         </div>
                         <div class="group-col-passengers">
                             <small class="label-text">Passengers:</small><br>
-                            <strong>{{ group.confirmed_bookings|length }}/{{ group.total_passengers }}</strong>
+                            <strong>{{ group.get_confirmed_bookings()|length }}/{{ group.total_passengers }}</strong>
                         </div>
                         <div class="group-col-amount">
                             {% if group.group_discount_rate > 0 %}
