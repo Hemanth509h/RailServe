@@ -31,7 +31,8 @@ if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
 # Use DATABASE_URL with fallback to local database
-database_url = os.environ.get("DATABASE_URL")
+database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
+
 use_local_db = False
 
 if database_url:
@@ -39,7 +40,7 @@ if database_url:
     if not database_url.startswith('postgresql://') and not database_url.startswith('sqlite://'):
         # Treat it as password and construct full Supabase URL
         password = database_url
-        database_url = f"postgresql://postgres:{password}@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres"
+        database_url = f"postgresql://postgres:Htnameh509h@@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres"
         logging.info("Constructed Supabase connection string from provided password")
     else:
         logging.info("Using provided DATABASE_URL")
