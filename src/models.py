@@ -419,6 +419,11 @@ class GroupBooking(db.Model):
         except:
             return 0.0
     
+    @property
+    def total_amount(self):
+        """Property to access total amount for template compatibility"""
+        return self.get_total_amount()
+    
     def get_confirmed_bookings(self):
         """Get confirmed bookings in the group"""
         try:
