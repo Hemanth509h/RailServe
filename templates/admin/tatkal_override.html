@@ -2,6 +2,10 @@
 
 {% block title %}Tatkal Override Management - Admin{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/tatkal_override.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row">

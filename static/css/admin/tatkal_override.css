@@ -1,1 +1,449 @@
 /* Admin Tatkal Override Page Styles */
+
+/* Container and layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Page header styling */
+.container h2 {
+    color: var(--admin-text-primary);
+    font-weight: 700;
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.container h2 i {
+    color: #f59e0b;
+    font-size: 2rem;
+}
+
+.container p.text-muted {
+    color: var(--admin-text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+/* Enhanced alert styling for status */
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--admin-shadow-md);
+    border-left: 4px solid transparent;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, var(--success-color), #10b981);
+    color: var(--text-inverse);
+    border-left-color: #059669;
+}
+
+.alert-success h5 {
+    color: var(--text-inverse);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-success h5 i {
+    color: #6ee7b7;
+}
+
+.alert-success p {
+    color: var(--text-inverse);
+    margin-bottom: 0.5rem;
+}
+
+.alert-success strong {
+    color: #6ee7b7;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, var(--info-color), #0891b2);
+    color: var(--text-inverse);
+    border-left-color: #0891b2;
+}
+
+.alert-info h5 {
+    color: var(--text-inverse);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-info h5 i {
+    color: #a5f3fc;
+}
+
+.alert-info p {
+    color: var(--text-inverse);
+    margin-bottom: 0;
+}
+
+/* Enhanced card styling */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--admin-shadow-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--admin-card-bg);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-lg);
+}
+
+.card-header {
+    background: var(--admin-header-bg);
+    border-bottom: none;
+    padding: 1.5rem;
+    border-radius: 16px 16px 0 0;
+}
+
+.card-header h5,
+.card-header h6 {
+    color: var(--text-inverse);
+    margin-bottom: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-header i {
+    color: #fbbf24;
+}
+
+.card-body {
+    padding: 2rem;
+    background: var(--admin-card-bg);
+}
+
+/* Enhanced form styling */
+.form-label {
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.form-control {
+    border: 2px solid var(--admin-border-light);
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: var(--admin-card-bg);
+    color: var(--admin-text-primary);
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--admin-accent-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: var(--admin-card-bg);
+    color: var(--admin-text-primary);
+}
+
+.form-text {
+    color: var(--admin-text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Enhanced button styling */
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    font-size: 0.95rem;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: var(--text-inverse);
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-success:hover {
+    background: var(--success-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    color: var(--text-inverse);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: var(--text-inverse);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+    color: var(--text-inverse);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn i {
+    margin-right: 0.5rem;
+}
+
+/* Side info card styling */
+.col-lg-4 .card-body p {
+    color: var(--admin-text-primary);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.col-lg-4 .card-body ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.col-lg-4 .card-body li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--admin-text-secondary);
+    border-bottom: 1px solid var(--admin-border-light);
+}
+
+.col-lg-4 .card-body li:last-child {
+    border-bottom: none;
+}
+
+.col-lg-4 .card-body li::before {
+    content: '•';
+    position: absolute;
+    left: 0.5rem;
+    color: var(--admin-accent-blue);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Table styling */
+.table {
+    background: var(--admin-card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: none;
+    box-shadow: var(--admin-shadow-sm);
+}
+
+.table thead th {
+    background: var(--admin-header-bg);
+    color: var(--text-inverse);
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.table tbody td {
+    border: none;
+    border-bottom: 1px solid var(--admin-border-light);
+    padding: 1rem;
+    color: var(--admin-text-primary);
+    vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--admin-shadow-md);
+}
+
+/* Badge styling */
+.badge {
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bg-success {
+    background: var(--success-color) !important;
+    color: var(--text-inverse);
+}
+
+.bg-secondary {
+    background: var(--admin-text-secondary) !important;
+    color: var(--text-inverse);
+}
+
+/* Grid layout improvements */
+.row {
+    margin-bottom: 2rem;
+}
+
+.row:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+    .container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .col-lg-8,
+    .col-lg-4 {
+        margin-bottom: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .alert {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .container h2 {
+        font-size: 1.75rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .container h2 i {
+        font-size: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .form-control {
+        padding: 0.875rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .btn:last-child {
+        margin-bottom: 0;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0.75rem;
+    }
+    
+    .container h2 {
+        font-size: 1.5rem;
+    }
+    
+    .card {
+        border-radius: 12px;
+    }
+    
+    .card-header {
+        padding: 1rem;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .alert {
+        padding: 1rem;
+    }
+    
+    .btn {
+        padding: 0.875rem 1.25rem;
+    }
+}
+
+/* Dark theme specific adjustments */
+[data-theme="dark"] .card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .card-body {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .form-control {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control:focus {
+    background: var(--bg-primary);
+    border-color: var(--accent-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .table tbody td {
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(255, 255, 255, 0.05);
+}
