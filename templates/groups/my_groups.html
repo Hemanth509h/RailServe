@@ -51,7 +51,7 @@
                                     <i class="fas fa-percentage icon-left"></i>{{ group.group_discount_rate }}% discount
                                 </small><br>
                             {% endif %}
-                            <strong class="amount-text">₹{{ "%.0f"|format(group.total_amount) }}</strong>
+                            <strong class="amount-text">₹{{ "%.0f"|format(group.get_total_amount()) }}</strong>
                         </div>
                     </div>
                     
