@@ -141,13 +141,31 @@
                                             <i class="fas fa-bed"></i>
                                             <span class="berth-label">Berth:</span>
                                             <span class="berth-type">{{ passenger.berth_type }}</span>
+                                            {% if passenger.comfort_rating %}
+                                            <span class="comfort-rating" title="Comfort Rating out of 10">
+                                                <i class="fas fa-star"></i> {{ passenger.comfort_rating }}/10
+                                            </span>
+                                            {% endif %}
                                         </div>
                                         {% endif %}
+                                        
+                                        <!-- Detailed Seat Explanation -->
+                                        <div class="seat-explanation">
+                                            <i class="fas fa-info-circle"></i>
+                                            <p class="explanation-text">{{ passenger.get_seat_explanation() }}</p>
+                                        </div>
+                                        
+                                        <!-- Coach Location Info -->
+                                        <div class="coach-location">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <p class="location-text">{{ passenger.get_coach_location_info() }}</p>
+                                        </div>
                                     </div>
                                     {% else %}
                                     <div class="seat-allocation pending">
                                         <i class="fas fa-clock"></i>
-                                        <span class="pending-text">Seat assignment pending</span>
+                                        <span class="pending-text">{{ passenger.get_seat_explanation() }}</span>
+                                        <small class="help-text">Charts are prepared 4-6 hours before departure</small>
                                     </div>
                                     {% endif %}
                                     

@@ -158,12 +158,21 @@
                                                     <span class="seat-number">{{ passenger.seat_number }}</span>
                                                     {% if passenger.berth_type %}
                                                         <span class="berth-type">{{ passenger.berth_type }}</span>
+                                                        {% if passenger.comfort_rating %}
+                                                        <span class="comfort-rating" title="Comfort Rating">
+                                                            <i class="fas fa-star"></i> {{ passenger.comfort_rating }}/10
+                                                        </span>
+                                                        {% endif %}
                                                     {% endif %}
+                                                </div>
+                                                <div class="seat-explanation-compact">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <span class="explanation-text">{{ passenger.get_seat_explanation() }}</span>
                                                 </div>
                                                 {% else %}
                                                 <div class="seat-info pending">
                                                     <i class="fas fa-clock"></i>
-                                                    <span>Seat assignment pending</span>
+                                                    <span>{{ passenger.get_seat_explanation() }}</span>
                                                 </div>
                                                 {% endif %}
                                             </div>

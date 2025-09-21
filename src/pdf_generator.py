@@ -99,20 +99,24 @@ class TicketPDFGenerator:
         # Passenger Details
         story.append(Paragraph("PASSENGER DETAILS", self.styles['TicketSubHeader']))
         
-        passenger_headers = ['S.No.', 'Name', 'Age', 'Gender', 'ID Type', 'Seat Pref.']
+        passenger_headers = ['S.No.', 'Name', 'Age', 'Gender', 'Seat Number', 'Berth Type']
         passenger_data = [passenger_headers]
         
         for i, passenger in enumerate(passengers):
+            # Show actual allocated seat or status
+            seat_info = passenger.seat_number if passenger.seat_number else "To be allocated"
+            berth_info = passenger.berth_type if passenger.berth_type else "Pending"
+            
             passenger_data.append([
                 str(i + 1),
                 passenger.name,
                 str(passenger.age),
                 passenger.gender,
-                passenger.id_proof_type,
-                passenger.seat_preference
+                seat_info,
+                berth_info
             ])
         
-        passenger_table = Table(passenger_data, colWidths=[0.5*inch, 2*inch, 0.7*inch, 0.8*inch, 1*inch, 1.2*inch])
+        passenger_table = Table(passenger_data, colWidths=[0.5*inch, 2*inch, 0.7*inch, 0.8*inch, 1.2*inch, 1*inch])
         passenger_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),

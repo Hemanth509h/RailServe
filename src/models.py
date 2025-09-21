@@ -137,6 +137,98 @@ class Passenger(db.Model):
     
     def __init__(self, **kwargs):
         super(Passenger, self).__init__(**kwargs)
+    
+    def get_seat_explanation(self):
+        """Get a detailed explanation of the allocated seat"""
+        if not self.seat_number or not self.berth_type:
+            return "Seat allocation pending - will be assigned after chart preparation"
+        
+        # Parse seat number (e.g., "S1-45" -> coach="S1", seat="45")
+        parts = self.seat_number.split('-')
+        if len(parts) != 2:
+            return f"Seat: {self.seat_number}, Berth: {self.berth_type}"
+        
+        coach_part, seat_part = parts
+        
+        # Extract coach type and number
+        coach_type = ''.join([c for c in coach_part if c.isalpha()])
+        coach_num = ''.join([c for c in coach_part if c.isdigit()])
+        
+        # Explain coach type
+        coach_explanations = {
+            'S': 'Sleeper Class',
+            'SL': 'Sleeper Class', 
+            'B': 'AC 3-Tier',
+            'A': 'AC 2-Tier',
+            'H': 'AC First Class',
+            'D': 'Second Class Seating',
+            'C': 'Chair Car'
+        }
+        
+        coach_description = coach_explanations.get(coach_type, 'Coach')
+        
+        # Explain berth type with comfort details
+        berth_explanations = {
+            'Lower': 'Lower Berth - Easy access, can sit during day, ideal for elderly/families',
+            'Middle': 'Middle Berth - Mid-level, foldable during day, good for adult travelers',
+            'Upper': 'Upper Berth - High level, private space, suitable for agile travelers',
+            'Side Lower': 'Side Lower Berth - Single berth, more privacy, can sit during day',
+            'Side Upper': 'Side Upper Berth - Single upper berth, maximum privacy',
+            'Window': 'Window Seat - Scenic views, natural light',
+            'Aisle': 'Aisle Seat - Easy access to corridor and facilities',
+            'Middle': 'Middle Seat - Between window and aisle'
+        }
+        
+        berth_description = berth_explanations.get(self.berth_type, self.berth_type)
+        
+        explanation = f"Coach {coach_part} ({coach_description}), Seat {seat_part} - {berth_description}"
+        
+        # Add allocation reason based on preference
+        if self.seat_preference and self.seat_preference != 'No Preference':
+            if self.berth_type == self.seat_preference:
+                explanation += f" ✓ Allocated as per your preference: {self.seat_preference}"
+            else:
+                explanation += f" (Your preference: {self.seat_preference} was not available)"
+        
+        return explanation
+    
+    def get_coach_location_info(self):
+        """Get information about coach location and facilities"""
+        if not self.seat_number:
+            return "Coach location will be available after seat allocation"
+        
+        coach_part = self.seat_number.split('-')[0] if '-' in self.seat_number else self.seat_number
+        coach_type = ''.join([c for c in coach_part if c.isalpha()])
+        
+        location_info = {
+            'S': "Usually located in the middle of the train. Basic facilities with charging points.",
+            'SL': "Usually located in the middle of the train. Basic facilities with charging points.",
+            'B': "AC coaches located towards front/rear. Climate controlled with charging points and reading lights.",
+            'A': "Premium AC coaches, usually towards front. Enhanced comfort with premium facilities.",
+            'H': "First class coaches at the front. Luxury amenities and premium service.",
+            'D': "Seating coaches, usually at front/rear. Comfortable seats for day journeys.",
+            'C': "Chair car coaches with reclining seats. Good for shorter journeys."
+        }
+        
+        return location_info.get(coach_type, "Coach location will be informed at the platform.")
+    
+    @property
+    def comfort_rating(self):
+        """Get a comfort rating for the allocated seat"""
+        if not self.berth_type:
+            return None
+        
+        comfort_scores = {
+            'Lower': 9,  # Most comfortable
+            'Side Lower': 8,
+            'Middle': 6,
+            'Upper': 5,
+            'Side Upper': 7,
+            'Window': 8,
+            'Aisle': 7
+        }
+        
+        return comfort_scores.get(self.berth_type, 5)
 
 
 class Payment(db.Model):
