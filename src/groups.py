@@ -8,7 +8,8 @@ from sqlalchemy import and_, or_
 from datetime import datetime, timedelta
 from .models import (
     GroupBooking, Booking, User, Train, Station, TrainRoute, 
-    Passenger, LoyaltyProgram, db
+    Passenger, LoyaltyProgram, GroupMemberInvitation, 
+    GroupMemberPayment, GroupMessage, db
 )
 from .utils import search_trains, calculate_fare
 from .app import app
@@ -289,3 +290,183 @@ def admin_groups():
                          total_groups=total_groups,
                          active_groups=active_groups,
                          total_passengers=total_passengers)
+
+# Enhanced Group Booking Features
+
+@groups_bp.route('/invite_member/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def invite_member(group_id):
+    """Invite a member to join the group"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access
+    if group.group_leader_id != current_user.id:
+        flash('Only group leaders can invite members', 'error')
+        return redirect(url_for('groups.manage_group', group_id=group_id))
+    
+    if request.method == 'POST':
+        invited_email = request.form.get('invited_email')
+        message = request.form.get('message', '')
+        
+        if not invited_email:
+            flash('Email address is required', 'error')
+            return render_template('groups/invite_member.html', group=group)
+        
+        # Check if email is already invited
+        existing_invitation = GroupMemberInvitation.query.filter_by(
+            group_booking_id=group_id,
+            invited_email=invited_email,
+            status='pending'
+        ).first()
+        
+        if existing_invitation and not existing_invitation.is_expired():
+            flash('This email address already has a pending invitation', 'warning')
+            return render_template('groups/invite_member.html', group=group)
+        
+        try:
+            # Check if user exists
+            invited_user = User.query.filter_by(email=invited_email).first()
+            
+            invitation = GroupMemberInvitation(
+                group_booking_id=group_id,
+                inviter_id=current_user.id,
+                invited_email=invited_email,
+                invited_user_id=invited_user.id if invited_user else None,
+                message=message
+            )
+            
+            db.session.add(invitation)
+            db.session.commit()
+            
+            flash(f'Invitation sent to {invited_email}! Invitation code: {invitation.invitation_code}', 'success')
+            return redirect(url_for('groups.manage_group', group_id=group_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Error sending invitation. Please try again.', 'error')
+    
+    return render_template('groups/invite_member.html', group=group)
+
+@groups_bp.route('/join_group/<invitation_code>')
+@login_required
+def join_group(invitation_code):
+    """Join group using invitation code"""
+    invitation = GroupMemberInvitation.query.filter_by(
+        invitation_code=invitation_code
+    ).first_or_404()
+    
+    if not invitation.can_accept():
+        flash('This invitation has expired or is no longer valid', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    # Check if user's email matches invitation
+    if current_user.email != invitation.invited_email:
+        flash('This invitation is not for your email address', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    try:
+        invitation.status = 'accepted'
+        invitation.responded_at = datetime.utcnow()
+        invitation.invited_user_id = current_user.id
+        
+        db.session.commit()
+        
+        flash(f'Successfully joined group "{invitation.group_booking.group_name}"!', 'success')
+        return redirect(url_for('groups.manage_group', group_id=invitation.group_booking_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error joining group. Please try again.', 'error')
+        return redirect(url_for('groups.my_groups'))
+
+@groups_bp.route('/group_payments/<int:group_id>')
+@login_required
+def group_payments(group_id):
+    """View payment coordination for group"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access - group leader or member
+    is_member = any(booking.user_id == current_user.id for booking in group.individual_bookings)
+    if group.group_leader_id != current_user.id and not is_member:
+        flash('Access denied', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    payment_summary = group.get_payment_summary()
+    member_payments = GroupMemberPayment.query.filter_by(group_booking_id=group_id).all()
+    
+    return render_template('groups/payments.html', 
+                         group=group, 
+                         payment_summary=payment_summary,
+                         member_payments=member_payments)
+
+@groups_bp.route('/group_messages/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def group_messages(group_id):
+    """Group messaging for coordination"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access - group leader or member
+    is_member = any(booking.user_id == current_user.id for booking in group.individual_bookings)
+    if group.group_leader_id != current_user.id and not is_member:
+        flash('Access denied', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    if request.method == 'POST':
+        message_text = request.form.get('message')
+        message_type = request.form.get('message_type', 'general')
+        is_important = request.form.get('is_important') == 'on'
+        
+        if message_text:
+            try:
+                message = GroupMessage(
+                    group_booking_id=group_id,
+                    sender_id=current_user.id,
+                    message=message_text,
+                    message_type=message_type,
+                    is_important=is_important
+                )
+                
+                db.session.add(message)
+                db.session.commit()
+                
+                flash('Message sent successfully!', 'success')
+                
+            except Exception as e:
+                db.session.rollback()
+                flash('Error sending message. Please try again.', 'error')
+    
+    messages = GroupMessage.query.filter_by(group_booking_id=group_id).order_by(GroupMessage.created_at.desc()).all()
+    
+    # Mark messages as read
+    for message in messages:
+        if not message.is_read_by(current_user.id):
+            message.mark_as_read(current_user.id)
+    
+    db.session.commit()
+    
+    return render_template('groups/messages.html', group=group, messages=messages)
+
+@groups_bp.route('/enhanced_manage/<int:group_id>')
+@login_required  
+def enhanced_manage_group(group_id):
+    """Enhanced group management with new features"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access
+    is_member = any(booking.user_id == current_user.id for booking in group.individual_bookings)
+    if group.group_leader_id != current_user.id and not is_member and not current_user.is_admin():
+        flash('Access denied', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    # Get enhanced information
+    payment_summary = group.get_payment_summary()
+    seat_coordination = group.get_seat_coordination_info()
+    recent_messages = GroupMessage.query.filter_by(group_booking_id=group_id).order_by(GroupMessage.created_at.desc()).limit(3).all()
+    pending_invitations = GroupMemberInvitation.query.filter_by(group_booking_id=group_id, status='pending').all()
+    
+    return render_template('groups/enhanced_manage.html', 
+                         group=group,
+                         payment_summary=payment_summary,
+                         seat_coordination=seat_coordination,
+                         recent_messages=recent_messages,
+                         pending_invitations=pending_invitations)

@@ -537,6 +537,167 @@ class GroupBooking(db.Model):
             ).all()
         except:
             return []
+    
+    def get_all_passengers(self):
+        """Get all passengers in the group"""
+        passengers = []
+        for booking in self.individual_bookings:
+            passengers.extend(booking.passengers)
+        return passengers
+    
+    def get_seat_coordination_info(self):
+        """Get information about seat coordination for the group"""
+        passengers = self.get_all_passengers()
+        if not passengers:
+            return "No passengers in group yet"
+        
+        # Group passengers by train and coach
+        train_coaches = {}
+        for passenger in passengers:
+            if passenger.seat_number:
+                # Parse seat number (e.g., "S1-45" -> coach="S1", seat="45")
+                parts = passenger.seat_number.split('-')
+                if len(parts) == 2:
+                    coach = parts[0]
+                    booking = next((b for b in self.individual_bookings if passenger in b.passengers), None)
+                    if booking and booking.train:
+                        train_key = f"{booking.train.name}"
+                        if train_key not in train_coaches:
+                            train_coaches[train_key] = {}
+                        if coach not in train_coaches[train_key]:
+                            train_coaches[train_key][coach] = []
+                        train_coaches[train_key][coach].append(passenger.name)
+        
+        if not train_coaches:
+            return "Seat allocation pending for all passengers"
+        
+        # Generate coordination report
+        info = []
+        for train, coaches in train_coaches.items():
+            if len(coaches) == 1:
+                coach_name = list(coaches.keys())[0]
+                info.append(f"✅ All passengers in {train} are in coach {coach_name}")
+            else:
+                coach_list = ", ".join(coaches.keys())
+                info.append(f"⚠️ Passengers in {train} are spread across coaches: {coach_list}")
+        
+        return " | ".join(info) if info else "Seat coordination information not available"
+    
+    def get_payment_summary(self):
+        """Get payment summary for the group"""
+        total_amount = self.get_total_amount()
+        confirmed_bookings = self.get_confirmed_bookings()
+        paid_amount = sum(booking.total_amount for booking in confirmed_bookings if booking.payment_status == 'paid')
+        
+        return {
+            'total_amount': total_amount,
+            'paid_amount': paid_amount,
+            'pending_amount': total_amount - paid_amount,
+            'payment_percentage': (paid_amount / total_amount * 100) if total_amount > 0 else 0
+        }
+
+class GroupMemberInvitation(db.Model):
+    """Invitations for group booking members"""
+    id = db.Column(db.Integer, primary_key=True)
+    group_booking_id = db.Column(db.Integer, db.ForeignKey('group_booking.id'), nullable=False)
+    inviter_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    invited_email = db.Column(db.String(120), nullable=False)
+    invited_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # If user exists
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, declined, expired
+    invitation_code = db.Column(db.String(50), unique=True, nullable=False)
+    message = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime)
+    responded_at = db.Column(db.DateTime)
+    
+    # Relationships
+    group_booking = db.relationship('GroupBooking', backref='member_invitations')
+    inviter = db.relationship('User', foreign_keys=[inviter_id])
+    invited_user = db.relationship('User', foreign_keys=[invited_user_id])
+    
+    def __init__(self, **kwargs):
+        super(GroupMemberInvitation, self).__init__(**kwargs)
+        if not self.invitation_code:
+            import uuid
+            self.invitation_code = str(uuid.uuid4())[:8].upper()
+        if not self.expires_at:
+            self.expires_at = datetime.utcnow() + timedelta(days=7)
+    
+    def is_expired(self):
+        """Check if invitation has expired"""
+        return datetime.utcnow() > self.expires_at
+    
+    def can_accept(self):
+        """Check if invitation can still be accepted"""
+        return self.status == 'pending' and not self.is_expired()
+
+class GroupMemberPayment(db.Model):
+    """Track individual payments within group bookings"""
+    id = db.Column(db.Integer, primary_key=True)
+    group_booking_id = db.Column(db.Integer, db.ForeignKey('group_booking.id'), nullable=False)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    amount_due = db.Column(db.Float, nullable=False)
+    amount_paid = db.Column(db.Float, default=0.0)
+    payment_method = db.Column(db.String(20))  # credit_card, debit_card, upi, wallet
+    payment_reference = db.Column(db.String(100))
+    status = db.Column(db.String(20), default='pending')  # pending, partial, paid, failed
+    due_date = db.Column(db.DateTime)
+    paid_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    group_booking = db.relationship('GroupBooking', backref='member_payments')
+    booking = db.relationship('Booking', backref='group_payment')
+    user = db.relationship('User', backref='group_payments')
+    
+    def __init__(self, **kwargs):
+        super(GroupMemberPayment, self).__init__(**kwargs)
+        if not self.due_date:
+            self.due_date = datetime.utcnow() + timedelta(days=3)
+    
+    @property
+    def remaining_amount(self):
+        """Amount still pending payment"""
+        return max(0, self.amount_due - self.amount_paid)
+    
+    def is_overdue(self):
+        """Check if payment is overdue"""
+        return datetime.utcnow() > self.due_date and self.status != 'paid'
+
+class GroupMessage(db.Model):
+    """Messages within group bookings for coordination"""
+    id = db.Column(db.Integer, primary_key=True)
+    group_booking_id = db.Column(db.Integer, db.ForeignKey('group_booking.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    message_type = db.Column(db.String(20), default='general')  # general, announcement, reminder
+    is_important = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    read_by = db.Column(db.Text)  # JSON array of user IDs who have read the message
+    
+    # Relationships
+    group_booking = db.relationship('GroupBooking', backref='messages')
+    sender = db.relationship('User', backref='group_messages')
+    
+    def __init__(self, **kwargs):
+        super(GroupMessage, self).__init__(**kwargs)
+        if not self.read_by:
+            self.read_by = '[]'
+    
+    def mark_as_read(self, user_id):
+        """Mark message as read by user"""
+        import json
+        read_list = json.loads(self.read_by) if self.read_by else []
+        if user_id not in read_list:
+            read_list.append(user_id)
+            self.read_by = json.dumps(read_list)
+    
+    def is_read_by(self, user_id):
+        """Check if message is read by user"""
+        import json
+        read_list = json.loads(self.read_by) if self.read_by else []
+        return user_id in read_list
 
 class LoyaltyProgram(db.Model):
     """Frequent traveler loyalty program"""

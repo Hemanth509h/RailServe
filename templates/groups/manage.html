@@ -524,6 +524,40 @@
         </div>
         {% endif %}
 
+        <!-- Enhanced Group Features -->
+        <div class="stats-section">
+            <h3 class="stats-title">
+                <i class="fas fa-star"></i>
+                Enhanced Group Features
+            </h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-couch"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Seat Coordination</div>
+                        <div class="stat-value" style="font-size: 0.9rem; color: #4a5568;">
+                            {{ group.get_seat_coordination_info() }}
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-label">Payment Status</div>
+                        <div class="stat-value" style="font-size: 1.2rem;">
+                            {% set payment_summary = group.get_payment_summary() %}
+                            ₹{{ "%.0f"|format(payment_summary.paid_amount) }}/{{ "%.0f"|format(payment_summary.total_amount) }}
+                            <small style="color: #718096; font-size: 0.8rem;">({{ "%.0f"|format(payment_summary.payment_percentage) }}%)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="action-buttons">
             <a href="{{ url_for('groups.add_group_train_booking', group_id=group.id) }}" 
@@ -531,6 +565,33 @@
                 <i class="fas fa-plus"></i>
                 Add New Booking
             </a>
+            
+            {% if group.group_leader_id == current_user.id %}
+            <a href="{{ url_for('groups.invite_member', group_id=group.id) }}" 
+               class="btn btn-primary">
+                <i class="fas fa-user-plus"></i>
+                Invite Members
+            </a>
+            {% endif %}
+            
+            <a href="{{ url_for('groups.group_payments', group_id=group.id) }}" 
+               class="btn btn-info">
+                <i class="fas fa-credit-card"></i>
+                Payment Coordination
+            </a>
+            
+            <a href="{{ url_for('groups.group_messages', group_id=group.id) }}" 
+               class="btn btn-warning">
+                <i class="fas fa-comments"></i>
+                Group Messages
+            </a>
+            
+            <a href="{{ url_for('groups.enhanced_manage_group', group_id=group.id) }}" 
+               class="btn btn-purple">
+                <i class="fas fa-cogs"></i>
+                Enhanced Management
+            </a>
+            
             <a href="{{ url_for('groups.my_groups') }}" class="btn btn-secondary">
                 <i class="fas fa-list"></i>
                 View All Groups
