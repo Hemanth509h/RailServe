@@ -56,13 +56,19 @@ if database_url:
         logging.info("Falling back to local SQLite database")
         use_local_db = True
 else:
-    logging.info("No DATABASE_URL provided, using local SQLite database")
+    logging.info("No DATABASE_URL provided, using offline database")
     use_local_db = True
 
 if use_local_db:
-    # Use local SQLite database
-    database_url = "sqlite:///local_railway.db"
-    logging.info("Using local SQLite database: local_railway.db")
+    # First try Replit's built-in PostgreSQL database
+    replit_db_url = os.environ.get("DATABASE_URL")
+    if replit_db_url and replit_db_url.startswith('postgresql://'):
+        database_url = replit_db_url
+        logging.info("Using Replit's built-in PostgreSQL database")
+    else:
+        # Final fallback to SQLite for offline use
+        database_url = "sqlite:///local_railway.db"
+        logging.info("Using SQLite database for offline mode: local_railway.db")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
