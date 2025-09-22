@@ -356,12 +356,37 @@ img.gallery-image:hover {
     text-size-adjust: 100%;
 }
 
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-primary);
     background-color: var(--bg-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Mobile-First Responsive Typography */
+@media (max-width: 480px) {
+    html { font-size: 14px; }
+    body { font-size: 0.9rem; line-height: 1.5; }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+    html { font-size: 15px; }
+}
+
+@media (min-width: 769px) {
+    html { font-size: 16px; }
+}
+
+@media (min-width: 1200px) {
+    html { font-size: 17px; }
 }
 
 /* Navigation */
@@ -374,6 +399,14 @@ body {
     top: 0;
     z-index: 1000;
     transition: background 0.3s ease;
+    min-height: 60px;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        min-height: 56px;
+        padding: 0.5rem 0;
+    }
 }
 
 .nav-container {
@@ -382,10 +415,25 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 2rem;
-    height: 70px;
+    padding: 0 1rem;
+    min-height: 60px;
     position: relative;
-    overflow: hidden;
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 1rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .nav-container {
+        padding: 0 2rem;
+        min-height: 70px;
+    }
 }
 
 .nav-brand a {
