@@ -142,16 +142,9 @@
                                             <td>{{ passenger.age }}</td>
                                             <td>{{ passenger.gender }}</td>
                                             <td>
-                                                {% if passenger.seat_number %}
-                                                    <div class="seat-info">
-                                                        <strong>{{ passenger.seat_number }}</strong>
-                                                        {% if passenger.berth_type %}
-                                                            <br><small>{{ passenger.berth_type }}</small>
-                                                        {% endif %}
-                                                    </div>
-                                                {% else %}
-                                                    <span class="text-muted">Awaiting allocation</span>
-                                                {% endif %}
+                                                <div class="seat-info">
+                                                    {{ passenger.get_seat_explanation() }}
+                                                </div>
                                             </td>
                                             <td>
                                                 <span class="status-badge {{ booking.status }}">{{ booking.status.replace('_', ' ').title() }}</span>
