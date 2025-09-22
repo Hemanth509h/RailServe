@@ -3,7 +3,17 @@
 ## Overview
 RailServe is a comprehensive railway reservation system built with Flask and PostgreSQL. It provides a complete platform for railway ticket booking, management, and various related services.
 
-## Recent Changes (September 21, 2025)
+## Recent Changes (September 22, 2025)
+- **Bulk Operations Removal**: Completely removed bulk operations from admin interface including waitlist allocation, chart preparation bulk actions, and related CSS/JavaScript
+- **South Indian Railway Focus**: Completely rewrote setup_database.py to focus on South Indian railways
+- **Database Scale Enhancement**: Expanded database to include 1500 trains and 1250 stations
+- **Regional Railway Data**: Comprehensive coverage of Tamil Nadu (500+ stations), Karnataka (300+ stations), Kerala (200+ stations), Andhra Pradesh & Telangana (250+ stations)
+- **Train Diversity**: Created 1500 trains with authentic South Indian names, routes, and categories including Express, Superfast, MEMU, Duronto, Vande Bharat, and regional services
+- **Route Generation**: Implemented intelligent route generation system with 8192+ route entries connecting stations realistically
+- **Data Quality**: Ensured unique station names and codes to prevent database constraint violations
+- **Admin Interface Cleanup**: Removed bulk chart operations, waitlist allocation bulk features, and associated UI elements
+
+## Previous Changes (September 21, 2025)
 - **Project Import Completed**: Successfully imported and configured RailServe for Replit environment
 - **Navigation Layout Fixed**: Resolved overlapping search form issues with proper CSS styling
 - **Database Setup**: Configured PostgreSQL database with essential stations and trains data
