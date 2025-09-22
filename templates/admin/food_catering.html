@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Food & Catering Management - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-utensils"></i> Food & Catering Management</h1>
+        <p>Vendor management and food service coordination</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <input type="text" name="search" placeholder="Search vendors, stations..." value="{{ search }}" class="search-input">
+                <select name="station" class="filter-select">
+                    <option value="">All Stations</option>
+                    {% for station in stations %}
+                        <option value="{{ station.id }}" {% if station_filter == station.id|string %}selected{% endif %}>
+                            {{ station.name }} ({{ station.code }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Catering Vendors -->
+    <div class="data-section">
+        <h3>Food & Catering Vendors ({{ vendors|length }})</h3>
+        {% if vendors %}
+            <div class="vendors-grid">
+                {% for vendor, station in vendors %}
+                    <div class="vendor-card">
+                        <div class="vendor-header">
+                            <h4>{{ vendor.vendor_name }}</h4>
+                            <div class="vendor-rating">
+                                <span class="rating-value">{{ "%.1f"|format(vendor.rating) }}</span>
+                                <div class="stars">
+                                    {% for i in range(1, 6) %}
+                                        <i class="fas fa-star {{ 'filled' if vendor.rating >= i else 'empty' }}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="vendor-details">
+                            <div class="detail-row">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>Station:</strong> {{ station.name }} ({{ station.code }})</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-phone"></i>
+                                <span><strong>Phone:</strong> {{ vendor.contact_phone }}</span>
+                            </div>
+                            {% if vendor.contact_email %}
+                                <div class="detail-row">
+                                    <i class="fas fa-envelope"></i>
+                                    <span><strong>Email:</strong> {{ vendor.contact_email }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="detail-row">
+                                <i class="fas fa-utensils"></i>
+                                <span><strong>Service:</strong> {{ vendor.service_type.replace('_', ' ').title() }}</span>
+                            </div>
+                            {% if vendor.cuisine_types %}
+                                <div class="detail-row">
+                                    <i class="fas fa-list"></i>
+                                    <span><strong>Cuisine:</strong> {{ vendor.cuisine_types }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if vendor.license_number %}
+                            <div class="license-info">
+                                <div class="license-details">
+                                    <span><strong>License:</strong> {{ vendor.license_number }}</span>
+                                    {% if vendor.license_expiry %}
+                                        <span class="license-expiry {{ 'expired' if vendor.license_expiry < date.today() else 'valid' }}">
+                                            Expires: {{ vendor.license_expiry.strftime('%d %b %Y') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="vendor-status">
+                            <span class="status-badge {{ 'active' if vendor.active else 'inactive' }}">
+                                {{ 'Active' if vendor.active else 'Inactive' }}
+                            </span>
+                        </div>
+                        
+                        <div class="vendor-actions">
+                            <button type="button" class="btn-sm btn-primary" onclick="editVendor({{ vendor.id }})">
+                                Edit
+                            </button>
+                            <button type="button" class="btn-sm btn-info" onclick="viewOrders({{ vendor.id }})">
+                                View Orders
+                            </button>
+                            {% if vendor.active %}
+                                <button type="button" class="btn-sm btn-warning" onclick="deactivateVendor({{ vendor.id }})">
+                                    Deactivate
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn-sm btn-success" onclick="activateVendor({{ vendor.id }})">
+                                    Activate
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-utensils"></i>
+                <h3>No Catering Vendors</h3>
+                <p>No food vendors found. Register catering vendors to manage food services across stations.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<style>
+.vendors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1rem;
+}
+
+.vendor-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.vendor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.vendor-header h4 {
+    color: #1f2937;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.vendor-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rating-value {
+    font-weight: bold;
+    color: #f59e0b;
+    font-size: 1.1em;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.stars i.filled {
+    color: #f59e0b;
+}
+
+.stars i.empty {
+    color: #d1d5db;
+}
+
+.vendor-details {
+    margin-bottom: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9em;
+}
+
+.detail-row i {
+    width: 16px;
+    color: #6b7280;
+}
+
+.license-info {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.license-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85em;
+}
+
+.license-expiry.expired {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.license-expiry.valid {
+    color: #059669;
+}
+
+.vendor-status {
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.active {
+    background: #10b981;
+    color: white;
+}
+
+.status-badge.inactive {
+    background: #6b7280;
+    color: white;
+}
+
+.vendor-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .vendors-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function editVendor(vendorId) {
+    // Implementation for editing vendor
+    alert('Edit vendor functionality - to be implemented');
+}
+
+function viewOrders(vendorId) {
+    // Implementation for viewing vendor orders
+    alert('View orders functionality - to be implemented');
+}
+
+function activateVendor(vendorId) {
+    // Implementation for activating vendor
+    alert('Activate vendor functionality - to be implemented');
+}
+
+function deactivateVendor(vendorId) {
+    // Implementation for deactivating vendor
+    alert('Deactivate vendor functionality - to be implemented');
+}
+</script>
+{% endblock %}

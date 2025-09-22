@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Performance Metrics - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-chart-bar"></i> Performance Metrics</h1>
+        <p>KPIs and operational performance monitoring</p>
+    </div>
+
+    <!-- Key Metrics Summary -->
+    <div class="metrics-summary">
+        <div class="metric-card">
+            <div class="metric-icon on-time">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="metric-content">
+                <h3>On-Time Performance</h3>
+                <div class="metric-value">{{ "%.1f"|format(avg_on_time) }}%</div>
+                <div class="metric-label">Average Last 24h</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon load">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="metric-content">
+                <h3>Passenger Load</h3>
+                <div class="metric-value">{{ "%.1f"|format(avg_load) }}%</div>
+                <div class="metric-label">Average Occupancy</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon revenue">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="metric-content">
+                <h3>Revenue</h3>
+                <div class="metric-value">₹{{ "%.2f"|format(total_revenue) }}</div>
+                <div class="metric-label">Last 24h Total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Metrics -->
+    <div class="metrics-details">
+        <!-- On-Time Performance -->
+        {% if on_time_metrics %}
+            <div class="metric-section">
+                <h3><i class="fas fa-clock"></i> On-Time Performance Trends</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Train</th>
+                                <th>Station</th>
+                                <th>Performance (%)</th>
+                                <th>Benchmark</th>
+                                <th>Variance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for metric in on_time_metrics %}
+                                <tr>
+                                    <td>{{ metric.date_recorded.strftime('%d %b %Y') }}</td>
+                                    <td>{{ metric.time_recorded.strftime('%H:%M') }}</td>
+                                    <td>
+                                        {% if metric.train %}
+                                            {{ metric.train.number }} - {{ metric.train.name }}
+                                        {% else %}
+                                            System Wide
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if metric.station %}
+                                            {{ metric.station.name }}
+                                        {% else %}
+                                            All Stations
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="performance-value {{ 'good' if metric.metric_value >= 85 else 'average' if metric.metric_value >= 70 else 'poor' }}">
+                                            {{ "%.1f"|format(metric.metric_value) }}%
+                                        </div>
+                                    </td>
+                                    <td>{{ "%.1f"|format(metric.benchmark_value or 85) }}%</td>
+                                    <td>
+                                        {% if metric.variance_percentage %}
+                                            <span class="variance {{ 'positive' if metric.variance_percentage >= 0 else 'negative' }}">
+                                                {{ "%.1f"|format(metric.variance_percentage) }}%
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Passenger Load Metrics -->
+        {% if load_metrics %}
+            <div class="metric-section">
+                <h3><i class="fas fa-users"></i> Passenger Load Analysis</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Train</th>
+                                <th>Route</th>
+                                <th>Load (%)</th>
+                                <th>Benchmark</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for metric in load_metrics %}
+                                <tr>
+                                    <td>{{ metric.date_recorded.strftime('%d %b %Y') }}</td>
+                                    <td>{{ metric.time_recorded.strftime('%H:%M') }}</td>
+                                    <td>
+                                        {% if metric.train %}
+                                            {{ metric.train.number }} - {{ metric.train.name }}
+                                        {% else %}
+                                            System Average
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if metric.station %}
+                                            From {{ metric.station.name }}
+                                        {% else %}
+                                            All Routes
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="load-value {{ 'high' if metric.metric_value >= 90 else 'optimal' if metric.metric_value >= 70 else 'low' }}">
+                                            {{ "%.1f"|format(metric.metric_value) }}%
+                                        </div>
+                                    </td>
+                                    <td>{{ "%.1f"|format(metric.benchmark_value or 80) }}%</td>
+                                    <td>
+                                        {% if metric.metric_value >= 95 %}
+                                            <span class="status-badge overcrowded">Overcrowded</span>
+                                        {% elif metric.metric_value >= 80 %}
+                                            <span class="status-badge optimal">Optimal</span>
+                                        {% else %}
+                                            <span class="status-badge underutilized">Underutilized</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Revenue Metrics -->
+        {% if revenue_metrics %}
+            <div class="metric-section">
+                <h3><i class="fas fa-rupee-sign"></i> Revenue Performance</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Train/Route</th>
+                                <th>Revenue (₹)</th>
+                                <th>Target (₹)</th>
+                                <th>Achievement</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for metric in revenue_metrics %}
+                                <tr>
+                                    <td>{{ metric.date_recorded.strftime('%d %b %Y') }}</td>
+                                    <td>{{ metric.time_recorded.strftime('%H:%M') }}</td>
+                                    <td>
+                                        {% if metric.train %}
+                                            {{ metric.train.number }} - {{ metric.train.name }}
+                                        {% else %}
+                                            Daily Total
+                                        {% endif %}
+                                    </td>
+                                    <td class="revenue-amount">₹{{ "%.2f"|format(metric.metric_value) }}</td>
+                                    <td>₹{{ "%.2f"|format(metric.benchmark_value or metric.metric_value) }}</td>
+                                    <td>
+                                        {% if metric.variance_percentage %}
+                                            <span class="achievement {{ 'exceeds' if metric.variance_percentage > 0 else 'below' }}">
+                                                {{ "%.1f"|format(100 + (metric.variance_percentage or 0)) }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="achievement meets">100%</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if metric.variance_percentage %}
+                                            {% if metric.variance_percentage > 5 %}
+                                                <i class="fas fa-arrow-up trend-up"></i>
+                                            {% elif metric.variance_percentage < -5 %}
+                                                <i class="fas fa-arrow-down trend-down"></i>
+                                            {% else %}
+                                                <i class="fas fa-minus trend-stable"></i>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if not on_time_metrics and not load_metrics and not revenue_metrics %}
+        <div class="no-data">
+            <i class="fas fa-chart-bar"></i>
+            <h3>No Performance Data</h3>
+            <p>Performance metrics will appear here once data is collected. Metrics are automatically generated based on system operations.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.metrics-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.metric-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.metric-icon.on-time { background: #10b981; }
+.metric-icon.load { background: #3b82f6; }
+.metric-icon.revenue { background: #f59e0b; }
+
+.metric-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: #374151;
+    font-size: 1rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1f2937;
+    line-height: 1;
+}
+
+.metric-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.metric-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-section h3 {
+    color: #374151;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.performance-value, .load-value {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.performance-value.good, .load-value.optimal { background: #dcfce7; color: #166534; }
+.performance-value.average, .load-value.high { background: #fef3c7; color: #92400e; }
+.performance-value.poor, .load-value.low { background: #fee2e2; color: #991b1b; }
+
+.variance.positive { color: #059669; }
+.variance.negative { color: #dc2626; }
+
+.revenue-amount {
+    font-weight: bold;
+    color: #059669;
+}
+
+.achievement.exceeds { color: #059669; font-weight: bold; }
+.achievement.meets { color: #6b7280; }
+.achievement.below { color: #dc2626; font-weight: bold; }
+
+.trend-up { color: #059669; }
+.trend-down { color: #dc2626; }
+.trend-stable { color: #6b7280; }
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.overcrowded { background: #ef4444; color: white; }
+.status-badge.optimal { background: #10b981; color: white; }
+.status-badge.underutilized { background: #f59e0b; color: white; }
+</style>
+{% endblock %}

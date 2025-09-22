@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}Dynamic Pricing - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-tags"></i> Dynamic Pricing Management</h1>
+        <p>Surge pricing and demand-based fare management</p>
+    </div>
+
+    <!-- Pricing Overview -->
+    <div class="pricing-overview">
+        <div class="overview-card">
+            <i class="fas fa-percentage"></i>
+            <div class="overview-content">
+                <h3>Active Surge Rules</h3>
+                <div class="overview-number">{{ pricing_rules|length }}</div>
+            </div>
+        </div>
+        
+        <div class="overview-card">
+            <i class="fas fa-arrow-up"></i>
+            <div class="overview-content">
+                <h3>Avg Surge Multiplier</h3>
+                <div class="overview-number">
+                    {% set avg_surge = (pricing_rules|map(attribute='0.surge_multiplier')|sum / pricing_rules|length) if pricing_rules|length > 0 else 1.0 %}
+                    {{ "%.2f"|format(avg_surge) }}x
+                </div>
+            </div>
+        </div>
+        
+        <div class="overview-card">
+            <i class="fas fa-calendar"></i>
+            <div class="overview-content">
+                <h3>Peak Season</h3>
+                <div class="overview-status">{{ 'Active' if pricing_rules|selectattr('0.special_event')|list else 'Normal' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Pricing Form -->
+    <div class="pricing-form-section">
+        <h3>Update Dynamic Pricing</h3>
+        <form method="POST" action="{{ url_for('admin.update_dynamic_pricing') }}" class="pricing-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="train_id">Train *</label>
+                    <select name="train_id" id="train_id" required>
+                        <option value="">Select Train</option>
+                        {% for train in trains %}
+                            <option value="{{ train.id }}">{{ train.number }} - {{ train.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="journey_date">Journey Date *</label>
+                    <input type="date" name="journey_date" id="journey_date" required min="{{ date.today().strftime('%Y-%m-%d') }}">
+                </div>
+                <div class="form-group">
+                    <label for="coach_class">Coach Class *</label>
+                    <select name="coach_class" id="coach_class" required>
+                        <option value="">Select Class</option>
+                        <option value="SL">Sleeper (SL)</option>
+                        <option value="AC3">AC 3-Tier (AC3)</option>
+                        <option value="AC2">AC 2-Tier (AC2)</option>
+                        <option value="AC1">AC First Class (AC1)</option>
+                        <option value="CC">Chair Car (CC)</option>
+                        <option value="2S">Second Seating (2S)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="surge_multiplier">Surge Multiplier *</label>
+                    <input type="number" name="surge_multiplier" id="surge_multiplier" step="0.1" min="0.5" max="3.0" value="1.0" required>
+                    <small>1.0 = Normal Price, 1.5 = 50% Increase, 2.0 = Double Price</small>
+                </div>
+                <div class="form-group">
+                    <label for="special_event">Special Event</label>
+                    <input type="text" name="special_event" id="special_event" placeholder="e.g., Diwali, Summer Rush, Holiday">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary">Update Pricing</button>
+        </form>
+    </div>
+
+    <!-- Current Pricing Rules -->
+    <div class="pricing-rules-section">
+        <h3>Current Pricing Rules</h3>
+        {% if pricing_rules %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Train</th>
+                            <th>Journey Date</th>
+                            <th>Class</th>
+                            <th>Base Fare</th>
+                            <th>Surge Multiplier</th>
+                            <th>Dynamic Fare</th>
+                            <th>Special Event</th>
+                            <th>Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pricing, train in pricing_rules %}
+                            <tr>
+                                <td>
+                                    <div class="train-info">
+                                        <strong>{{ train.number }}</strong><br>
+                                        <small>{{ train.name }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ pricing.journey_date.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    <span class="class-badge {{ pricing.coach_class.lower() }}">{{ pricing.coach_class }}</span>
+                                </td>
+                                <td class="base-fare">₹{{ "%.2f"|format(pricing.base_fare) }}</td>
+                                <td>
+                                    <div class="surge-multiplier {{ 'surge-high' if pricing.surge_multiplier > 1.5 else 'surge-medium' if pricing.surge_multiplier > 1.0 else 'surge-normal' }}">
+                                        {{ "%.2f"|format(pricing.surge_multiplier) }}x
+                                    </div>
+                                </td>
+                                <td class="dynamic-fare">₹{{ "%.2f"|format(pricing.base_fare * pricing.surge_multiplier) }}</td>
+                                <td>
+                                    {% if pricing.special_event %}
+                                        <span class="event-badge">{{ pricing.special_event }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ pricing.updated_at.strftime('%d %b %H:%M') }}</td>
+                                <td>
+                                    <button type="button" class="btn-sm btn-secondary" onclick="editPricing({{ pricing.id }})">
+                                        Edit
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-tags"></i>
+                <h3>No Dynamic Pricing Rules</h3>
+                <p>Set up dynamic pricing rules to automatically adjust fares based on demand and special events.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pricing Guidelines -->
+    <div class="pricing-guidelines">
+        <h3>Pricing Guidelines</h3>
+        <div class="guidelines-grid">
+            <div class="guideline-card">
+                <i class="fas fa-info-circle"></i>
+                <h4>Normal Period</h4>
+                <p>Multiplier: 1.0x - Standard fare pricing for regular travel periods</p>
+            </div>
+            <div class="guideline-card">
+                <i class="fas fa-chart-line"></i>
+                <h4>High Demand</h4>
+                <p>Multiplier: 1.2-1.5x - Moderate surge for peak travel times and weekends</p>
+            </div>
+            <div class="guideline-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>Peak Season</h4>
+                <p>Multiplier: 1.5-2.0x - High surge for festivals, holidays, and special events</p>
+            </div>
+            <div class="guideline-card">
+                <i class="fas fa-fire"></i>
+                <h4>Extreme Demand</h4>
+                <p>Multiplier: 2.0-3.0x - Maximum surge for emergency or very high demand situations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pricing-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.overview-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.overview-card i {
+    font-size: 2rem;
+    color: #6b7280;
+}
+
+.overview-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.overview-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.overview-status {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #059669;
+}
+
+.pricing-form-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.pricing-form-section h3 {
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.pricing-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.form-group small {
+    color: #6b7280;
+    font-size: 0.8em;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.pricing-rules-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.train-info strong {
+    color: #2563eb;
+}
+
+.class-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.class-badge.sl { background: #f3f4f6; color: #374151; }
+.class-badge.ac3 { background: #dbeafe; color: #1e40af; }
+.class-badge.ac2 { background: #dcfce7; color: #166534; }
+.class-badge.ac1 { background: #fef3c7; color: #92400e; }
+.class-badge.cc { background: #ede9fe; color: #6b21a8; }
+.class-badge.2s { background: #fee2e2; color: #991b1b; }
+
+.base-fare,
+.dynamic-fare {
+    font-weight: 500;
+}
+
+.dynamic-fare {
+    color: #059669;
+    font-weight: bold;
+}
+
+.surge-multiplier {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.surge-normal { background: #10b981; color: white; }
+.surge-medium { background: #f59e0b; color: white; }
+.surge-high { background: #ef4444; color: white; }
+
+.event-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.pricing-guidelines {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.guidelines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.guideline-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.guideline-card i {
+    font-size: 1.5rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.guideline-card h4 {
+    margin: 0 0 0.5rem 0;
+    color: #374151;
+}
+
+.guideline-card p {
+    color: #6b7280;
+    font-size: 0.9em;
+    margin: 0;
+}
+
+.text-muted {
+    color: #6b7280;
+}
+</style>
+
+<script>
+function editPricing(pricingId) {
+    // Implementation for editing pricing rule
+    alert('Edit pricing functionality - to be implemented');
+}
+
+// Auto-populate today's date
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('journey_date').value = today;
+});
+</script>
+{% endblock %}

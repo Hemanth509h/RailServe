@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Lost & Found - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-search-plus"></i> Lost & Found System</h1>
+        <p>Item tracking and recovery management</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <input type="text" name="search" placeholder="Search item ID, description, location..." value="{{ search }}" class="search-input">
+                <select name="status" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="found" {% if status_filter == 'found' %}selected{% endif %}>Found</option>
+                    <option value="claimed" {% if status_filter == 'claimed' %}selected{% endif %}>Claimed</option>
+                    <option value="disposed" {% if status_filter == 'disposed' %}selected{% endif %}>Disposed</option>
+                </select>
+                <select name="category" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="electronics" {% if category_filter == 'electronics' %}selected{% endif %}>Electronics</option>
+                    <option value="clothing" {% if category_filter == 'clothing' %}selected{% endif %}>Clothing</option>
+                    <option value="documents" {% if category_filter == 'documents' %}selected{% endif %}>Documents</option>
+                    <option value="jewelry" {% if category_filter == 'jewelry' %}selected{% endif %}>Jewelry</option>
+                    <option value="bags" {% if category_filter == 'bags' %}selected{% endif %}>Bags</option>
+                    <option value="other" {% if category_filter == 'other' %}selected{% endif %}>Other</option>
+                </select>
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Add Lost Item Form -->
+    <div class="add-section">
+        <h3>Report New Lost Item</h3>
+        <form method="POST" action="{{ url_for('admin.add_lost_item') }}" class="add-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="item_description">Item Description *</label>
+                    <textarea name="item_description" id="item_description" rows="2" placeholder="Detailed description of the lost item..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="found_location">Found Location *</label>
+                    <input type="text" name="found_location" id="found_location" placeholder="e.g., Train 12345 Coach S1, Platform 2, Station ABC" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="found_by">Found By</label>
+                    <input type="text" name="found_by" id="found_by" placeholder="Staff member or passenger name">
+                </div>
+                <div class="form-group">
+                    <label for="storage_location">Storage Location *</label>
+                    <input type="text" name="storage_location" id="storage_location" placeholder="Where the item is currently stored" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select name="category" id="category">
+                        <option value="">Select Category</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="documents">Documents</option>
+                        <option value="jewelry">Jewelry</option>
+                        <option value="bags">Bags & Luggage</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="estimated_value">Estimated Value (₹)</label>
+                    <input type="number" name="estimated_value" id="estimated_value" placeholder="0" step="0.01">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Add Lost Item</button>
+        </form>
+    </div>
+
+    <!-- Items List -->
+    <div class="data-section">
+        <h3>Lost Items ({{ items|length }})</h3>
+        {% if items %}
+            <div class="items-grid">
+                {% for item in items %}
+                    <div class="item-card">
+                        <div class="item-header">
+                            <div class="item-id">{{ item.item_id }}</div>
+                            <div class="item-status">
+                                <span class="status-badge {{ item.status }}">{{ item.status.title() }}</span>
+                                {% if item.category %}
+                                    <span class="category-badge">{{ item.category.title() }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="item-description">
+                            <h4>{{ item.item_description[:100] }}{% if item.item_description|length > 100 %}...{% endif %}</h4>
+                        </div>
+                        
+                        <div class="item-details">
+                            <div class="detail-row">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>Found at:</strong> {{ item.found_location }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-calendar"></i>
+                                <span><strong>Date Found:</strong> {{ item.found_date.strftime('%d %b %Y') }}</span>
+                            </div>
+                            {% if item.found_by %}
+                                <div class="detail-row">
+                                    <i class="fas fa-user"></i>
+                                    <span><strong>Found By:</strong> {{ item.found_by }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="detail-row">
+                                <i class="fas fa-warehouse"></i>
+                                <span><strong>Storage:</strong> {{ item.storage_location }}</span>
+                            </div>
+                            {% if item.estimated_value %}
+                                <div class="detail-row">
+                                    <i class="fas fa-rupee-sign"></i>
+                                    <span><strong>Est. Value:</strong> ₹{{ "%.2f"|format(item.estimated_value) }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if item.status == 'claimed' and item.claimant_name %}
+                            <div class="claimant-info">
+                                <h5><i class="fas fa-user-check"></i> Claimed Information</h5>
+                                <div class="claimant-details">
+                                    <span><strong>Name:</strong> {{ item.claimant_name }}</span>
+                                    {% if item.claimant_phone %}
+                                        <span><strong>Phone:</strong> {{ item.claimant_phone }}</span>
+                                    {% endif %}
+                                    {% if item.claimed_date %}
+                                        <span><strong>Claimed:</strong> {{ item.claimed_date.strftime('%d %b %Y') }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="item-actions">
+                            {% if item.status == 'found' %}
+                                <button type="button" class="btn-sm btn-success" onclick="markAsClaimed('{{ item.item_id }}')">
+                                    Mark as Claimed
+                                </button>
+                                <button type="button" class="btn-sm btn-warning" onclick="updateStorage('{{ item.item_id }}')">
+                                    Update Storage
+                                </button>
+                            {% endif %}
+                            <button type="button" class="btn-sm btn-info" onclick="printLabel('{{ item.item_id }}')">
+                                Print Label
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-search-plus"></i>
+                <h3>No Lost Items</h3>
+                <p>No lost items found. Items reported as lost will appear here for tracking and recovery.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1rem;
+}
+
+.item-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.item-id {
+    font-family: monospace;
+    font-weight: bold;
+    color: #1f2937;
+    background: #f3f4f6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.item-status {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.found { background: #3b82f6; color: white; }
+.status-badge.claimed { background: #10b981; color: white; }
+.status-badge.disposed { background: #6b7280; color: white; }
+
+.category-badge {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.item-description h4 {
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.item-details {
+    margin-bottom: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9em;
+}
+
+.detail-row i {
+    width: 16px;
+    color: #6b7280;
+}
+
+.claimant-info {
+    background: #f0fdf4;
+    border: 1px solid #10b981;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.claimant-info h5 {
+    color: #047857;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.claimant-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85em;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.add-form {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function markAsClaimed(itemId) {
+    // Implementation for marking item as claimed
+    alert('Mark as claimed functionality - to be implemented');
+}
+
+function updateStorage(itemId) {
+    // Implementation for updating storage location
+    alert('Update storage functionality - to be implemented');
+}
+
+function printLabel(itemId) {
+    // Implementation for printing item label
+    window.print();
+}
+</script>
+{% endblock %}

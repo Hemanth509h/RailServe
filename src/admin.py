@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from functools import wraps
-from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, Waitlist, RefundRequest
+from .models import (User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, 
+                    Waitlist, RefundRequest, PlatformManagement, TrainPlatformAssignment, ComplaintManagement, 
+                    PerformanceMetrics, FoodCateringManagement, LostAndFound, DynamicPricing, PNRStatusTracking)
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta, date
@@ -1662,3 +1664,357 @@ def finalize_chart_manual(train_id, journey_date):
         flash(f'Error finalizing chart: {str(e)}', 'error')
     
     return redirect(url_for('admin.chart_preparation'))
+
+# Real Railway Management System Admin Features
+
+@admin_bp.route('/platform-management')
+@admin_required
+def platform_management():
+    """Platform and track management dashboard"""
+    search = request.args.get('search', '').strip()
+    station_filter = request.args.get('station', '')
+    
+    query = db.session.query(PlatformManagement, Station).join(Station)
+    
+    if search:
+        query = query.filter(
+            db.or_(
+                PlatformManagement.platform_number.ilike(f'%{search}%'),
+                Station.name.ilike(f'%{search}%'),
+                Station.code.ilike(f'%{search}%')
+            )
+        )
+    
+    if station_filter:
+        query = query.filter(PlatformManagement.station_id == station_filter)
+    
+    platforms = query.all()
+    stations = Station.query.filter_by(active=True).all()
+    
+    return render_template('admin/platform_management.html', 
+                         platforms=platforms, stations=stations, 
+                         search=search, station_filter=station_filter)
+
+@admin_bp.route('/platform-management/add', methods=['POST'])
+@admin_required
+def add_platform():
+    """Add new platform to a station"""
+    station_id = request.form.get('station_id', type=int)
+    platform_number = request.form.get('platform_number')
+    track_number = request.form.get('track_number')
+    platform_length = request.form.get('platform_length', type=int)
+    electrified = request.form.get('electrified') == 'on'
+    wheelchair_accessible = request.form.get('wheelchair_accessible') == 'on'
+    facilities = request.form.get('facilities')
+    
+    if not all([station_id, platform_number]):
+        flash('Station and platform number are required', 'error')
+        return redirect(url_for('admin.platform_management'))
+    
+    # Check for duplicate platform at same station
+    existing = PlatformManagement.query.filter_by(
+        station_id=station_id, platform_number=platform_number
+    ).first()
+    
+    if existing:
+        flash('Platform number already exists at this station', 'error')
+        return redirect(url_for('admin.platform_management'))
+    
+    platform = PlatformManagement(
+        station_id=station_id,
+        platform_number=platform_number,
+        track_number=track_number,
+        platform_length=platform_length,
+        electrified=electrified,
+        wheelchair_accessible=wheelchair_accessible,
+        facilities=facilities
+    )
+    
+    db.session.add(platform)
+    db.session.commit()
+    
+    flash('Platform added successfully', 'success')
+    return redirect(url_for('admin.platform_management'))
+
+@admin_bp.route('/complaint-management')
+@admin_required
+def complaint_management():
+    """Customer complaint management dashboard"""
+    search = request.args.get('search', '').strip()
+    status_filter = request.args.get('status', '')
+    category_filter = request.args.get('category', '')
+    priority_filter = request.args.get('priority', '')
+    
+    query = ComplaintManagement.query
+    
+    if search:
+        query = query.join(User).filter(
+            db.or_(
+                ComplaintManagement.ticket_number.ilike(f'%{search}%'),
+                ComplaintManagement.subject.ilike(f'%{search}%'),
+                User.username.ilike(f'%{search}%')
+            )
+        )
+    
+    if status_filter:
+        query = query.filter(ComplaintManagement.status == status_filter)
+    if category_filter:
+        query = query.filter(ComplaintManagement.category == category_filter)
+    if priority_filter:
+        query = query.filter(ComplaintManagement.priority == priority_filter)
+    
+    complaints = query.order_by(ComplaintManagement.created_at.desc()).all()
+    
+    return render_template('admin/complaint_management.html', 
+                         complaints=complaints,
+                         search=search, status_filter=status_filter,
+                         category_filter=category_filter, priority_filter=priority_filter)
+
+@admin_bp.route('/complaints/<int:complaint_id>/assign', methods=['POST'])
+@admin_required
+def assign_complaint(complaint_id):
+    """Assign complaint to admin user"""
+    complaint = ComplaintManagement.query.get_or_404(complaint_id)
+    
+    complaint.assigned_to = current_user.id
+    complaint.status = 'in_progress'
+    
+    db.session.commit()
+    
+    flash(f'Complaint {complaint.ticket_number} assigned to you', 'success')
+    return redirect(url_for('admin.complaint_management'))
+
+@admin_bp.route('/complaints/<int:complaint_id>/resolve', methods=['POST'])
+@admin_required
+def resolve_complaint(complaint_id):
+    """Resolve a complaint"""
+    complaint = ComplaintManagement.query.get_or_404(complaint_id)
+    resolution = request.form.get('resolution')
+    
+    if not resolution:
+        flash('Resolution text is required', 'error')
+        return redirect(url_for('admin.complaint_management'))
+    
+    complaint.resolution = resolution
+    complaint.status = 'resolved'
+    complaint.resolved_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    flash(f'Complaint {complaint.ticket_number} resolved successfully', 'success')
+    return redirect(url_for('admin.complaint_management'))
+
+@admin_bp.route('/performance-metrics')
+@admin_required
+def performance_metrics():
+    """System performance and KPI monitoring dashboard"""
+    # Get latest metrics
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+    
+    # On-time performance
+    on_time_metrics = PerformanceMetrics.query.filter(
+        PerformanceMetrics.metric_name == 'on_time_performance',
+        PerformanceMetrics.date_recorded >= yesterday
+    ).order_by(PerformanceMetrics.time_recorded.desc()).limit(10).all()
+    
+    # Passenger load metrics
+    load_metrics = PerformanceMetrics.query.filter(
+        PerformanceMetrics.metric_name == 'passenger_load',
+        PerformanceMetrics.date_recorded >= yesterday
+    ).order_by(PerformanceMetrics.time_recorded.desc()).limit(10).all()
+    
+    # Revenue metrics
+    revenue_metrics = PerformanceMetrics.query.filter(
+        PerformanceMetrics.metric_name == 'daily_revenue',
+        PerformanceMetrics.date_recorded >= yesterday
+    ).order_by(PerformanceMetrics.time_recorded.desc()).limit(10).all()
+    
+    # Calculate averages
+    avg_on_time = sum(m.metric_value for m in on_time_metrics) / len(on_time_metrics) if on_time_metrics else 0
+    avg_load = sum(m.metric_value for m in load_metrics) / len(load_metrics) if load_metrics else 0
+    total_revenue = sum(m.metric_value for m in revenue_metrics)
+    
+    return render_template('admin/performance_metrics.html',
+                         on_time_metrics=on_time_metrics,
+                         load_metrics=load_metrics,
+                         revenue_metrics=revenue_metrics,
+                         avg_on_time=avg_on_time,
+                         avg_load=avg_load,
+                         total_revenue=total_revenue)
+
+@admin_bp.route('/pnr-inquiry')
+@admin_required
+def pnr_inquiry_system():
+    """PNR status inquiry and tracking system"""
+    search = request.args.get('search', '').strip()
+    
+    if search:
+        # Search by PNR number
+        booking = Booking.query.filter(
+            Booking.pnr.ilike(f'%{search}%')
+        ).first()
+        
+        if booking:
+            # Get or create PNR tracking record
+            pnr_tracking = PNRStatusTracking.query.filter_by(booking_id=booking.id).first()
+            if not pnr_tracking:
+                pnr_tracking = PNRStatusTracking(
+                    booking_id=booking.id,
+                    current_status=booking.status
+                )
+                db.session.add(pnr_tracking)
+                db.session.commit()
+            
+            return render_template('admin/pnr_inquiry.html', 
+                                 booking=booking, pnr_tracking=pnr_tracking, search=search)
+        else:
+            flash('PNR not found', 'error')
+    
+    return render_template('admin/pnr_inquiry.html', search=search)
+
+@admin_bp.route('/food-catering')
+@admin_required
+def food_catering_management():
+    """Food and catering vendor management"""
+    search = request.args.get('search', '').strip()
+    station_filter = request.args.get('station', '')
+    
+    query = db.session.query(FoodCateringManagement, Station).join(Station)
+    
+    if search:
+        query = query.filter(
+            db.or_(
+                FoodCateringManagement.vendor_name.ilike(f'%{search}%'),
+                Station.name.ilike(f'%{search}%')
+            )
+        )
+    
+    if station_filter:
+        query = query.filter(FoodCateringManagement.station_id == station_filter)
+    
+    vendors = query.all()
+    stations = Station.query.filter_by(active=True).all()
+    
+    return render_template('admin/food_catering.html', 
+                         vendors=vendors, stations=stations,
+                         search=search, station_filter=station_filter)
+
+@admin_bp.route('/lost-and-found')
+@admin_required
+def lost_and_found():
+    """Lost and found item management"""
+    search = request.args.get('search', '').strip()
+    status_filter = request.args.get('status', '')
+    category_filter = request.args.get('category', '')
+    
+    query = LostAndFound.query
+    
+    if search:
+        query = query.filter(
+            db.or_(
+                LostAndFound.item_id.ilike(f'%{search}%'),
+                LostAndFound.item_description.ilike(f'%{search}%'),
+                LostAndFound.found_location.ilike(f'%{search}%')
+            )
+        )
+    
+    if status_filter:
+        query = query.filter(LostAndFound.status == status_filter)
+    if category_filter:
+        query = query.filter(LostAndFound.category == category_filter)
+    
+    items = query.order_by(LostAndFound.found_date.desc()).all()
+    
+    return render_template('admin/lost_and_found.html', 
+                         items=items, search=search,
+                         status_filter=status_filter, category_filter=category_filter)
+
+@admin_bp.route('/lost-and-found/add', methods=['POST'])
+@admin_required
+def add_lost_item():
+    """Add new lost item to the system"""
+    item_description = request.form.get('item_description')
+    found_location = request.form.get('found_location')
+    found_by = request.form.get('found_by')
+    storage_location = request.form.get('storage_location')
+    category = request.form.get('category')
+    estimated_value = request.form.get('estimated_value', type=float)
+    
+    if not all([item_description, found_location, storage_location]):
+        flash('Item description, found location, and storage location are required', 'error')
+        return redirect(url_for('admin.lost_and_found'))
+    
+    item = LostAndFound(
+        item_description=item_description,
+        found_location=found_location,
+        found_date=date.today(),
+        found_by=found_by,
+        storage_location=storage_location,
+        category=category,
+        estimated_value=estimated_value
+    )
+    
+    db.session.add(item)
+    db.session.commit()
+    
+    flash(f'Lost item {item.item_id} added successfully', 'success')
+    return redirect(url_for('admin.lost_and_found'))
+
+@admin_bp.route('/dynamic-pricing')
+@admin_required
+def dynamic_pricing_management():
+    """Dynamic pricing management and monitoring"""
+    today = date.today()
+    
+    # Get current pricing rules
+    pricing_rules = db.session.query(DynamicPricing, Train).join(Train).filter(
+        DynamicPricing.journey_date >= today
+    ).order_by(DynamicPricing.updated_at.desc()).all()
+    
+    trains = Train.query.filter_by(active=True).all()
+    
+    return render_template('admin/dynamic_pricing.html', 
+                         pricing_rules=pricing_rules, trains=trains)
+
+@admin_bp.route('/dynamic-pricing/update', methods=['POST'])
+@admin_required
+def update_dynamic_pricing():
+    """Update dynamic pricing for a train"""
+    train_id = request.form.get('train_id', type=int)
+    journey_date = request.form.get('journey_date')
+    coach_class = request.form.get('coach_class')
+    surge_multiplier = request.form.get('surge_multiplier', type=float)
+    special_event = request.form.get('special_event')
+    
+    if not all([train_id, journey_date, coach_class, surge_multiplier]):
+        flash('All fields are required', 'error')
+        return redirect(url_for('admin.dynamic_pricing_management'))
+    
+    journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+    
+    # Get or create pricing rule
+    pricing = DynamicPricing.query.filter_by(
+        train_id=train_id,
+        journey_date=journey_date_obj,
+        coach_class=coach_class
+    ).first()
+    
+    if not pricing:
+        train = Train.query.get(train_id)
+        pricing = DynamicPricing(
+            train_id=train_id,
+            journey_date=journey_date_obj,
+            coach_class=coach_class,
+            base_fare=train.fare_per_km
+        )
+        db.session.add(pricing)
+    
+    pricing.surge_multiplier = surge_multiplier
+    pricing.special_event = special_event
+    pricing.updated_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    flash('Dynamic pricing updated successfully', 'success')
+    return redirect(url_for('admin.dynamic_pricing_management'))

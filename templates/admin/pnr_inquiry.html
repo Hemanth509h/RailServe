@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}PNR Inquiry System - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-search"></i> PNR Inquiry System</h1>
+        <p>Real-time PNR status tracking and journey details</p>
+    </div>
+
+    <!-- PNR Search -->
+    <div class="search-section">
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <input type="text" name="search" placeholder="Enter PNR Number (e.g., 1234567890)" value="{{ search }}" class="search-input pnr-input">
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Search PNR
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if booking %}
+        <!-- PNR Details -->
+        <div class="pnr-details">
+            <div class="pnr-header">
+                <h2>PNR: {{ booking.pnr }}</h2>
+                <span class="status-badge {{ booking.status }}">{{ booking.status.replace('_', ' ').title() }}</span>
+            </div>
+
+            <div class="pnr-content">
+                <!-- Journey Information -->
+                <div class="info-section">
+                    <h3><i class="fas fa-route"></i> Journey Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Train</label>
+                            <div class="train-info">
+                                <strong>{{ booking.train.number }} - {{ booking.train.name }}</strong>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label>Route</label>
+                            <div class="route-info">
+                                <span class="station">{{ booking.from_station.name }} ({{ booking.from_station.code }})</span>
+                                <i class="fas fa-arrow-right"></i>
+                                <span class="station">{{ booking.to_station.name }} ({{ booking.to_station.code }})</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label>Journey Date</label>
+                            <div>{{ booking.journey_date.strftime('%d %B %Y, %A') }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Booking Date</label>
+                            <div>{{ booking.booking_date.strftime('%d %b %Y %H:%M') }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details -->
+                <div class="info-section">
+                    <h3><i class="fas fa-ticket-alt"></i> Booking Details</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Passengers</label>
+                            <div>{{ booking.passengers }} person(s)</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Class</label>
+                            <div>{{ booking.coach_class }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Quota</label>
+                            <div>{{ booking.quota.replace('_', ' ').title() }}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Total Amount</label>
+                            <div class="amount">₹{{ "%.2f"|format(booking.total_amount) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if pnr_tracking %}
+                    <!-- Enhanced PNR Status -->
+                    <div class="info-section">
+                        <h3><i class="fas fa-info-circle"></i> Current Status</h3>
+                        <div class="status-details">
+                            <div class="status-item">
+                                <label>Current Status</label>
+                                <div class="current-status">{{ pnr_tracking.current_status.replace('_', ' ').title() }}</div>
+                            </div>
+                            {% if pnr_tracking.platform_number %}
+                                <div class="status-item">
+                                    <label>Platform</label>
+                                    <div class="platform-number">{{ pnr_tracking.platform_number }}</div>
+                                </div>
+                            {% endif %}
+                            {% if pnr_tracking.boarding_time %}
+                                <div class="status-item">
+                                    <label>Boarding Time</label>
+                                    <div>{{ pnr_tracking.boarding_time.strftime('%H:%M') }}</div>
+                                </div>
+                            {% endif %}
+                            {% if pnr_tracking.coach_position %}
+                                <div class="status-item">
+                                    <label>Coach Position</label>
+                                    <div>{{ pnr_tracking.coach_position }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if pnr_tracking.special_instructions %}
+                            <div class="special-instructions">
+                                <h4><i class="fas fa-exclamation-triangle"></i> Special Instructions</h4>
+                                <p>{{ pnr_tracking.special_instructions }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- Passenger Details -->
+                {% if booking.passengers_details %}
+                    <div class="info-section">
+                        <h3><i class="fas fa-users"></i> Passenger Details</h3>
+                        <div class="passengers-table">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Age</th>
+                                        <th>Gender</th>
+                                        <th>Seat Assignment</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for passenger in booking.passengers_details %}
+                                        <tr>
+                                            <td>{{ passenger.name }}</td>
+                                            <td>{{ passenger.age }}</td>
+                                            <td>{{ passenger.gender }}</td>
+                                            <td>
+                                                {% if passenger.seat_number %}
+                                                    <div class="seat-info">
+                                                        <strong>{{ passenger.seat_number }}</strong>
+                                                        {% if passenger.berth_type %}
+                                                            <br><small>{{ passenger.berth_type }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">Awaiting allocation</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="status-badge {{ booking.status }}">{{ booking.status.replace('_', ' ').title() }}</span>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Payment Information -->
+                {% if booking.payment %}
+                    <div class="info-section">
+                        <h3><i class="fas fa-credit-card"></i> Payment Information</h3>
+                        <div class="payment-info">
+                            <div class="payment-item">
+                                <label>Payment Status</label>
+                                <div class="payment-status {{ booking.payment.status }}">{{ booking.payment.status.title() }}</div>
+                            </div>
+                            <div class="payment-item">
+                                <label>Method</label>
+                                <div>{{ booking.payment.payment_method.upper() }}</div>
+                            </div>
+                            <div class="payment-item">
+                                <label>Transaction ID</label>
+                                <div class="transaction-id">{{ booking.payment.transaction_id or 'N/A' }}</div>
+                            </div>
+                            <div class="payment-item">
+                                <label>Amount</label>
+                                <div class="amount">₹{{ "%.2f"|format(booking.payment.amount) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        {% if search %}
+            <div class="no-data">
+                <i class="fas fa-search"></i>
+                <h3>PNR Not Found</h3>
+                <p>No booking found with PNR number "{{ search }}". Please check the PNR number and try again.</p>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-search"></i>
+                <h3>Enter PNR Number</h3>
+                <p>Enter a 10-digit PNR number to view detailed booking information and current status.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<style>
+.pnr-input {
+    font-family: monospace;
+    font-size: 1.1em;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.pnr-details {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.pnr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.pnr-header h2 {
+    color: #1f2937;
+    font-family: monospace;
+    font-size: 1.5em;
+}
+
+.info-section {
+    margin-bottom: 2rem;
+}
+
+.info-section h3 {
+    color: #374151;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.info-item label {
+    display: block;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+    font-size: 0.9em;
+}
+
+.info-item div {
+    color: #1f2937;
+}
+
+.train-info {
+    font-size: 1.1em;
+    color: #2563eb !important;
+}
+
+.route-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.station {
+    font-weight: 500;
+}
+
+.amount {
+    font-weight: bold;
+    color: #059669 !important;
+    font-size: 1.1em;
+}
+
+.platform-number {
+    font-weight: bold;
+    color: #dc2626 !important;
+    font-size: 1.2em;
+}
+
+.status-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.status-item label {
+    display: block;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.current-status {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #2563eb;
+}
+
+.special-instructions {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.special-instructions h4 {
+    color: #92400e;
+    margin-bottom: 0.5rem;
+}
+
+.seat-info strong {
+    color: #2563eb;
+    font-family: monospace;
+}
+
+.payment-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.payment-status.success {
+    color: #059669;
+    font-weight: bold;
+}
+
+.payment-status.pending {
+    color: #d97706;
+    font-weight: bold;
+}
+
+.payment-status.failed {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.transaction-id {
+    font-family: monospace;
+    color: #6b7280;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.confirmed { background: #10b981; color: white; }
+.status-badge.waitlisted { background: #f59e0b; color: white; }
+.status-badge.cancelled { background: #ef4444; color: white; }
+.status-badge.pending_payment { background: #6b7280; color: white; }
+.status-badge.rac { background: #8b5cf6; color: white; }
+</style>
+{% endblock %}

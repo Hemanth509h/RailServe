@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Management - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-road"></i> Platform Management</h1>
+        <p>Manage station platforms and track assignments</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <input type="text" name="search" placeholder="Search platforms, stations..." value="{{ search }}" class="search-input">
+                <select name="station" class="filter-select">
+                    <option value="">All Stations</option>
+                    {% for station in stations %}
+                        <option value="{{ station.id }}" {% if station_filter == station.id|string %}selected{% endif %}>
+                            {{ station.name }} ({{ station.code }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Add Platform Form -->
+    <div class="add-section">
+        <h3>Add New Platform</h3>
+        <form method="POST" action="{{ url_for('admin.add_platform') }}" class="add-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="station_id">Station</label>
+                    <select name="station_id" id="station_id" required>
+                        <option value="">Select Station</option>
+                        {% for station in stations %}
+                            <option value="{{ station.id }}">{{ station.name }} ({{ station.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="platform_number">Platform Number</label>
+                    <input type="text" name="platform_number" id="platform_number" placeholder="e.g., 1, 2A, 3B" required>
+                </div>
+                <div class="form-group">
+                    <label for="track_number">Track Number</label>
+                    <input type="text" name="track_number" id="track_number" placeholder="e.g., T1, T2">
+                </div>
+                <div class="form-group">
+                    <label for="platform_length">Platform Length (m)</label>
+                    <input type="number" name="platform_length" id="platform_length" placeholder="e.g., 400">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="electrified" checked> Electrified
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="wheelchair_accessible"> Wheelchair Accessible
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="facilities">Facilities</label>
+                    <input type="text" name="facilities" id="facilities" placeholder="e.g., Waiting room, Food stall">
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">Add Platform</button>
+        </form>
+    </div>
+
+    <!-- Platforms List -->
+    <div class="data-section">
+        <h3>Platforms ({{ platforms|length }})</h3>
+        {% if platforms %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Station</th>
+                            <th>Platform</th>
+                            <th>Track</th>
+                            <th>Length</th>
+                            <th>Features</th>
+                            <th>Facilities</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for platform, station in platforms %}
+                            <tr>
+                                <td>
+                                    <strong>{{ station.name }}</strong><br>
+                                    <small>{{ station.code }}</small>
+                                </td>
+                                <td class="platform-number">{{ platform.platform_number }}</td>
+                                <td>{{ platform.track_number or 'N/A' }}</td>
+                                <td>{{ platform.platform_length or 'N/A' }}m</td>
+                                <td>
+                                    {% if platform.electrified %}<span class="badge success">Electrified</span>{% endif %}
+                                    {% if platform.wheelchair_accessible %}<span class="badge info">Accessible</span>{% endif %}
+                                </td>
+                                <td>{{ platform.facilities or 'None' }}</td>
+                                <td>
+                                    <span class="status-badge {{ platform.status }}">{{ platform.status.title() }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-road"></i>
+                <p>No platforms found. Add platforms to manage station infrastructure.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.platform-number {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #2563eb;
+}
+
+.badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.badge.success {
+    background-color: #10b981;
+    color: white;
+}
+
+.badge.info {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.active {
+    background-color: #10b981;
+    color: white;
+}
+
+.status-badge.maintenance {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.status-badge.closed {
+    background-color: #ef4444;
+    color: white;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Management - Railway Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <div class="content-header">
+        <h1><i class="fas fa-headset"></i> Complaint Management</h1>
+        <p>Customer service and query resolution system</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <input type="text" name="search" placeholder="Search tickets, users..." value="{{ search }}" class="search-input">
+                <select name="status" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                </select>
+                <select name="category" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="Booking" {% if category_filter == 'Booking' %}selected{% endif %}>Booking</option>
+                    <option value="Refund" {% if category_filter == 'Refund' %}selected{% endif %}>Refund</option>
+                    <option value="Train" {% if category_filter == 'Train' %}selected{% endif %}>Train</option>
+                    <option value="Food" {% if category_filter == 'Food' %}selected{% endif %}>Food</option>
+                    <option value="Staff" {% if category_filter == 'Staff' %}selected{% endif %}>Staff</option>
+                </select>
+                <select name="priority" class="filter-select">
+                    <option value="">All Priorities</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                    <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                </select>
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Complaints List -->
+    <div class="data-section">
+        <h3>Customer Complaints ({{ complaints|length }})</h3>
+        {% if complaints %}
+            <div class="complaints-list">
+                {% for complaint in complaints %}
+                    <div class="complaint-card">
+                        <div class="complaint-header">
+                            <div class="complaint-meta">
+                                <span class="ticket-number">{{ complaint.ticket_number }}</span>
+                                <span class="priority-badge {{ complaint.priority }}">{{ complaint.priority.title() }}</span>
+                                <span class="status-badge {{ complaint.status }}">{{ complaint.status.replace('_', ' ').title() }}</span>
+                            </div>
+                            <div class="complaint-date">{{ complaint.created_at.strftime('%d %b %Y %H:%M') }}</div>
+                        </div>
+                        
+                        <div class="complaint-body">
+                            <h4>{{ complaint.subject }}</h4>
+                            <p class="complaint-desc">{{ complaint.description[:200] }}{% if complaint.description|length > 200 %}...{% endif %}</p>
+                            
+                            <div class="complaint-details">
+                                <span><strong>User:</strong> {{ complaint.user.username }}</span>
+                                <span><strong>Category:</strong> {{ complaint.category }}</span>
+                                {% if complaint.subcategory %}<span><strong>Type:</strong> {{ complaint.subcategory }}</span>{% endif %}
+                                {% if complaint.assigned_admin %}<span><strong>Assigned to:</strong> {{ complaint.assigned_admin.username }}</span>{% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="complaint-actions">
+                            {% if complaint.status == 'open' %}
+                                <form method="POST" action="{{ url_for('admin.assign_complaint', complaint_id=complaint.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn-sm btn-primary">Assign to Me</button>
+                                </form>
+                            {% endif %}
+                            
+                            {% if complaint.status in ['open', 'in_progress'] %}
+                                <button type="button" class="btn-sm btn-success" onclick="openResolveModal({{ complaint.id }}, '{{ complaint.ticket_number }}')">
+                                    Resolve
+                                </button>
+                            {% endif %}
+                            
+                            {% if complaint.resolution %}
+                                <button type="button" class="btn-sm btn-info" onclick="showResolution('{{ complaint.resolution|replace("'", "\\'") }}')">
+                                    View Resolution
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-headset"></i>
+                <p>No complaints found. All customer queries are resolved!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Resolve Modal -->
+<div id="resolveModal" class="modal">
+    <div class="modal-content">
+        <h3>Resolve Complaint</h3>
+        <form id="resolveForm" method="POST">
+            <div class="form-group">
+                <label for="resolution">Resolution Details</label>
+                <textarea name="resolution" id="resolution" rows="4" placeholder="Describe how the complaint was resolved..." required></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button type="submit" class="btn-success">Resolve Complaint</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.complaints-list {
+    space-y: 1rem;
+}
+
+.complaint-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.complaint-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.complaint-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.ticket-number {
+    font-family: monospace;
+    font-weight: bold;
+    color: #1f2937;
+    background: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.priority-badge, .status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.priority-badge.low { background: #10b981; color: white; }
+.priority-badge.medium { background: #f59e0b; color: white; }
+.priority-badge.high { background: #ef4444; color: white; }
+.priority-badge.urgent { background: #dc2626; color: white; }
+
+.status-badge.open { background: #3b82f6; color: white; }
+.status-badge.in_progress { background: #f59e0b; color: white; }
+.status-badge.resolved { background: #10b981; color: white; }
+.status-badge.closed { background: #6b7280; color: white; }
+
+.complaint-body h4 {
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.complaint-desc {
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.complaint-details {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.9em;
+    color: #4b5563;
+}
+
+.complaint-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+</style>
+
+<script>
+function openResolveModal(complaintId, ticketNumber) {
+    document.getElementById('resolveForm').action = `/admin/complaints/${complaintId}/resolve`;
+    document.getElementById('resolveModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('resolveModal').style.display = 'none';
+}
+
+function showResolution(resolution) {
+    alert('Resolution: ' + resolution);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('resolveModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+</script>
+{% endblock %}

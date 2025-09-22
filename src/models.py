@@ -715,3 +715,177 @@ class TatkalOverride(db.Model):
     def get_active_override(cls):
         """Get the currently active Tatkal override"""
         return cls.query.filter_by(is_enabled=True).order_by(cls.enabled_at.desc()).first()
+
+# New Models for Real Railway Management System Features
+
+class PlatformManagement(db.Model):
+    """Platform and track assignment management"""
+    id = db.Column(db.Integer, primary_key=True)
+    station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    platform_number = db.Column(db.String(10), nullable=False)  # Platform 1, 2A, 3B, etc.
+    track_number = db.Column(db.String(10))  # Track assignment
+    platform_length = db.Column(db.Integer)  # Length in meters
+    electrified = db.Column(db.Boolean, default=True)
+    status = db.Column(db.String(20), default='active')  # active, maintenance, closed
+    facilities = db.Column(db.Text)  # Waiting room, food stall, etc.
+    wheelchair_accessible = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    station = db.relationship('Station', backref='platforms')
+    
+    def __init__(self, **kwargs):
+        super(PlatformManagement, self).__init__(**kwargs)
+
+class TrainPlatformAssignment(db.Model):
+    """Real-time platform assignments for trains"""
+    id = db.Column(db.Integer, primary_key=True)
+    train_id = db.Column(db.Integer, db.ForeignKey('train.id'), nullable=False)
+    station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    platform_id = db.Column(db.Integer, db.ForeignKey('platform_management.id'), nullable=False)
+    journey_date = db.Column(db.Date, nullable=False)
+    arrival_platform = db.Column(db.String(10))
+    departure_platform = db.Column(db.String(10))
+    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Relationships
+    train = db.relationship('Train')
+    station = db.relationship('Station')
+    platform = db.relationship('PlatformManagement')
+    assigned_by_user = db.relationship('User')
+    
+    def __init__(self, **kwargs):
+        super(TrainPlatformAssignment, self).__init__(**kwargs)
+
+class ComplaintManagement(db.Model):
+    """Customer complaint and query management system"""
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_number = db.Column(db.String(20), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))  # Optional, if related to booking
+    category = db.Column(db.String(50), nullable=False)  # Booking, Refund, Train, Food, Staff, etc.
+    subcategory = db.Column(db.String(50))  # Seat allotment, AC problem, etc.
+    priority = db.Column(db.String(10), default='medium')  # low, medium, high, urgent
+    subject = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='open')  # open, in_progress, resolved, closed
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'))  # Admin handling the complaint
+    resolution = db.Column(db.Text)
+    satisfaction_rating = db.Column(db.Integer)  # 1-5 rating from user
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    resolved_at = db.Column(db.DateTime)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='complaints')
+    booking = db.relationship('Booking', backref='complaints')
+    assigned_admin = db.relationship('User', foreign_keys=[assigned_to])
+    
+    def __init__(self, **kwargs):
+        super(ComplaintManagement, self).__init__(**kwargs)
+        if not self.ticket_number:
+            self.ticket_number = f"CMP{datetime.utcnow().strftime('%Y%m%d')}{random.randint(1000, 9999)}"
+
+class PerformanceMetrics(db.Model):
+    """System performance and KPI tracking"""
+    id = db.Column(db.Integer, primary_key=True)
+    metric_name = db.Column(db.String(100), nullable=False)  # passenger_load, on_time_performance, revenue_per_km, etc.
+    metric_value = db.Column(db.Float, nullable=False)
+    metric_unit = db.Column(db.String(20))  # percentage, rupees, minutes, count
+    train_id = db.Column(db.Integer, db.ForeignKey('train.id'))  # Optional, for train-specific metrics
+    station_id = db.Column(db.Integer, db.ForeignKey('station.id'))  # Optional, for station-specific metrics
+    date_recorded = db.Column(db.Date, nullable=False)
+    time_recorded = db.Column(db.DateTime, default=datetime.utcnow)
+    benchmark_value = db.Column(db.Float)  # Target/standard value
+    variance_percentage = db.Column(db.Float)  # How much above/below benchmark
+    
+    # Relationships
+    train = db.relationship('Train')
+    station = db.relationship('Station')
+    
+    def __init__(self, **kwargs):
+        super(PerformanceMetrics, self).__init__(**kwargs)
+
+class FoodCateringManagement(db.Model):
+    """Food and catering service management"""
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_name = db.Column(db.String(100), nullable=False)
+    contact_phone = db.Column(db.String(15), nullable=False)
+    contact_email = db.Column(db.String(120))
+    station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
+    service_type = db.Column(db.String(20), nullable=False)  # pantry_car, platform_delivery, counter
+    cuisine_types = db.Column(db.String(200))  # Indian, Chinese, South Indian, etc.
+    rating = db.Column(db.Float, default=0.0)
+    active = db.Column(db.Boolean, default=True)
+    license_number = db.Column(db.String(50))
+    license_expiry = db.Column(db.Date)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    station = db.relationship('Station', backref='catering_vendors')
+    
+    def __init__(self, **kwargs):
+        super(FoodCateringManagement, self).__init__(**kwargs)
+
+class LostAndFound(db.Model):
+    """Lost and found item tracking system"""
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.String(20), unique=True, nullable=False)
+    item_description = db.Column(db.Text, nullable=False)
+    found_location = db.Column(db.String(100), nullable=False)  # Train number + coach or station
+    found_date = db.Column(db.Date, nullable=False)
+    found_by = db.Column(db.String(100))  # Staff member or passenger who found it
+    status = db.Column(db.String(20), default='found')  # found, claimed, disposed
+    claimant_name = db.Column(db.String(100))
+    claimant_phone = db.Column(db.String(15))
+    claimant_id_proof = db.Column(db.String(50))
+    claimed_date = db.Column(db.Date)
+    storage_location = db.Column(db.String(100), nullable=False)
+    category = db.Column(db.String(50))  # electronics, clothing, documents, jewelry, etc.
+    estimated_value = db.Column(db.Float)
+    
+    def __init__(self, **kwargs):
+        super(LostAndFound, self).__init__(**kwargs)
+        if not self.item_id:
+            self.item_id = f"LF{datetime.utcnow().strftime('%Y%m%d')}{random.randint(100, 999)}"
+
+class DynamicPricing(db.Model):
+    """Dynamic pricing based on demand and occupancy"""
+    id = db.Column(db.Integer, primary_key=True)
+    train_id = db.Column(db.Integer, db.ForeignKey('train.id'), nullable=False)
+    journey_date = db.Column(db.Date, nullable=False)
+    coach_class = db.Column(db.String(10), nullable=False)
+    base_fare = db.Column(db.Float, nullable=False)
+    surge_multiplier = db.Column(db.Float, default=1.0)  # 1.0 = no surge, 1.5 = 50% increase
+    current_occupancy = db.Column(db.Float, default=0.0)  # Percentage occupied
+    demand_factor = db.Column(db.Float, default=1.0)  # Based on historical demand
+    special_event = db.Column(db.String(100))  # Festival, holiday, etc.
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    train = db.relationship('Train')
+    
+    def __init__(self, **kwargs):
+        super(DynamicPricing, self).__init__(**kwargs)
+    
+    def calculate_dynamic_fare(self, base_amount):
+        """Calculate final fare with dynamic pricing"""
+        return base_amount * self.surge_multiplier
+
+class PNRStatusTracking(db.Model):
+    """Enhanced PNR status tracking and journey details"""
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'), nullable=False)
+    current_status = db.Column(db.String(50), nullable=False)  # Confirmed, RAC, Waitlisted, Chart Prepared, etc.
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    next_update_time = db.Column(db.DateTime)  # When status might change
+    coach_position = db.Column(db.String(100))  # Position of coach in train (front, middle, rear)
+    boarding_time = db.Column(db.Time)  # Recommended boarding time
+    platform_number = db.Column(db.String(10))
+    special_instructions = db.Column(db.Text)  # Any special instructions for passenger
+    
+    # Relationships
+    booking = db.relationship('Booking', backref='pnr_tracking', uselist=False)
+    
+    def __init__(self, **kwargs):
+        super(PNRStatusTracking, self).__init__(**kwargs)
