@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Railway Database Setup Script - Essential Data Only
-Creates database schema and populates with only trains, stations, and train routes
+South Indian Railway Database Setup Script
+Creates database schema and populates with South Indian railway data
+1500 trains and 1250 stations focused on Tamil Nadu, Karnataka, Kerala, Andhra Pradesh, and Telangana
 
 Usage:
     python setup_database.py
@@ -16,13 +17,14 @@ import os
 import sys
 from datetime import datetime, time
 import logging
+import random
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def setup_database():
-    """Initialize database with essential railway data only"""
+    """Initialize database with South Indian railway data"""
     
     # Safety check
     env = os.environ.get('FLASK_ENV', 'development')
@@ -30,7 +32,8 @@ def setup_database():
         logger.error("Database setup script should not be run in production!")
         sys.exit(1)
     
-    logger.info("Starting Railway Database Setup (Essential Data Only)...")
+    logger.info("Starting South Indian Railway Database Setup...")
+    logger.info("Target: 1500 trains and 1250 stations")
     logger.info("=" * 60)
     
     # Import Flask app and models
@@ -51,35 +54,36 @@ def setup_database():
             db.create_all()
             logger.info("Database schema created successfully")
             
-            # Populate with essential data only
-            logger.info("Populating database with essential railway data...")
-            populate_essential_data(db)
+            # Populate with South Indian railway data
+            logger.info("Populating database with South Indian railway data...")
+            populate_south_indian_data(db)
             
             logger.info("Database setup completed successfully!")
+            logger.info(f"Created 1250 stations and 1500 trains focused on South India")
             
     except Exception as e:
         logger.error(f"Database setup failed: {str(e)}")
         sys.exit(1)
 
-def populate_essential_data(db):
-    """Populate database with only essential railway data"""
+def populate_south_indian_data(db):
+    """Populate database with South Indian railway data"""
     
     from src.models import User, Station, Train, TrainRoute
     
     # Create admin user if requested
     create_admin_user(db, User)
     
-    # Create essential stations
-    logger.info("Creating major railway stations...")
-    create_essential_stations(db, Station)
+    # Create 1250 stations (mostly South Indian)
+    logger.info("Creating 1250 railway stations...")
+    create_south_indian_stations(db, Station)
     
-    # Create essential trains
-    logger.info("Creating essential trains...")
-    create_essential_trains(db, Train)
+    # Create 1500 trains
+    logger.info("Creating 1500 trains...")
+    create_south_indian_trains(db, Train)
     
     # Create train routes
     logger.info("Creating train routes...")
-    create_train_routes(db, Train, Station, TrainRoute)
+    create_south_indian_routes(db, Train, Station, TrainRoute)
 
 def create_admin_user(db, User):
     """Create admin user only if explicitly requested"""
@@ -111,220 +115,348 @@ def create_admin_user(db, User):
     else:
         logger.info("Skipping admin user creation (set CREATE_ADMIN=1 and ADMIN_PASSWORD to create)")
 
-def create_essential_stations(db, Station):
-    """Create major railway stations across India"""
+def create_south_indian_stations(db, Station):
+    """Create 1250 railway stations focused on South India"""
     
-    # Essential major railway stations
-    essential_stations = [
-        # Metro cities and major junctions
-        ('NDLS', 'New Delhi', 'Delhi', 'DL', 'Metro'),
-        ('CST', 'Mumbai CST', 'Mumbai', 'MH', 'Metro'),
-        ('HWH', 'Howrah Junction', 'Kolkata', 'WB', 'Metro'),
-        ('MAS', 'Chennai Central', 'Chennai', 'TN', 'Metro'),
-        ('SBC', 'Bangalore City Junction', 'Bangalore', 'KA', 'Metro'),
-        ('PUNE', 'Pune Junction', 'Pune', 'MH', 'Metro'),
-        ('AMH', 'Ahmadabad Junction', 'Ahmedabad', 'GJ', 'Metro'),
-        ('HYB', 'Hyderabad Deccan', 'Hyderabad', 'TS', 'Metro'),
+    # Major South Indian stations
+    major_stations = [
+        # Tamil Nadu - Major stations
+        ('MAS', 'Chennai Central', 'Chennai', 'TN'),
+        ('MSB', 'Chennai Egmore', 'Chennai', 'TN'),
+        ('TBM', 'Tambaram', 'Chennai', 'TN'),
+        ('CGL', 'Chengalpattu', 'Chengalpattu', 'TN'),
+        ('VM', 'Villupuram', 'Villupuram', 'TN'),
+        ('CUD', 'Cuddalore Port', 'Cuddalore', 'TN'),
+        ('PDY', 'Puducherry', 'Puducherry', 'PY'),
+        ('TPJ', 'Tiruchirapalli Junction', 'Tiruchirappalli', 'TN'),
+        ('TJ', 'Thanjavur Junction', 'Thanjavur', 'TN'),
+        ('KMU', 'Kumbakonam', 'Kumbakonam', 'TN'),
+        ('MV', 'Mayiladuthurai Junction', 'Mayiladuthurai', 'TN'),
+        ('CDM', 'Chidambaram', 'Chidambaram', 'TN'),
+        ('MDU', 'Madurai Junction', 'Madurai', 'TN'),
+        ('DG', 'Dindigul Junction', 'Dindigul', 'TN'),
+        ('KQN', 'Kodaikanal Road', 'Kodaikanal', 'TN'),
+        ('CBE', 'Coimbatore Junction', 'Coimbatore', 'TN'),
+        ('ED', 'Erode Junction', 'Erode', 'TN'),
+        ('SA', 'Salem Junction', 'Salem', 'TN'),
+        ('JTJ', 'Jolarpettai Junction', 'Jolarpettai', 'TN'),
+        ('KPD', 'Katpadi Junction', 'Vellore', 'TN'),
+        ('ARV', 'Arkonam Junction', 'Arkonam', 'TN'),
+        ('RU', 'Renigunta Junction', 'Tirupati', 'AP'),
+        ('TPTY', 'Tirupati', 'Tirupati', 'AP'),
+        ('GDR', 'Gudur Junction', 'Gudur', 'AP'),
+        ('NLR', 'Nellore', 'Nellore', 'AP'),
+        ('OGL', 'Ongole', 'Ongole', 'AP'),
+        ('BZA', 'Vijayawada Junction', 'Vijayawada', 'AP'),
+        ('TEL', 'Tenali Junction', 'Tenali', 'AP'),
+        ('GNT', 'Guntur Junction', 'Guntur', 'AP'),
+        ('NLDA', 'Nalanda', 'Nalanda', 'AP'),
         
-        # Major junctions
-        ('JUC', 'Jalandhar City', 'Jalandhar', 'PB', 'Junction'),
-        ('ASR', 'Amritsar Junction', 'Amritsar', 'PB', 'Junction'),
-        ('LDH', 'Ludhiana Junction', 'Ludhiana', 'PB', 'Junction'),
-        ('UMB', 'Ambala Cantonment', 'Ambala', 'HR', 'Junction'),
-        ('CDG', 'Chandigarh', 'Chandigarh', 'CH', 'Junction'),
-        ('JP', 'Jaipur Junction', 'Jaipur', 'RJ', 'Junction'),
-        ('JU', 'Jodhpur Junction', 'Jodhpur', 'RJ', 'Junction'),
-        ('UDZ', 'Udaipur City', 'Udaipur', 'RJ', 'Junction'),
+        # Karnataka - Major stations
+        ('SBC', 'Bangalore City Junction', 'Bangalore', 'KA'),
+        ('YPR', 'Yesvantpur Junction', 'Bangalore', 'KA'),
+        ('KJM', 'Krishnarajapuram', 'Bangalore', 'KA'),
+        ('YNK', 'Yelhanka Junction', 'Bangalore', 'KA'),
+        ('TK', 'Tumkur', 'Tumkur', 'KA'),
+        ('ASK', 'Arsikere Junction', 'Arsikere', 'KA'),
+        ('RRB', 'Birur Junction', 'Birur', 'KA'),
+        ('DVG', 'Davangere', 'Davangere', 'KA'),
+        ('HRR', 'Harihar', 'Harihar', 'KA'),
+        ('RNR', 'Ranibennur', 'Ranibennur', 'KA'),
+        ('HVR', 'Haveri', 'Haveri', 'KA'),
+        ('UBL', 'Hubli Junction', 'Hubli', 'KA'),
+        ('DWR', 'Dharwad', 'Dharwad', 'KA'),
+        ('LD', 'Londa Junction', 'Londa', 'KA'),
+        ('BGM', 'Belagavi', 'Belagavi', 'KA'),
+        ('GPB', 'Gokak Road', 'Gokak', 'KA'),
+        ('MRJ', 'Miraj Junction', 'Miraj', 'MH'),
+        ('KOP', 'Kolhapur', 'Kolhapur', 'MH'),
+        ('MAJN', 'Mangalore Junction', 'Mangalore', 'KA'),
+        ('KBPR', 'Kabaka Puttur', 'Puttur', 'KA'),
+        ('SBHR', 'Subramanya Road', 'Subramanya', 'KA'),
+        ('BNTL', 'Bantwal', 'Bantwal', 'KA'),
+        ('MAQ', 'Mangalore Central', 'Mangalore', 'KA'),
+        ('UD', 'Udupi', 'Udupi', 'KA'),
+        ('KUDA', 'Kundapura', 'Kundapura', 'KA'),
+        ('BYNR', 'Byndoor', 'Byndoor', 'KA'),
+        ('KNSM', 'Kumsi', 'Kumsi', 'KA'),
+        ('MRDW', 'Murdeshwar', 'Murdeshwar', 'KA'),
+        ('HNA', 'Honnavar', 'Honnavar', 'KA'),
+        ('KT', 'Karwar', 'Karwar', 'KA'),
+        ('MYS', 'Mysore Junction', 'Mysore', 'KA'),
+        ('S', 'Srirangapatnam', 'Srirangapatnam', 'KA'),
+        ('MYA', 'Mandya', 'Mandya', 'KA'),
+        ('CPT', 'Chamarajanagar', 'Chamarajanagar', 'KA'),
+        ('SLO', 'Salem Odai', 'Salem', 'TN'),
         
-        # Eastern region
-        ('PNBE', 'Patna Junction', 'Patna', 'BR', 'Junction'),
-        ('DNR', 'Danapur', 'Patna', 'BR', 'Junction'),
-        ('GYA', 'Gaya Junction', 'Gaya', 'BR', 'Junction'),
-        ('MFP', 'Muzaffarpur Junction', 'Muzaffarpur', 'BR', 'Junction'),
-        ('GKP', 'Gorakhpur Junction', 'Gorakhpur', 'UP', 'Junction'),
-        ('LKO', 'Lucknow', 'Lucknow', 'UP', 'Junction'),
-        ('CNB', 'Kanpur Central', 'Kanpur', 'UP', 'Junction'),
-        ('AGC', 'Agra Cantonment', 'Agra', 'UP', 'Junction'),
-        ('ANVT', 'Anand Vihar Terminal', 'Delhi', 'DL', 'Terminal'),
+        # Kerala - Major stations  
+        ('TVC', 'Thiruvananthapuram Central', 'Thiruvananthapuram', 'KL'),
+        ('QLN', 'Kollam Junction', 'Kollam', 'KL'),
+        ('ALLP', 'Alappuzha', 'Alappuzha', 'KL'),
+        ('KTYM', 'Kottayam', 'Kottayam', 'KL'),
+        ('CGY', 'Changanassery', 'Changanassery', 'KL'),
+        ('TRVL', 'Tiruvalla', 'Tiruvalla', 'KL'),
+        ('CNGR', 'Chengannur', 'Chengannur', 'KL'),
+        ('ERS', 'Ernakulam Junction', 'Kochi', 'KL'),
+        ('ERN', 'Ernakulam Town', 'Kochi', 'KL'),
+        ('AWY', 'Aluva', 'Aluva', 'KL'),
+        ('CKI', 'Chalakudy', 'Chalakudy', 'KL'),
+        ('IJK', 'Irinjalakuda', 'Irinjalakuda', 'KL'),
+        ('TCR', 'Thrissur', 'Thrissur', 'KL'),
+        ('OTP', 'Ottapalam', 'Ottapalam', 'KL'),
+        ('SRR', 'Shoranur Junction', 'Shoranur', 'KL'),
+        ('TIR', 'Tirur', 'Tirur', 'KL'),
+        ('KTU', 'Kuttippuram', 'Kuttippuram', 'KL'),
+        ('FK', 'Ferok', 'Ferok', 'KL'),
+        ('CLT', 'Kozhikode', 'Kozhikode', 'KL'),
+        ('QLD', 'Quilandi', 'Quilandi', 'KL'),
+        ('BDJ', 'Vadakara', 'Vadakara', 'KL'),
+        ('TLY', 'Thalassery', 'Thalassery', 'KL'),
+        ('CAN', 'Kannur', 'Kannur', 'KL'),
+        ('PAY', 'Payyanur', 'Payyanur', 'KL'),
+        ('KZE', 'Kanhangad', 'Kanhangad', 'KL'),
+        ('KGQ', 'Kasaragod', 'Kasaragod', 'KL'),
         
-        # Western region
-        ('BCT', 'Mumbai Central', 'Mumbai', 'MH', 'Terminal'),
-        ('LTT', 'Lokmanya Tilak Terminus', 'Mumbai', 'MH', 'Terminal'),
-        ('CSTM', 'Chhatrapati Shivaji Maharaj Terminus', 'Mumbai', 'MH', 'Terminal'),
-        ('ST', 'Surat', 'Surat', 'GJ', 'Junction'),
-        ('BRC', 'Vadodara Junction', 'Vadodara', 'GJ', 'Junction'),
-        ('RTM', 'Ratlam Junction', 'Ratlam', 'MP', 'Junction'),
-        ('UJN', 'Ujjain Junction', 'Ujjain', 'MP', 'Junction'),
-        ('BINA', 'Bina Junction', 'Bina', 'MP', 'Junction'),
-        ('JBP', 'Jabalpur', 'Jabalpur', 'MP', 'Junction'),
-        ('NGP', 'Nagpur', 'Nagpur', 'MH', 'Junction'),
-        
-        # Southern region  
-        ('TCR', 'Tiruchirappalli', 'Tiruchirappalli', 'TN', 'Junction'),
-        ('MDU', 'Madurai Junction', 'Madurai', 'TN', 'Junction'),
-        ('CBE', 'Coimbatore Junction', 'Coimbatore', 'TN', 'Junction'),
-        ('SA', 'Salem Junction', 'Salem', 'TN', 'Junction'),
-        ('TVC', 'Thiruvananthapuram Central', 'Thiruvananthapuram', 'KL', 'Terminal'),
-        ('ERS', 'Ernakulam Junction', 'Kochi', 'KL', 'Junction'),
-        ('CLT', 'Kozhikode', 'Kozhikode', 'KL', 'Junction'),
-        ('CAN', 'Kannur', 'Kannur', 'KL', 'Junction'),
-        ('MAJN', 'Mangalore Junction', 'Mangalore', 'KA', 'Junction'),
-        ('UBL', 'Hubli Junction', 'Hubli', 'KA', 'Junction'),
-        ('BGM', 'Belagavi', 'Belagavi', 'KA', 'Junction'),
-        
-        # Northeastern states
-        ('GHY', 'Guwahati', 'Guwahati', 'AS', 'Junction'),
-        ('DBRG', 'Dibrugarh', 'Dibrugarh', 'AS', 'Junction'),
-        ('SLGR', 'Silchar', 'Silchar', 'AS', 'Junction'),
-        ('KYQ', 'Kamakhya', 'Guwahati', 'AS', 'Junction'),
-        ('APDJ', 'Alipur Duar Junction', 'Alipur Duar', 'WB', 'Junction'),
-        ('NJP', 'New Jalpaiguri', 'Siliguri', 'WB', 'Junction'),
+        # Andhra Pradesh & Telangana - Major stations
+        ('SC', 'Secunderabad Junction', 'Hyderabad', 'TS'),
+        ('HYB', 'Hyderabad Deccan', 'Hyderabad', 'TS'),
+        ('KCG', 'Kacheguda', 'Hyderabad', 'TS'),
+        ('LPI', 'Lingampalli', 'Hyderabad', 'TS'),
+        ('WL', 'Warangal', 'Warangal', 'TS'),
+        ('KZJ', 'Kazipet Junction', 'Kazipet', 'TS'),
+        ('BPQ', 'Balharshah', 'Balharshah', 'MH'),
+        ('SKZR', 'Sirkazhi', 'Sirkazhi', 'TN'),
+        ('NGP', 'Nagpur', 'Nagpur', 'MH'),
+        ('WR', 'Wardha Junction', 'Wardha', 'MH'),
+        ('CD', 'Chandrapur', 'Chandrapur', 'MH'),
+        ('MJBK', 'Manjlegaon', 'Manjlegaon', 'MH'),
     ]
     
+    # Generate additional stations for Tamil Nadu
+    tn_districts = ['Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 
+                    'Dindigul', 'Erode', 'Kallakurichi', 'Kanchipuram', 'Kanyakumari', 'Karur', 
+                    'Krishnagiri', 'Madurai', 'Mayurbhanj', 'Nagapattinam', 'Namakkal', 'Nilgiris',
+                    'Perambalur', 'Pudukkottai', 'Ramanathapuram', 'Ranipet', 'Salem', 'Sivaganga',
+                    'Tenkasi', 'Thanjavur', 'Theni', 'Thoothukudi', 'Tiruchirappalli', 'Tirunelveli',
+                    'Tirupathur', 'Tiruppur', 'Tiruvallur', 'Tiruvannamalai', 'Tiruvarur', 'Vellore',
+                    'Viluppuram', 'Virudhunagar']
+    
+    ka_districts = ['Bagalkot', 'Ballari', 'Belagavi', 'Bengaluru Rural', 'Bengaluru Urban', 'Bidar',
+                    'Chamarajanagar', 'Chikballapur', 'Chikkamagaluru', 'Chitradurga', 'Dakshina Kannada',
+                    'Davanagere', 'Dharwad', 'Gadag', 'Hassan', 'Haveri', 'Kalaburagi', 'Kodagu',
+                    'Kolar', 'Koppal', 'Mandya', 'Mysuru', 'Raichur', 'Ramanagara', 'Shivamogga',
+                    'Tumakuru', 'Udupi', 'Uttara Kannada', 'Vijayapura', 'Yadgir']
+    
+    kl_districts = ['Alappuzha', 'Ernakulam', 'Idukki', 'Kannur', 'Kasaragod', 'Kollam', 'Kottayam',
+                    'Kozhikode', 'Malappuram', 'Palakkad', 'Pathanamthitta', 'Thiruvananthapuram',
+                    'Thrissur', 'Wayanad']
+    
+    ap_ts_districts = ['Anantapur', 'Chittoor', 'East Godavari', 'Guntur', 'Krishna', 'Kurnool',
+                       'Nellore', 'Prakasam', 'Srikakulam', 'Visakhapatnam', 'Vizianagaram',
+                       'West Godavari', 'YSR Kadapa', 'Adilabad', 'Bhadradri Kothagudem', 
+                       'Hyderabad', 'Jagtial', 'Jangaon', 'Jayashankar', 'Jogulamba', 'Kamareddy',
+                       'Karimnagar', 'Khammam', 'Komaram Bheem', 'Mahabubabad', 'Mahabubnagar',
+                       'Mancherial', 'Medak', 'Medchal', 'Mulugu', 'Nagarkurnool', 'Nalgonda',
+                       'Narayanpet', 'Nirmal', 'Nizamabad', 'Peddapalli', 'Rajanna Sircilla',
+                       'Rangareddy', 'Sangareddy', 'Siddipet', 'Suryapet', 'Vikarabad', 'Wanaparthy',
+                       'Warangal Rural', 'Warangal Urban', 'Yadadri Bhuvanagiri']
+    
     stations = []
-    for code, name, city, state, station_type in essential_stations:
-        station = Station(
-            name=name,
-            code=code,
-            city=city,
-            state=state
-        )
-        stations.append(station)
+    stations.extend([Station(name=name, code=code, city=city, state=state) 
+                     for code, name, city, state in major_stations])
+    
+    # Generate additional stations
+    station_code_counter = 1000
+    
+    # Tamil Nadu stations (400 total)
+    for i, district in enumerate(tn_districts * 10):
+        if len(stations) >= 500:  # 500 TN stations
+            break
+        code = f"TN{station_code_counter}"
+        name = f"{district} {'Junction' if i % 3 == 0 else 'Railway Station'}"
+        stations.append(Station(name=name, code=code, city=district, state='TN'))
+        station_code_counter += 1
+    
+    # Karnataka stations (350 total)
+    for i, district in enumerate(ka_districts * 12):
+        if len([s for s in stations if s.state == 'KA']) >= 300:  # 300 KA stations
+            break
+        code = f"KA{station_code_counter}"
+        name = f"{district} {'Junction' if i % 4 == 0 else 'Railway Station'}"
+        stations.append(Station(name=name, code=code, city=district, state='KA'))
+        station_code_counter += 1
+    
+    # Kerala stations (250 total)
+    for i, district in enumerate(kl_districts * 18):
+        if len([s for s in stations if s.state == 'KL']) >= 200:  # 200 KL stations
+            break
+        code = f"KL{station_code_counter}"
+        name = f"{district} {'Junction' if i % 5 == 0 else 'Railway Station'}"
+        stations.append(Station(name=name, code=code, city=district, state='KL'))
+        station_code_counter += 1
+    
+    # Andhra Pradesh & Telangana stations (250 total)
+    for i, district in enumerate(ap_ts_districts * 6):
+        if len([s for s in stations if s.state in ['AP', 'TS']]) >= 250:  # 250 AP/TS stations
+            break
+        state = 'TS' if 'Hyderabad' in district or i % 2 == 0 else 'AP'
+        code = f"{state}{station_code_counter}"
+        name = f"{district} {'Junction' if i % 4 == 0 else 'Railway Station'}"
+        stations.append(Station(name=name, code=code, city=district, state=state))
+        station_code_counter += 1
+    
+    # Fill remaining slots with mixed South Indian stations
+    while len(stations) < 1250:
+        state = random.choice(['TN', 'KA', 'KL', 'AP', 'TS'])
+        if state == 'TN':
+            city = random.choice(tn_districts)
+        elif state == 'KA':
+            city = random.choice(ka_districts)
+        elif state == 'KL':
+            city = random.choice(kl_districts)
+        else:
+            city = random.choice(ap_ts_districts)
+        
+        code = f"{state}{station_code_counter}"
+        station_type = random.choice(['Junction', 'Railway Station', 'Halt', 'Terminal'])
+        name = f"{city} {station_type}"
+        stations.append(Station(name=name, code=code, city=city, state=state))
+        station_code_counter += 1
     
     db.session.add_all(stations)
     db.session.commit()
-    logger.info(f"Created {len(stations)} essential railway stations")
+    logger.info(f"Created {len(stations)} South Indian railway stations")
 
-def create_essential_trains(db, Train):
-    """Create essential trains connecting major routes"""
+def create_south_indian_trains(db, Train):
+    """Create 1500 trains focused on South Indian routes"""
     
-    # Essential trains - major express and superfast trains
-    essential_trains = [
-        # Rajdhani Express trains
-        ('12301', 'New Delhi Howrah Rajdhani Express', 'Rajdhani', 'Express', 'Daily'),
-        ('12951', 'New Delhi Mumbai Central Rajdhani Express', 'Rajdhani', 'Express', 'Daily'),
-        ('12429', 'New Delhi Bangalore Rajdhani Express', 'Rajdhani', 'Express', 'Tue,Fri,Sun'),
-        ('12431', 'New Delhi Trivandrum Rajdhani Express', 'Rajdhani', 'Express', 'Tue,Fri'),
-        ('12423', 'New Delhi Dibrugarh Rajdhani Express', 'Rajdhani', 'Express', 'Wed,Sat'),
-        
-        # Shatabdi Express trains
-        ('12001', 'New Delhi Bhopal Shatabdi Express', 'Shatabdi', 'Express', 'Daily'),
-        ('12051', 'New Delhi Amritsar Shatabdi Express', 'Shatabdi', 'Express', 'Daily'),
-        ('12009', 'New Delhi Amritsar Shatabdi Express', 'Shatabdi', 'Express', 'Daily'),
-        ('12028', 'Mumbai Chennai Shatabdi Express', 'Shatabdi', 'Express', 'Daily'),
-        
-        # Duronto Express trains
-        ('12259', 'New Delhi Kanyakumari Duronto Express', 'Duronto', 'Express', 'Tue,Thu,Sun'),
-        ('12273', 'New Delhi Howrah Duronto Express', 'Duronto', 'Express', 'Daily'),
-        
-        # Major Mail/Express trains
-        ('12617', 'Mangala Lakshadweep Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12615', 'Grand Trunk Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12723', 'Telangana Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12841', 'Coromandel Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12859', 'Gitanjali Express', 'Mail/Express', 'Express', 'Daily'),
-        
-        # Popular long-distance trains
-        ('16031', 'Andaman Express', 'Mail/Express', 'Express', 'Tue,Fri,Sun'),
-        ('16093', 'Lucknow Mail', 'Mail/Express', 'Express', 'Daily'),
-        ('12649', 'Karnataka Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12925', 'Paschim Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12555', 'Gorakhdham Express', 'Mail/Express', 'Express', 'Daily'),
-        
-        # Inter-city trains
-        ('12249', 'Howrah Yesvantpur Duronto Express', 'Duronto', 'Express', 'Mon,Wed,Sat'),
-        ('12653', 'Rock Fort Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12801', 'Purushottam Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12875', 'Neelachal Express', 'Mail/Express', 'Express', 'Daily'),
-        ('12311', 'Kalka Mail', 'Mail/Express', 'Express', 'Daily'),
-        
-        # Regional connectivity
-        ('14005', 'Lichchavi Express', 'Mail/Express', 'Express', 'Daily'),
-        ('14015', 'Sadbhavana Express', 'Mail/Express', 'Express', 'Daily'),
-        ('14021', 'Vibhuti Express', 'Mail/Express', 'Express', 'Daily'),
-        ('15023', 'Gorkha Express', 'Mail/Express', 'Express', 'Daily'),
-        ('15051', 'Ganga Kaveri Express', 'Mail/Express', 'Express', 'Wed,Sat'),
+    # South Indian train categories and names
+    train_categories = [
+        ('Express', 'Mail/Express'),
+        ('Superfast', 'Superfast'),
+        ('Passenger', 'Passenger'),
+        ('MEMU', 'MEMU'),
+        ('DMU', 'DMU'),
+        ('Jan Shatabdi', 'Jan Shatabdi'),
+        ('Intercity', 'Intercity'),
+        ('Garib Rath', 'Garib Rath'),
+        ('Duronto', 'Duronto'),
+        ('Humsafar', 'Humsafar'),
+        ('Tejas', 'Tejas'),
+        ('Vande Bharat', 'Vande Bharat')
+    ]
+    
+    south_indian_train_names = [
+        'Brindavan Express', 'Mysore Express', 'Kerala Express', 'Trivandrum Express',
+        'Coromandel Express', 'Tamil Nadu Express', 'Pandyan Express', 'Cheran Express',
+        'Pallavan Express', 'Cholan Express', 'Cauvery Express', 'Kurinja Express',
+        'Nilgiri Express', 'Annamalai Express', 'Pamban Express', 'Kanyakumari Express',
+        'Mangalore Express', 'Konkan Kanya Express', 'Netravati Express', 'Matsyagandha Express',
+        'Udupi Express', 'Karwar Express', 'Goa Express', 'Mandovi Express',
+        'Bangalore Express', 'Mysuru Express', 'Hampi Express', 'Vijayanagar Express',
+        'Hospet Express', 'Bellary Express', 'Hubli Express', 'Dharwad Express',
+        'Hyderabad Express', 'Telangana Express', 'Godavari Express', 'Krishna Express',
+        'Visakha Express', 'East Coast Express', 'Falaknuma Express', 'Narayanadri Express',
+        'Tirumala Express', 'Padmavati Express', 'Sapthagiri Express', 'Venkatadri Express',
+        'Rayalaseema Express', 'Amaravati Express', 'Vijayawada Express', 'Guntur Express',
+        'Alleppey Express', 'Kochi Express', 'Malabar Express', 'Parasuram Express',
+        'Jayanthi Janata Express', 'Sabari Express', 'Vanchinad Express', 'Backwater Express',
+        'Spice Coast Express', 'Coconut Express', 'Cardamom Express', 'Tea Garden Express'
     ]
     
     trains = []
-    for number, name, train_type, category, frequency in essential_trains:
+    train_number = 10001
+    
+    for i in range(1500):
+        # Generate train details
+        category, train_type = random.choice(train_categories)
+        base_name = random.choice(south_indian_train_names)
+        
+        # Avoid duplicate names by adding suffix if needed
+        train_name = base_name
+        if i > len(south_indian_train_names):
+            train_name = f"{base_name} {category}"
+        
+        # Set train capacity based on type
+        if train_type in ['Vande Bharat', 'Tejas', 'Duronto']:
+            total_seats = random.randint(350, 450)
+        elif train_type in ['Superfast', 'Mail/Express']:
+            total_seats = random.randint(300, 500)
+        elif train_type in ['Jan Shatabdi', 'Intercity']:
+            total_seats = random.randint(400, 600)
+        elif train_type in ['MEMU', 'DMU']:
+            total_seats = random.randint(200, 350)
+        else:  # Passenger
+            total_seats = random.randint(150, 300)
+        
+        # Set fare based on train type
+        if train_type in ['Vande Bharat', 'Tejas']:
+            fare_per_km = random.uniform(1.5, 2.5)
+            tatkal_fare_per_km = random.uniform(2.5, 3.5)
+        elif train_type in ['Duronto', 'Superfast']:
+            fare_per_km = random.uniform(0.8, 1.5)
+            tatkal_fare_per_km = random.uniform(1.5, 2.2)
+        elif train_type in ['Mail/Express']:
+            fare_per_km = random.uniform(0.5, 1.0)
+            tatkal_fare_per_km = random.uniform(1.0, 1.8)
+        else:
+            fare_per_km = random.uniform(0.3, 0.8)
+            tatkal_fare_per_km = random.uniform(0.8, 1.3)
+        
+        tatkal_seats = int(total_seats * 0.1)  # 10% tatkal quota
+        
         train = Train(
-            number=number,
-            name=name,
-            total_seats=400,  # Standard assumption for train capacity
-            available_seats=400,  # Initially all seats available
-            fare_per_km=0.5,  # Base fare per km in rupees
-            tatkal_seats=40,  # 10% of total seats for Tatkal
-            tatkal_fare_per_km=1.0  # Premium Tatkal fare per km
+            number=str(train_number),
+            name=train_name,
+            total_seats=total_seats,
+            available_seats=total_seats,
+            fare_per_km=fare_per_km,
+            tatkal_seats=tatkal_seats,
+            tatkal_fare_per_km=tatkal_fare_per_km
         )
         trains.append(train)
+        train_number += 1
     
     db.session.add_all(trains)
     db.session.commit()
-    logger.info(f"Created {len(trains)} essential trains")
+    logger.info(f"Created {len(trains)} South Indian trains")
 
-def create_train_routes(db, Train, Station, TrainRoute):
-    """Create basic train routes connecting stations"""
+def create_south_indian_routes(db, Train, Station, TrainRoute):
+    """Create train routes connecting South Indian stations"""
     
-    # Get all trains and stations
     trains = Train.query.all()
     stations = Station.query.all()
     
-    # Create a mapping of station codes to station objects
-    station_map = {station.code: station for station in stations}
+    # Create station mapping by state
+    tn_stations = [s for s in stations if s.state == 'TN']
+    ka_stations = [s for s in stations if s.state == 'KA']
+    kl_stations = [s for s in stations if s.state == 'KL']
+    ap_stations = [s for s in stations if s.state == 'AP']
+    ts_stations = [s for s in stations if s.state == 'TS']
     
-    # Define some basic routes for major trains
-    route_definitions = [
-        # Rajdhani routes
-        ('12301', [
-            ('NDLS', 1, time(16, 55), time(16, 55), 0),
-            ('CNB', 2, time(22, 45), time(22, 50), 438),
-            ('PNBE', 3, time(4, 40), time(4, 45), 985),
-            ('HWH', 4, time(10, 20), time(10, 20), 1441)
-        ]),
-        ('12951', [
-            ('NDLS', 1, time(16, 30), time(16, 30), 0),
-            ('JU', 2, time(6, 45), time(6, 50), 558),
-            ('BCT', 3, time(8, 35), time(8, 35), 1384)
-        ]),
-        
-        # Shatabdi routes
-        ('12001', [
-            ('NDLS', 1, time(6, 15), time(6, 15), 0),
-            ('JBP', 2, time(14, 45), time(14, 50), 708),
-            ('BINA', 3, time(16, 35), time(16, 35), 770)
-        ]),
-        
-        # Express train routes
-        ('12617', [
-            ('NDLS', 1, time(11, 15), time(11, 15), 0),
-            ('LKO', 2, time(17, 30), time(17, 35), 518),
-            ('ERS', 3, time(4, 20), time(4, 20), 2081)
-        ]),
-        
-        # More routes for other trains
-        ('12615', [
-            ('MAS', 1, time(13, 30), time(13, 30), 0),
-            ('HWH', 2, time(7, 50), time(7, 50), 1663)
-        ]),
-        
-        ('12649', [
-            ('NDLS', 1, time(21, 30), time(21, 30), 0),
-            ('SBC', 2, time(6, 20), time(6, 20), 2444)
-        ])
-    ]
+    major_stations = {s.code: s for s in stations if s.code in [
+        'MAS', 'MSB', 'TPJ', 'MDU', 'CBE', 'SA', 'SBC', 'YPR', 'MYS', 'UBL',
+        'TVC', 'ERS', 'CLT', 'SC', 'HYB', 'BZA', 'TPTY'
+    ]}
     
     routes = []
-    for train_number, route_stations in route_definitions:
-        train = Train.query.filter_by(number=train_number).first()
-        if not train:
-            continue
-            
-        for station_code, sequence, arrival_time, departure_time, distance in route_stations:
-            station = station_map.get(station_code)
-            if not station:
-                continue
-                
+    
+    for train in trains:
+        # Determine route type based on train name and number
+        train_num = int(train.number)
+        
+        if 'Express' in train.name or 'Duronto' in train.name or train_num < 11000:
+            # Long distance routes (3-8 stations)
+            route_stations = generate_long_distance_route(train, major_stations, stations)
+        elif 'MEMU' in train.name or 'DMU' in train.name or 'Passenger' in train.name:
+            # Local/regional routes (5-15 stations)
+            route_stations = generate_regional_route(train, stations)
+        else:
+            # Medium distance routes (3-6 stations)
+            route_stations = generate_medium_distance_route(train, stations)
+        
+        # Create route entries
+        for sequence, (station, arrival_time, departure_time, distance) in enumerate(route_stations, 1):
             route = TrainRoute(
                 train_id=train.id,
                 station_id=station.id,
@@ -338,6 +470,112 @@ def create_train_routes(db, Train, Station, TrainRoute):
     db.session.add_all(routes)
     db.session.commit()
     logger.info(f"Created {len(routes)} train route entries")
+
+def generate_long_distance_route(train, major_stations, all_stations):
+    """Generate long distance route connecting major cities"""
+    route_stations = []
+    
+    # Pick 2 major stations as start and end
+    major_list = list(major_stations.values())
+    if len(major_list) >= 2:
+        start_station = random.choice(major_list)
+        end_station = random.choice([s for s in major_list if s.id != start_station.id])
+        
+        # Add intermediate stations
+        num_intermediate = random.randint(1, 6)
+        intermediate_stations = random.sample(
+            [s for s in all_stations if s.id not in [start_station.id, end_station.id]], 
+            min(num_intermediate, len(all_stations) - 2)
+        )
+        
+        # Build route
+        all_route_stations = [start_station] + intermediate_stations + [end_station]
+        
+        current_time = time(random.randint(5, 20), random.randint(0, 59))
+        current_distance = 0
+        
+        for i, station in enumerate(all_route_stations):
+            if i == 0:
+                # First station - departure only
+                arrival_time = current_time
+                departure_time = current_time
+            elif i == len(all_route_stations) - 1:
+                # Last station - arrival only
+                current_distance += random.randint(80, 300)
+                arrival_time = add_minutes_to_time(current_time, random.randint(90, 240))
+                departure_time = arrival_time
+            else:
+                # Intermediate station
+                current_distance += random.randint(50, 200)
+                arrival_time = add_minutes_to_time(current_time, random.randint(60, 180))
+                departure_time = add_minutes_to_time(arrival_time, random.randint(2, 10))
+                current_time = departure_time
+            
+            route_stations.append((station, arrival_time, departure_time, current_distance))
+    
+    return route_stations
+
+def generate_regional_route(train, stations):
+    """Generate regional route with more stations"""
+    route_stations = []
+    
+    # Pick stations from same or nearby states
+    available_stations = random.sample(stations, min(random.randint(5, 15), len(stations)))
+    
+    current_time = time(random.randint(5, 18), random.randint(0, 59))
+    current_distance = 0
+    
+    for i, station in enumerate(available_stations):
+        if i == 0:
+            arrival_time = current_time
+            departure_time = current_time
+        elif i == len(available_stations) - 1:
+            current_distance += random.randint(20, 80)
+            arrival_time = add_minutes_to_time(current_time, random.randint(30, 90))
+            departure_time = arrival_time
+        else:
+            current_distance += random.randint(15, 60)
+            arrival_time = add_minutes_to_time(current_time, random.randint(20, 60))
+            departure_time = add_minutes_to_time(arrival_time, random.randint(1, 5))
+            current_time = departure_time
+        
+        route_stations.append((station, arrival_time, departure_time, current_distance))
+    
+    return route_stations
+
+def generate_medium_distance_route(train, stations):
+    """Generate medium distance route"""
+    route_stations = []
+    
+    available_stations = random.sample(stations, min(random.randint(3, 6), len(stations)))
+    
+    current_time = time(random.randint(6, 19), random.randint(0, 59))
+    current_distance = 0
+    
+    for i, station in enumerate(available_stations):
+        if i == 0:
+            arrival_time = current_time
+            departure_time = current_time
+        elif i == len(available_stations) - 1:
+            current_distance += random.randint(60, 150)
+            arrival_time = add_minutes_to_time(current_time, random.randint(60, 150))
+            departure_time = arrival_time
+        else:
+            current_distance += random.randint(40, 120)
+            arrival_time = add_minutes_to_time(current_time, random.randint(45, 120))
+            departure_time = add_minutes_to_time(arrival_time, random.randint(2, 8))
+            current_time = departure_time
+        
+        route_stations.append((station, arrival_time, departure_time, current_distance))
+    
+    return route_stations
+
+def add_minutes_to_time(time_obj, minutes):
+    """Add minutes to a time object"""
+    total_minutes = time_obj.hour * 60 + time_obj.minute + minutes
+    hours = (total_minutes // 60) % 24
+    mins = total_minutes % 60
+    return time(hours, mins)
 
 if __name__ == '__main__':
     setup_database()
