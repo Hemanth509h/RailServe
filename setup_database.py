@@ -251,16 +251,11 @@ def create_essential_trains(db, Train):
         train = Train(
             number=number,
             name=name,
-            type=train_type,
-            category=category,
-            frequency=frequency,
-            total_coaches=18,  # Standard assumption
-            departure_time=time(6, 0),  # Default times - would be station-specific normally
-            arrival_time=time(18, 0),
-            distance=1000,  # Placeholder - would be calculated from routes
-            duration=720,  # 12 hours placeholder
-            base_fare=500.0,  # Base fare in rupees
-            reservation_quota={'General': 70, 'Ladies': 10, 'Senior Citizen': 5, 'Tatkal': 10, 'Other': 5}
+            total_seats=400,  # Standard assumption for train capacity
+            available_seats=400,  # Initially all seats available
+            fare_per_km=0.5,  # Base fare per km in rupees
+            tatkal_seats=40,  # 10% of total seats for Tatkal
+            tatkal_fare_per_km=1.0  # Premium Tatkal fare per km
         )
         trains.append(train)
     
@@ -333,12 +328,10 @@ def create_train_routes(db, Train, Station, TrainRoute):
             route = TrainRoute(
                 train_id=train.id,
                 station_id=station.id,
-                sequence_number=sequence,
+                sequence=sequence,
                 arrival_time=arrival_time,
                 departure_time=departure_time,
-                distance_from_origin=distance,
-                platform_number=1,  # Default platform
-                stop_duration=5 if sequence not in [1, len(route_stations)] else 0  # 5 min stops, except origin/destination
+                distance_from_start=distance
             )
             routes.append(route)
     
