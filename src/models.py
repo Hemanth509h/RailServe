@@ -807,27 +807,6 @@ class PerformanceMetrics(db.Model):
         super(PerformanceMetrics, self).__init__(**kwargs)
 
 
-class LostAndFound(db.Model):
-    """Lost and found item tracking system"""
-    id = db.Column(db.Integer, primary_key=True)
-    item_id = db.Column(db.String(20), unique=True, nullable=False)
-    item_description = db.Column(db.Text, nullable=False)
-    found_location = db.Column(db.String(100), nullable=False)  # Train number + coach or station
-    found_date = db.Column(db.Date, nullable=False)
-    found_by = db.Column(db.String(100))  # Staff member or passenger who found it
-    status = db.Column(db.String(20), default='found')  # found, claimed, disposed
-    claimant_name = db.Column(db.String(100))
-    claimant_phone = db.Column(db.String(15))
-    claimant_id_proof = db.Column(db.String(50))
-    claimed_date = db.Column(db.Date)
-    storage_location = db.Column(db.String(100), nullable=False)
-    category = db.Column(db.String(50))  # electronics, clothing, documents, jewelry, etc.
-    estimated_value = db.Column(db.Float)
-    
-    def __init__(self, **kwargs):
-        super(LostAndFound, self).__init__(**kwargs)
-        if not self.item_id:
-            self.item_id = f"LF{datetime.utcnow().strftime('%Y%m%d')}{random.randint(100, 999)}"
 
 class DynamicPricing(db.Model):
     """Dynamic pricing based on demand and occupancy"""
