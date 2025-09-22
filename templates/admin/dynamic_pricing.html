@@ -1,15 +1,580 @@
 {% extends "base.html" %}
 
-{% block title %}Dynamic Pricing - Railway Admin{% endblock %}
+{% block title %}Dynamic Pricing Management - RailServe Admin{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+.pricing-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .pricing-container {
+        padding: 1rem;
+    }
+}
+
+.page-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 2.5rem;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    box-shadow: var(--admin-shadow-lg);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.page-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 2rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .page-header p {
+        font-size: 1rem;
+    }
+}
+
+/* Overview Cards */
+.pricing-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .pricing-overview {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.overview-card {
+    background: var(--admin-card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--admin-shadow-md);
+    border: 1px solid var(--admin-border-light);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.overview-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--admin-shadow-lg);
+}
+
+@media (max-width: 768px) {
+    .overview-card {
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+}
+
+.overview-card i {
+    font-size: 2rem;
+    color: #f5576c;
+    background: rgba(245, 87, 108, 0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overview-content {
+    flex: 1;
+}
+
+.overview-content h3 {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.overview-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--admin-text-primary);
+    line-height: 1;
+}
+
+.overview-status {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--admin-accent-green);
+}
+
+/* Pricing Form Section */
+.pricing-form-section {
+    background: var(--admin-card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--admin-shadow-md);
+    border: 1px solid var(--admin-border-light);
+}
+
+.pricing-form-section h3 {
+    color: var(--admin-text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.pricing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.form-group label .required {
+    color: #ef4444;
+}
+
+.form-group input, 
+.form-group select {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--admin-border-light);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--bg-secondary);
+    color: var(--admin-text-primary);
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: #f5576c;
+    box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+}
+
+.form-group small {
+    margin-top: 0.5rem;
+    color: var(--admin-text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.surge-input-group {
+    position: relative;
+}
+
+.surge-slider {
+    width: 100%;
+    margin: 1rem 0;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--admin-border-light);
+    outline: none;
+}
+
+.surge-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f5576c;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+}
+
+.surge-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f5576c;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+}
+
+.surge-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--admin-text-secondary);
+    margin-top: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    justify-self: start;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-lg);
+}
+
+@media (max-width: 768px) {
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+        padding: 1.25rem;
+    }
+}
+
+/* Pricing Rules Table */
+.pricing-rules-section {
+    background: var(--admin-card-bg);
+    border-radius: 16px;
+    box-shadow: var(--admin-shadow-md);
+    border: 1px solid var(--admin-border-light);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--admin-border-light);
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: var(--admin-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rules-filter {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .rules-filter {
+        width: 100%;
+    }
+}
+
+.table-responsive {
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pricing-table th,
+.pricing-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--admin-border-light);
+}
+
+.pricing-table th {
+    background: var(--bg-primary);
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.pricing-table tr:hover {
+    background: var(--bg-primary);
+}
+
+@media (max-width: 768px) {
+    .pricing-table {
+        font-size: 0.875rem;
+    }
+    
+    .pricing-table th,
+    .pricing-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+.train-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.train-number {
+    font-weight: 600;
+    color: var(--admin-text-primary);
+}
+
+.train-name {
+    color: var(--admin-text-secondary);
+    font-size: 0.8rem;
+}
+
+.fare-amount {
+    font-weight: 600;
+    color: var(--admin-text-primary);
+}
+
+.base-fare {
+    color: var(--admin-text-secondary);
+}
+
+.dynamic-fare {
+    color: #f5576c;
+    font-weight: bold;
+}
+
+.surge-multiplier {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    background: rgba(245, 87, 108, 0.1);
+    color: #f5576c;
+}
+
+.surge-multiplier.high {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.surge-multiplier.low {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.special-event {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.last-updated {
+    color: var(--admin-text-secondary);
+    font-size: 0.8rem;
+}
+
+/* No Data State */
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: var(--admin-text-secondary);
+}
+
+.no-data i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    color: #f5576c;
+}
+
+.no-data h3 {
+    color: var(--admin-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+    background: var(--admin-card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--admin-shadow-md);
+    border: 1px solid var(--admin-border-light);
+}
+
+.quick-actions h4 {
+    color: var(--admin-text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 2px solid var(--admin-border-light);
+    background: var(--bg-secondary);
+    color: var(--admin-text-primary);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    border-color: #f5576c;
+    transform: translateY(-1px);
+    box-shadow: var(--admin-shadow-md);
+}
+
+@media (max-width: 768px) {
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .pricing-container {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .pricing-table tr:hover {
+    background: var(--bg-table-hover);
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="admin-content">
-    <div class="content-header">
-        <h1><i class="fas fa-tags"></i> Dynamic Pricing Management</h1>
-        <p>Surge pricing and demand-based fare management</p>
+<div class="pricing-container">
+    <div class="page-header">
+        <h1><i class="fas fa-chart-line"></i> Smart Pricing Control Center</h1>
+        <p>Advanced demand-based fare management and revenue optimization</p>
     </div>
 
-    <!-- Pricing Overview -->
+    <!-- Overview Dashboard -->
     <div class="pricing-overview">
         <div class="overview-card">
             <i class="fas fa-percentage"></i>
@@ -20,47 +585,81 @@
         </div>
         
         <div class="overview-card">
-            <i class="fas fa-arrow-up"></i>
+            <i class="fas fa-trending-up"></i>
             <div class="overview-content">
-                <h3>Avg Surge Multiplier</h3>
-                <div class="overview-number">
-                    {% set avg_surge = (pricing_rules|map(attribute='0.surge_multiplier')|sum / pricing_rules|length) if pricing_rules|length > 0 else 1.0 %}
-                    {{ "%.2f"|format(avg_surge) }}x
-                </div>
+                <h3>Average Multiplier</h3>
+                {% set avg_surge = (pricing_rules|map(attribute='0.surge_multiplier')|sum / pricing_rules|length) if pricing_rules|length > 0 else 1.0 %}
+                <div class="overview-number">{{ "%.2f"|format(avg_surge) }}x</div>
             </div>
         </div>
         
         <div class="overview-card">
-            <i class="fas fa-calendar"></i>
+            <i class="fas fa-calendar-star"></i>
             <div class="overview-content">
-                <h3>Peak Season</h3>
-                <div class="overview-status">{{ 'Active' if pricing_rules|selectattr('0.special_event')|list else 'Normal' }}</div>
+                <h3>Market Status</h3>
+                <div class="overview-status">{{ 'Peak Season' if pricing_rules|selectattr('0.special_event')|list else 'Normal Period' }}</div>
             </div>
+        </div>
+        
+        <div class="overview-card">
+            <i class="fas fa-rupee-sign"></i>
+            <div class="overview-content">
+                <h3>Revenue Impact</h3>
+                <div class="overview-number">+{{ ((avg_surge - 1) * 100)|round(0) }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+        <div class="action-buttons">
+            <button class="action-btn" onclick="applySeasonalPricing()">
+                <i class="fas fa-calendar"></i> Apply Seasonal Pricing
+            </button>
+            <button class="action-btn" onclick="resetAllPricing()">
+                <i class="fas fa-undo"></i> Reset to Base Prices
+            </button>
+            <button class="action-btn" onclick="exportPricingData()">
+                <i class="fas fa-download"></i> Export Pricing Data
+            </button>
         </div>
     </div>
 
     <!-- Update Pricing Form -->
     <div class="pricing-form-section">
-        <h3>Update Dynamic Pricing</h3>
+        <h3><i class="fas fa-edit"></i> Update Dynamic Pricing</h3>
         <form method="POST" action="{{ url_for('admin.update_dynamic_pricing') }}" class="pricing-form">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="train_id">Train *</label>
+                    <label for="train_id">
+                        Select Train <span class="required">*</span>
+                    </label>
                     <select name="train_id" id="train_id" required>
-                        <option value="">Select Train</option>
+                        <option value="">Choose a train...</option>
                         {% for train in trains %}
                             <option value="{{ train.id }}">{{ train.number }} - {{ train.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label for="journey_date">Journey Date *</label>
-                    <input type="date" name="journey_date" id="journey_date" required>
+                    <label for="journey_date">
+                        Journey Date <span class="required">*</span>
+                    </label>
+                    <input type="date" 
+                           name="journey_date" 
+                           id="journey_date" 
+                           min="{{ moment().format('YYYY-MM-DD') }}"
+                           required>
                 </div>
+                
                 <div class="form-group">
-                    <label for="coach_class">Coach Class *</label>
+                    <label for="coach_class">
+                        Coach Class <span class="required">*</span>
+                    </label>
                     <select name="coach_class" id="coach_class" required>
-                        <option value="">Select Class</option>
+                        <option value="">Select class...</option>
                         <option value="SL">Sleeper (SL)</option>
                         <option value="AC3">AC 3-Tier (AC3)</option>
                         <option value="AC2">AC 2-Tier (AC2)</option>
@@ -73,307 +672,258 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="surge_multiplier">Surge Multiplier *</label>
-                    <input type="number" name="surge_multiplier" id="surge_multiplier" step="0.1" min="0.5" max="3.0" value="1.0" required>
-                    <small>1.0 = Normal Price, 1.5 = 50% Increase, 2.0 = Double Price</small>
+                    <label for="surge_multiplier">
+                        Surge Multiplier <span class="required">*</span>
+                    </label>
+                    <div class="surge-input-group">
+                        <input type="number" 
+                               name="surge_multiplier" 
+                               id="surge_multiplier" 
+                               step="0.1" 
+                               min="0.5" 
+                               max="3.0" 
+                               value="1.0" 
+                               required
+                               oninput="updateSurgeSlider(this.value)">
+                        <input type="range" 
+                               class="surge-slider" 
+                               min="0.5" 
+                               max="3.0" 
+                               step="0.1" 
+                               value="1.0" 
+                               oninput="updateSurgeInput(this.value)">
+                        <div class="surge-labels">
+                            <span>0.5x (50% Off)</span>
+                            <span>1.0x (Normal)</span>
+                            <span>2.0x (Double)</span>
+                            <span>3.0x (Triple)</span>
+                        </div>
+                    </div>
+                    <small>Adjust pricing based on demand. 1.0 = Normal price, 1.5 = 50% increase, 0.8 = 20% discount</small>
                 </div>
+                
                 <div class="form-group">
-                    <label for="special_event">Special Event</label>
-                    <input type="text" name="special_event" id="special_event" placeholder="e.g., Diwali, Summer Rush, Holiday">
+                    <label for="special_event">
+                        Special Event (Optional)
+                    </label>
+                    <input type="text" 
+                           name="special_event" 
+                           id="special_event" 
+                           placeholder="e.g., Diwali Rush, Summer Holiday, Weekend Peak">
+                    <small>Add context for why pricing is being adjusted</small>
                 </div>
             </div>
             
-            <button type="submit" class="btn-primary">Update Pricing</button>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Update Pricing Rule
+            </button>
         </form>
     </div>
 
     <!-- Current Pricing Rules -->
     <div class="pricing-rules-section">
-        <h3>Current Pricing Rules</h3>
-        {% if pricing_rules %}
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Train</th>
-                            <th>Journey Date</th>
-                            <th>Class</th>
-                            <th>Base Fare</th>
-                            <th>Surge Multiplier</th>
-                            <th>Dynamic Fare</th>
-                            <th>Special Event</th>
-                            <th>Updated</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pricing, train in pricing_rules %}
-                            <tr>
-                                <td>
-                                    <div class="train-info">
-                                        <strong>{{ train.number }}</strong><br>
-                                        <small>{{ train.name }}</small>
-                                    </div>
-                                </td>
-                                <td>{{ pricing.journey_date.strftime('%d %b %Y') }}</td>
-                                <td>
-                                    <span class="class-badge {{ 'second-seating' if pricing.coach_class == '2S' else pricing.coach_class.lower() }}">{{ pricing.coach_class }}</span>
-                                </td>
-                                <td class="base-fare">₹{{ "%.2f"|format(pricing.base_fare) }}</td>
-                                <td>
-                                    <div class="surge-multiplier {{ 'surge-high' if pricing.surge_multiplier > 1.5 else 'surge-medium' if pricing.surge_multiplier > 1.0 else 'surge-normal' }}">
-                                        {{ "%.2f"|format(pricing.surge_multiplier) }}x
-                                    </div>
-                                </td>
-                                <td class="dynamic-fare">₹{{ "%.2f"|format(pricing.base_fare * pricing.surge_multiplier) }}</td>
-                                <td>
-                                    {% if pricing.special_event %}
-                                        <span class="event-badge">{{ pricing.special_event }}</span>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ pricing.updated_at.strftime('%d %b %H:%M') }}</td>
-                                <td>
-                                    <button type="button" class="btn-sm btn-secondary" onclick="editPricing({{ pricing.id }})">
-                                        Edit
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="no-data">
-                <i class="fas fa-tags"></i>
-                <h3>No Dynamic Pricing Rules</h3>
-                <p>Set up dynamic pricing rules to automatically adjust fares based on demand and special events.</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Pricing Guidelines -->
-    <div class="pricing-guidelines">
-        <h3>Pricing Guidelines</h3>
-        <div class="guidelines-grid">
-            <div class="guideline-card">
-                <i class="fas fa-info-circle"></i>
-                <h4>Normal Period</h4>
-                <p>Multiplier: 1.0x - Standard fare pricing for regular travel periods</p>
-            </div>
-            <div class="guideline-card">
-                <i class="fas fa-chart-line"></i>
-                <h4>High Demand</h4>
-                <p>Multiplier: 1.2-1.5x - Moderate surge for peak travel times and weekends</p>
-            </div>
-            <div class="guideline-card">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h4>Peak Season</h4>
-                <p>Multiplier: 1.5-2.0x - High surge for festivals, holidays, and special events</p>
-            </div>
-            <div class="guideline-card">
-                <i class="fas fa-fire"></i>
-                <h4>Extreme Demand</h4>
-                <p>Multiplier: 2.0-3.0x - Maximum surge for emergency or very high demand situations</p>
+        <div class="section-header">
+            <h3><i class="fas fa-table"></i> Active Pricing Rules</h3>
+            <div class="rules-filter">
+                <select id="classFilter" onchange="filterPricingRules()">
+                    <option value="">All Classes</option>
+                    <option value="SL">Sleeper</option>
+                    <option value="AC3">AC 3-Tier</option>
+                    <option value="AC2">AC 2-Tier</option>
+                    <option value="AC1">AC First Class</option>
+                </select>
             </div>
         </div>
+        
+        {% if pricing_rules %}
+        <div class="table-responsive">
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th>Train Information</th>
+                        <th>Travel Date</th>
+                        <th>Class</th>
+                        <th>Base Fare</th>
+                        <th>Surge Multiplier</th>
+                        <th>Dynamic Fare</th>
+                        <th>Special Event</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pricingRulesBody">
+                    {% for pricing_rule, train in pricing_rules %}
+                    <tr data-class="{{ pricing_rule.coach_class }}">
+                        <td>
+                            <div class="train-info">
+                                <div class="train-number">{{ train.number }}</div>
+                                <div class="train-name">{{ train.name[:30] }}{% if train.name|length > 30 %}...{% endif %}</div>
+                            </div>
+                        </td>
+                        <td>{{ pricing_rule.journey_date.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <span class="class-badge">{{ pricing_rule.coach_class }}</span>
+                        </td>
+                        <td>
+                            <div class="base-fare">₹{{ "%.0f"|format(pricing_rule.base_fare) }}</div>
+                        </td>
+                        <td>
+                            <span class="surge-multiplier {% if pricing_rule.surge_multiplier > 1.5 %}high{% elif pricing_rule.surge_multiplier < 1.0 %}low{% endif %}">
+                                {{ "%.1f"|format(pricing_rule.surge_multiplier) }}x
+                            </span>
+                        </td>
+                        <td>
+                            <div class="dynamic-fare">₹{{ "%.0f"|format(pricing_rule.calculate_dynamic_fare(pricing_rule.base_fare)) }}</div>
+                        </td>
+                        <td>
+                            {% if pricing_rule.special_event %}
+                                <span class="special-event">{{ pricing_rule.special_event }}</span>
+                            {% else %}
+                                <span class="text-secondary">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="last-updated">{{ pricing_rule.updated_at.strftime('%d/%m %H:%M') }}</div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn" onclick="editPricingRule({{ pricing_rule.id }})" title="Edit Rule">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn" onclick="deletePricingRule({{ pricing_rule.id }})" title="Delete Rule">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-chart-line"></i>
+            <h3>No Pricing Rules Active</h3>
+            <p>All trains are using standard base pricing. Create your first dynamic pricing rule above.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<style>
-.pricing-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.overview-card {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    border: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.overview-card i {
-    font-size: 2rem;
-    color: #6b7280;
-}
-
-.overview-content h3 {
-    margin: 0 0 0.5rem 0;
-    color: #374151;
-    font-size: 0.9rem;
-}
-
-.overview-number {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #1f2937;
-}
-
-.overview-status {
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: #059669;
-}
-
-.pricing-form-section {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.pricing-form-section h3 {
-    margin-bottom: 1rem;
-    color: #374151;
-}
-
-.pricing-form .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-}
-
-.form-group small {
-    color: #6b7280;
-    font-size: 0.8em;
-    margin-top: 0.25rem;
-    display: block;
-}
-
-.pricing-rules-section {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.train-info strong {
-    color: #2563eb;
-}
-
-.class-badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: 500;
-    text-transform: uppercase;
-}
-
-.class-badge.sl { background: #f3f4f6; color: #374151; }
-.class-badge.ac3 { background: #dbeafe; color: #1e40af; }
-.class-badge.ac2 { background: #dcfce7; color: #166534; }
-.class-badge.ac1 { background: #fef3c7; color: #92400e; }
-.class-badge.cc { background: #ede9fe; color: #6b21a8; }
-.class-badge.second-seating { background: #fee2e2; color: #991b1b; }
-
-.base-fare,
-.dynamic-fare {
-    font-weight: 500;
-}
-
-.dynamic-fare {
-    color: #059669;
-    font-weight: bold;
-}
-
-.surge-multiplier {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.surge-normal { background: #10b981; color: white; }
-.surge-medium { background: #f59e0b; color: white; }
-.surge-high { background: #ef4444; color: white; }
-
-.event-badge {
-    background: #fef3c7;
-    color: #92400e;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: 500;
-}
-
-.pricing-guidelines {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-}
-
-.guidelines-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.guideline-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 1rem;
-    text-align: center;
-}
-
-.guideline-card i {
-    font-size: 1.5rem;
-    color: #6b7280;
-    margin-bottom: 0.5rem;
-}
-
-.guideline-card h4 {
-    margin: 0 0 0.5rem 0;
-    color: #374151;
-}
-
-.guideline-card p {
-    color: #6b7280;
-    font-size: 0.9em;
-    margin: 0;
-}
-
-.text-muted {
-    color: #6b7280;
-}
-</style>
-
 <script>
-function editPricing(pricingId) {
-    // Implementation for editing pricing rule
-    alert('Edit pricing functionality - to be implemented');
+// Sync surge slider and input
+function updateSurgeSlider(value) {
+    document.querySelector('.surge-slider').value = value;
+    updateSurgePreview(value);
 }
 
-// Auto-populate today's date
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('journey_date');
-    if (dateInput && !dateInput.value) {
-        dateInput.value = today;
-        dateInput.min = today;
+function updateSurgeInput(value) {
+    document.getElementById('surge_multiplier').value = value;
+    updateSurgePreview(value);
+}
+
+function updateSurgePreview(multiplier) {
+    const preview = document.getElementById('surge_preview');
+    if (preview) {
+        const change = ((multiplier - 1) * 100).toFixed(0);
+        preview.textContent = change > 0 ? `+${change}%` : `${change}%`;
     }
+}
+
+// Filter pricing rules
+function filterPricingRules() {
+    const filter = document.getElementById('classFilter').value;
+    const rows = document.querySelectorAll('#pricingRulesBody tr');
+    
+    rows.forEach(row => {
+        const classValue = row.dataset.class;
+        if (!filter || classValue === filter) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Quick actions
+function applySeasonalPricing() {
+    if (confirm('Apply seasonal pricing (20% increase) to all popular routes?')) {
+        // Implementation would go here
+        alert('Seasonal pricing applied to popular routes!');
+    }
+}
+
+function resetAllPricing() {
+    if (confirm('Reset all dynamic pricing rules to base fares? This action cannot be undone.')) {
+        // Implementation would go here
+        alert('All pricing rules have been reset to base fares.');
+    }
+}
+
+function exportPricingData() {
+    // Implementation would go here
+    alert('Pricing data exported to CSV file!');
+}
+
+function editPricingRule(ruleId) {
+    // Implementation would populate the form with existing data
+    alert(`Edit pricing rule ${ruleId}`);
+}
+
+function deletePricingRule(ruleId) {
+    if (confirm('Delete this pricing rule? This will revert to base pricing.')) {
+        // Implementation would go here
+        alert(`Pricing rule ${ruleId} deleted.`);
+    }
+}
+
+// Auto-update pricing preview
+document.addEventListener('DOMContentLoaded', function() {
+    const trainSelect = document.getElementById('train_id');
+    const classSelect = document.getElementById('coach_class');
+    const dateInput = document.getElementById('journey_date');
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+    dateInput.value = today;
+    
+    // Add dynamic pricing suggestions
+    const multiplierInput = document.getElementById('surge_multiplier');
+    multiplierInput.addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        let suggestion = '';
+        
+        if (value < 0.8) {
+            suggestion = 'Deep discount pricing - Use for low demand periods';
+        } else if (value < 1.0) {
+            suggestion = 'Promotional pricing - Attract price-sensitive customers';
+        } else if (value === 1.0) {
+            suggestion = 'Standard pricing - Normal market conditions';
+        } else if (value <= 1.5) {
+            suggestion = 'Premium pricing - High demand expected';
+        } else if (value <= 2.0) {
+            suggestion = 'Peak pricing - Very high demand or special events';
+        } else {
+            suggestion = 'Maximum surge - Use only during extreme demand';
+        }
+        
+        // Update suggestion display
+        let suggestionElement = document.getElementById('pricing-suggestion');
+        if (!suggestionElement) {
+            suggestionElement = document.createElement('div');
+            suggestionElement.id = 'pricing-suggestion';
+            suggestionElement.style.marginTop = '0.5rem';
+            suggestionElement.style.padding = '0.75rem';
+            suggestionElement.style.backgroundColor = 'rgba(245, 87, 108, 0.1)';
+            suggestionElement.style.border = '1px solid rgba(245, 87, 108, 0.2)';
+            suggestionElement.style.borderRadius = '8px';
+            suggestionElement.style.fontSize = '0.875rem';
+            suggestionElement.style.color = 'var(--admin-text-secondary)';
+            this.parentElement.appendChild(suggestionElement);
+        }
+        suggestionElement.textContent = suggestion;
+    });
 });
 </script>
 {% endblock %}

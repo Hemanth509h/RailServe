@@ -1,133 +1,254 @@
 {% extends "base.html" %}
 
-{% block title %}Complaint Management - Railway Admin{% endblock %}
+{% block title %}Complaint Management - RailServe Admin{% endblock %}
 
-{% block content %}
-<div class="admin-content">
-    <div class="content-header">
-        <h1><i class="fas fa-headset"></i> Complaint Management</h1>
-        <p>Customer service and query resolution system</p>
-    </div>
-
-    <!-- Search and Filters -->
-    <div class="search-section">
-        <form method="GET" class="search-form">
-            <div class="search-controls">
-                <input type="text" name="search" placeholder="Search tickets, users..." value="{{ search }}" class="search-input">
-                <select name="status" class="filter-select">
-                    <option value="">All Status</option>
-                    <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
-                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
-                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
-                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
-                </select>
-                <select name="category" class="filter-select">
-                    <option value="">All Categories</option>
-                    <option value="Booking" {% if category_filter == 'Booking' %}selected{% endif %}>Booking</option>
-                    <option value="Refund" {% if category_filter == 'Refund' %}selected{% endif %}>Refund</option>
-                    <option value="Train" {% if category_filter == 'Train' %}selected{% endif %}>Train</option>
-                    <option value="Food" {% if category_filter == 'Food' %}selected{% endif %}>Food</option>
-                    <option value="Staff" {% if category_filter == 'Staff' %}selected{% endif %}>Staff</option>
-                </select>
-                <select name="priority" class="filter-select">
-                    <option value="">All Priorities</option>
-                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
-                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
-                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
-                    <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
-                </select>
-                <button type="submit" class="btn-search">
-                    <i class="fas fa-search"></i> Search
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Complaints List -->
-    <div class="data-section">
-        <h3>Customer Complaints ({{ complaints|length }})</h3>
-        {% if complaints %}
-            <div class="complaints-list">
-                {% for complaint in complaints %}
-                    <div class="complaint-card">
-                        <div class="complaint-header">
-                            <div class="complaint-meta">
-                                <span class="ticket-number">{{ complaint.ticket_number }}</span>
-                                <span class="priority-badge {{ complaint.priority }}">{{ complaint.priority.title() }}</span>
-                                <span class="status-badge {{ complaint.status }}">{{ complaint.status.replace('_', ' ').title() }}</span>
-                            </div>
-                            <div class="complaint-date">{{ complaint.created_at.strftime('%d %b %Y %H:%M') }}</div>
-                        </div>
-                        
-                        <div class="complaint-body">
-                            <h4>{{ complaint.subject }}</h4>
-                            <p class="complaint-desc">{{ complaint.description[:200] }}{% if complaint.description|length > 200 %}...{% endif %}</p>
-                            
-                            <div class="complaint-details">
-                                <span><strong>User:</strong> {{ complaint.user.username }}</span>
-                                <span><strong>Category:</strong> {{ complaint.category }}</span>
-                                {% if complaint.subcategory %}<span><strong>Type:</strong> {{ complaint.subcategory }}</span>{% endif %}
-                                {% if complaint.assigned_admin %}<span><strong>Assigned to:</strong> {{ complaint.assigned_admin.username }}</span>{% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="complaint-actions">
-                            {% if complaint.status == 'open' %}
-                                <form method="POST" action="{{ url_for('admin.assign_complaint', complaint_id=complaint.id) }}" style="display: inline;">
-                                    <button type="submit" class="btn-sm btn-primary">Assign to Me</button>
-                                </form>
-                            {% endif %}
-                            
-                            {% if complaint.status in ['open', 'in_progress'] %}
-                                <button type="button" class="btn-sm btn-success" data-complaint-id="{{ complaint.id }}" data-ticket-number="{{ complaint.ticket_number }}" onclick="openResolveModal(this.dataset.complaintId, this.dataset.ticketNumber)">Resolve</button>
-                            {% endif %}
-                            
-                            {% if complaint.resolution %}
-                                <button type="button" class="btn-sm btn-info" data-resolution="{{ complaint.resolution }}" onclick="showResolution(this.dataset.resolution)">View Resolution</button>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="no-data">
-                <i class="fas fa-headset"></i>
-                <p>No complaints found. All customer queries are resolved!</p>
-            </div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Resolve Modal -->
-<div id="resolveModal" class="modal">
-    <div class="modal-content">
-        <h3>Resolve Complaint</h3>
-        <form id="resolveForm" method="POST">
-            <div class="form-group">
-                <label for="resolution">Resolution Details</label>
-                <textarea name="resolution" id="resolution" rows="4" placeholder="Describe how the complaint was resolved..." required></textarea>
-            </div>
-            <div class="form-actions">
-                <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
-                <button type="submit" class="btn-success">Resolve Complaint</button>
-            </div>
-        </form>
-    </div>
-</div>
-
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 <style>
-.complaints-list {
+.complaint-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .complaint-container {
+        padding: 1rem;
+    }
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: var(--admin-shadow-lg);
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.page-header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 2rem;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+    }
+    
+    .page-header p {
+        font-size: 1rem;
+    }
+}
+
+/* Enhanced Search Section */
+.search-section {
+    background: var(--admin-card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--admin-shadow-md);
+    border: 1px solid var(--admin-border-light);
+}
+
+.search-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--admin-text-primary);
+}
+
+.search-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.search-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+@media (max-width: 768px) {
+    .search-controls {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.form-group {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.search-input, .filter-select {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--admin-border-light);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--bg-secondary);
+    color: var(--admin-text-primary);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus, .filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-lg);
+}
+
+@media (max-width: 768px) {
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 1.25rem;
+    }
+}
+
+/* Stats Overview */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+.stat-card {
+    background: var(--admin-card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--admin-shadow-md);
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--admin-shadow-lg);
+}
+
+.stat-card.open {
+    border-left-color: #f59e0b;
+}
+
+.stat-card.resolved {
+    border-left-color: #10b981;
+}
+
+.stat-card.high-priority {
+    border-left-color: #ef4444;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--admin-text-primary);
+    line-height: 1;
+}
+
+.stat-label {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+}
+
+/* Complaint Cards */
+.complaints-container {
+    background: var(--admin-card-bg);
+    border-radius: 16px;
+    box-shadow: var(--admin-shadow-md);
+    border: 1px solid var(--admin-border-light);
+    overflow: hidden;
+}
+
+.complaints-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--admin-border-light);
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.complaints-header h3 {
+    margin: 0;
+    color: var(--admin-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.complaints-list {
+    max-height: 800px;
+    overflow-y: auto;
 }
 
 .complaint-card {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--admin-border-light);
+    transition: all 0.3s ease;
+}
+
+.complaint-card:hover {
+    background: var(--bg-primary);
+}
+
+.complaint-card:last-child {
+    border-bottom: none;
 }
 
 .complaint-header {
@@ -137,105 +258,493 @@
     margin-bottom: 1rem;
 }
 
+@media (max-width: 768px) {
+    .complaint-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
 .complaint-meta {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .ticket-number {
-    font-family: monospace;
-    font-weight: bold;
-    color: #1f2937;
-    background: #f3f4f6;
-    padding: 2px 8px;
-    border-radius: 4px;
+    background: var(--admin-accent-blue);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
 }
 
 .priority-badge, .status-badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.priority-badge.low { background: #10b981; color: white; }
-.priority-badge.medium { background: #f59e0b; color: white; }
-.priority-badge.high { background: #ef4444; color: white; }
-.priority-badge.urgent { background: #dc2626; color: white; }
+.priority-badge.low {
+    background: #e5e7eb;
+    color: #6b7280;
+}
 
-.status-badge.open { background: #3b82f6; color: white; }
-.status-badge.in_progress { background: #f59e0b; color: white; }
-.status-badge.resolved { background: #10b981; color: white; }
-.status-badge.closed { background: #6b7280; color: white; }
+.priority-badge.medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.priority-badge.high {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.priority-badge.urgent {
+    background: #ef4444;
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.status-badge.open {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-badge.in_progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.resolved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.complaint-date {
+    color: var(--admin-text-secondary);
+    font-size: 0.9rem;
+}
+
+.complaint-body {
+    margin-bottom: 1rem;
+}
 
 .complaint-body h4 {
-    color: #1f2937;
+    color: var(--admin-text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
+    line-height: 1.4;
 }
 
 .complaint-desc {
-    color: #6b7280;
-    margin-bottom: 1rem;
+    color: var(--admin-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
 }
 
 .complaint-details {
     display: flex;
-    gap: 1rem;
     flex-wrap: wrap;
-    font-size: 0.9em;
-    color: #4b5563;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .complaint-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+.complaint-details span {
+    color: var(--admin-text-secondary);
+}
+
+.complaint-details strong {
+    color: var(--admin-text-primary);
 }
 
 .complaint-actions {
     display: flex;
     gap: 0.5rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+    .complaint-actions {
+        flex-direction: column;
+    }
+}
+
+.btn-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .btn-sm {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.btn-sm.btn-primary {
+    background: var(--admin-accent-blue);
+    color: white;
+}
+
+.btn-sm.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-sm.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-sm.btn-success:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-sm.btn-info {
+    background: #6366f1;
+    color: white;
+}
+
+.btn-sm.btn-info:hover {
+    background: #4f46e5;
+    transform: translateY(-1px);
+}
+
+/* No Data State */
+.no-data {
+    text-align: center;
+    padding: 4rem;
+    color: var(--admin-text-secondary);
+}
+
+.no-data i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    color: #667eea;
+}
+
+.no-data h3 {
+    color: var(--admin-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
-    top: 0;
+    z-index: 1000;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
-    background: white;
+    background: var(--admin-card-bg);
     margin: 10% auto;
     padding: 2rem;
-    border-radius: 8px;
+    border-radius: 16px;
     width: 90%;
     max-width: 500px;
+    box-shadow: var(--admin-shadow-lg);
+    border: 1px solid var(--admin-border-light);
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 20% auto;
+        padding: 1.5rem;
+        width: 95%;
+    }
+}
+
+.modal-content h3 {
+    color: var(--admin-text-primary);
+    margin-bottom: 1rem;
+}
+
+.modal-content .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal-content textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--admin-border-light);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    color: var(--admin-text-primary);
+    resize: vertical;
+    min-height: 100px;
 }
 
 .form-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     justify-content: flex-end;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Pulse animation for urgent complaints */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .complaint-container {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .modal {
+    background-color: rgba(0, 0, 0, 0.7);
 }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="complaint-container">
+    <div class="page-header">
+        <h1><i class="fas fa-headset"></i> Customer Support Center</h1>
+        <p>Comprehensive complaint management and customer service resolution</p>
+    </div>
+
+    <!-- Enhanced Search Section -->
+    <div class="search-section">
+        <div class="search-header">
+            <i class="fas fa-search"></i>
+            <h3>Search & Filter Complaints</h3>
+        </div>
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <div class="form-group">
+                    <label for="search">Search Query</label>
+                    <input type="text" 
+                           id="search"
+                           name="search" 
+                           placeholder="Search tickets, users, descriptions..." 
+                           value="{{ search }}" 
+                           class="search-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                        <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="Booking" {% if category_filter == 'Booking' %}selected{% endif %}>Booking</option>
+                        <option value="Refund" {% if category_filter == 'Refund' %}selected{% endif %}>Refund</option>
+                        <option value="Train" {% if category_filter == 'Train' %}selected{% endif %}>Train</option>
+                        <option value="Food" {% if category_filter == 'Food' %}selected{% endif %}>Food</option>
+                        <option value="Staff" {% if category_filter == 'Staff' %}selected{% endif %}>Staff</option>
+                        <option value="Technical" {% if category_filter == 'Technical' %}selected{% endif %}>Technical</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" name="priority" class="filter-select">
+                        <option value="">All Priorities</option>
+                        <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                        <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                        <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                        <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                        <span class="hide-mobile">Search</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+        <div class="stat-card open">
+            <div class="stat-number">{{ complaints|selectattr('status', 'equalto', 'open')|list|length }}</div>
+            <div class="stat-label">Open Complaints</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ complaints|selectattr('status', 'equalto', 'in_progress')|list|length }}</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card resolved">
+            <div class="stat-number">{{ complaints|selectattr('status', 'equalto', 'resolved')|list|length }}</div>
+            <div class="stat-label">Resolved Today</div>
+        </div>
+        <div class="stat-card high-priority">
+            <div class="stat-number">{{ complaints|selectattr('priority', 'in', ['high', 'urgent'])|list|length }}</div>
+            <div class="stat-label">High Priority</div>
+        </div>
+    </div>
+
+    <!-- Complaints List -->
+    <div class="complaints-container">
+        <div class="complaints-header">
+            <h3><i class="fas fa-list"></i> Customer Complaints ({{ complaints|length }})</h3>
+            <div class="view-options">
+                <span class="text-secondary">{{ complaints|length }} total complaints</span>
+            </div>
+        </div>
+        
+        {% if complaints %}
+        <div class="complaints-list">
+            {% for complaint in complaints %}
+                <div class="complaint-card">
+                    <div class="complaint-header">
+                        <div class="complaint-meta">
+                            <span class="ticket-number">{{ complaint.ticket_number }}</span>
+                            <span class="priority-badge {{ complaint.priority }}">{{ complaint.priority.title() }}</span>
+                            <span class="status-badge {{ complaint.status }}">{{ complaint.status.replace('_', ' ').title() }}</span>
+                        </div>
+                        <div class="complaint-date">{{ complaint.created_at.strftime('%d %b %Y %H:%M') }}</div>
+                    </div>
+                    
+                    <div class="complaint-body">
+                        <h4>{{ complaint.subject }}</h4>
+                        <p class="complaint-desc">{{ complaint.description[:200] }}{% if complaint.description|length > 200 %}...{% endif %}</p>
+                        
+                        <div class="complaint-details">
+                            <span><strong>User:</strong> {{ complaint.user.username }}</span>
+                            <span><strong>Category:</strong> {{ complaint.category }}</span>
+                            {% if complaint.subcategory %}<span><strong>Type:</strong> {{ complaint.subcategory }}</span>{% endif %}
+                            {% if complaint.assigned_admin %}<span><strong>Assigned to:</strong> {{ complaint.assigned_admin.username }}</span>{% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="complaint-actions">
+                        {% if complaint.status == 'open' %}
+                            <form method="POST" action="{{ url_for('admin.assign_complaint', complaint_id=complaint.id) }}" style="display: inline;">
+                                <button type="submit" class="btn-sm btn-primary">
+                                    <i class="fas fa-user-plus"></i> Assign to Me
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        {% if complaint.status in ['open', 'in_progress'] %}
+                            <button type="button" class="btn-sm btn-success" 
+                                    data-complaint-id="{{ complaint.id }}" 
+                                    data-ticket-number="{{ complaint.ticket_number }}" 
+                                    onclick="openResolveModal(this.dataset.complaintId, this.dataset.ticketNumber)">
+                                <i class="fas fa-check"></i> Resolve
+                            </button>
+                        {% endif %}
+                        
+                        {% if complaint.resolution %}
+                            <button type="button" class="btn-sm btn-info" 
+                                    data-resolution="{{ complaint.resolution }}" 
+                                    onclick="showResolution(this.dataset.resolution)">
+                                <i class="fas fa-eye"></i> View Resolution
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-smile-beam"></i>
+            <h3>All Clear!</h3>
+            <p>No complaints match your current filters. All customer queries are resolved!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Resolve Modal -->
+<div id="resolveModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-check-circle"></i> Resolve Complaint</h3>
+        <form id="resolveForm" method="POST">
+            <div class="form-group">
+                <label for="resolution">Resolution Details</label>
+                <textarea name="resolution" 
+                         id="resolution" 
+                         placeholder="Describe how the complaint was resolved, actions taken, and any follow-up required..." 
+                         required></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn-sm btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="submit" class="btn-sm btn-success">
+                    <i class="fas fa-check"></i> Resolve Complaint
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
 function openResolveModal(complaintId, ticketNumber) {
-    document.getElementById('resolveForm').action = `/admin/complaints/${complaintId}/resolve`;
-    document.getElementById('resolveModal').style.display = 'block';
+    const modal = document.getElementById('resolveModal');
+    const form = document.getElementById('resolveForm');
+    
+    form.action = `/admin/complaints/${complaintId}/resolve`;
+    modal.style.display = 'block';
+    
+    // Focus on textarea
+    document.getElementById('resolution').focus();
 }
 
 function closeModal() {
     document.getElementById('resolveModal').style.display = 'none';
+    document.getElementById('resolution').value = '';
 }
 
 function showResolution(resolution) {
-    alert('Resolution: ' + resolution);
+    alert('Resolution:\n\n' + resolution);
 }
 
 // Close modal when clicking outside
@@ -245,5 +754,32 @@ window.onclick = function(event) {
         closeModal();
     }
 }
+
+// Auto-refresh functionality
+let refreshInterval;
+
+function startAutoRefresh() {
+    refreshInterval = setInterval(() => {
+        // Only refresh if no forms are being filled
+        if (!document.querySelector('input:focus, textarea:focus, select:focus')) {
+            location.reload();
+        }
+    }, 30000); // Refresh every 30 seconds
+}
+
+function stopAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+}
+
+// Start auto-refresh on load
+document.addEventListener('DOMContentLoaded', startAutoRefresh);
+
+// Stop auto-refresh when user is interacting with forms
+document.addEventListener('focusin', stopAutoRefresh);
+document.addEventListener('focusout', () => {
+    setTimeout(startAutoRefresh, 5000); // Resume after 5 seconds of no interaction
+});
 </script>
 {% endblock %}
