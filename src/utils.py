@@ -368,8 +368,9 @@ def prepare_chart(train_id, journey_date):
     return chart
 
 def prepare_final_chart(train_id, journey_date):
-    """Prepare final chart 30 minutes before departure"""
-    from .models import ChartPreparation
+    """Prepare final chart 30 minutes before departure and allocate seats"""
+    from .models import ChartPreparation, Booking, Passenger
+    from .seat_allocation import SeatAllocator
     
     chart = ChartPreparation.query.filter_by(
         train_id=train_id,
@@ -379,7 +380,38 @@ def prepare_final_chart(train_id, journey_date):
     if chart:
         chart.final_chart_at = datetime.utcnow()
         chart.status = 'final'
+        
+        # Allocate seats for all confirmed bookings that don't have seats yet
+        confirmed_bookings = Booking.query.filter(
+            Booking.train_id == train_id,
+            Booking.journey_date == journey_date,
+            Booking.status == 'confirmed'
+        ).all()
+        
+        seat_allocator = SeatAllocator()
+        allocated_count = 0
+        
+        for booking in confirmed_bookings:
+            # Check if any passenger in this booking doesn't have a seat
+            passengers_without_seats = Passenger.query.filter(
+                Passenger.booking_id == booking.id,
+                db.or_(Passenger.seat_number.is_(None), Passenger.seat_number == '')
+            ).count()
+            
+            if passengers_without_seats > 0:
+                try:
+                    if seat_allocator.allocate_seats(booking.id):
+                        allocated_count += 1
+                except Exception as e:
+                    # Log error but continue with other bookings
+                    import logging
+                    logging.error(f"Failed to allocate seats for booking {booking.id}: {str(e)}")
+        
         db.session.commit()
+        
+        # Log the allocation results
+        import logging
+        logging.info(f"Chart finalized for train {train_id} on {journey_date}. Allocated seats for {allocated_count} bookings.")
     
     return chart
 
