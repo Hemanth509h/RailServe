@@ -27,6 +27,19 @@ fake = Faker('en_IN')  # Indian locale for realistic data
 def setup_database():
     """Initialize database with schema from actual models and populate with test data"""
     
+    # Safety check - only run in development environment
+    env = os.environ.get('FLASK_ENV', 'development')
+    if env == 'production':
+        logger.error("Database setup script should not be run in production!")
+        sys.exit(1)
+    
+    # Require explicit confirmation for destructive operations
+    require_seed = os.environ.get('REQUIRE_SEED', '').lower()
+    if require_seed not in ['1', 'true', 'yes']:
+        logger.warning("Set REQUIRE_SEED=1 to confirm you want to drop all tables and reseed data")
+        logger.warning("This will DELETE ALL EXISTING DATA!")
+        sys.exit(1)
+    
     logger.info("Starting Railway Database Initialization...")
     logger.info("=" * 60)
     
@@ -40,7 +53,8 @@ def setup_database():
         with app.app_context():
             logger.info("Creating database schema from actual models...")
             
-            # Drop all tables first
+            # Only drop tables in development with explicit confirmation
+            logger.warning("DROPPING ALL TABLES - This will delete all data!")
             db.drop_all()
             
             # Create all tables using actual model definitions
@@ -72,11 +86,15 @@ def populate_test_data(db):
     logger.info("Creating users...")
     create_users(db, User)
     
-    logger.info("Creating 1500 stations...")
-    create_stations(db, Station)
+    # Use smaller datasets suitable for development/testing
+    num_stations = int(os.environ.get('NUM_STATIONS', '100'))
+    num_trains = int(os.environ.get('NUM_TRAINS', '50'))
     
-    logger.info("Creating 1250 trains...")
-    create_trains(db, Train)
+    logger.info(f"Creating {num_stations} stations...")
+    create_stations(db, Station, num_stations)
+    
+    logger.info(f"Creating {num_trains} trains...")
+    create_trains(db, Train, num_trains)
     
     logger.info("Creating train routes...")
     create_train_routes(db, Train, Station, TrainRoute)
@@ -100,17 +118,32 @@ def create_users(db, User):
     """Create users including admin and test users"""
     users = []
     
-    # Create admin user
-    admin = User(
-        username='admin',
-        email='admin@railserve.com',
-        password_hash='scrypt:32768:8:1$ZKnR7QwYiWrMGqVl$f4c8a1b2d3e4f5g6h7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z5',  # password: admin123
-        role='super_admin',
-        active=True,
-        reset_token=None,
-        reset_token_expiry=None
-    )
-    users.append(admin)
+    # Create admin user only if explicitly requested and password provided
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    create_admin = os.environ.get('CREATE_ADMIN', '').lower() in ['1', 'true', 'yes']
+    
+    if create_admin:
+        if not admin_password:
+            logger.error("CREATE_ADMIN=1 requires ADMIN_PASSWORD environment variable")
+            sys.exit(1)
+        
+        # Hash the provided password using werkzeug
+        from werkzeug.security import generate_password_hash
+        password_hash = generate_password_hash(admin_password)
+        
+        admin = User(
+            username='admin',
+            email='admin@railserve.com',
+            password_hash=password_hash,
+            role='super_admin',
+            active=True,
+            reset_token=None,
+            reset_token_expiry=None
+        )
+        users.append(admin)
+        logger.info("Created admin user with provided password")
+    else:
+        logger.info("Skipping admin user creation (set CREATE_ADMIN=1 and ADMIN_PASSWORD to create)")
     
     # Create test users
     for i in range(100):
@@ -129,8 +162,8 @@ def create_users(db, User):
     db.session.add_all(users)
     db.session.commit()
 
-def create_stations(db, Station):
-    """Create 1500 railway stations across India"""
+def create_stations(db, Station, num_stations=100):
+    """Create railway stations across India"""
     
     # Indian states and major cities
     indian_states_cities = [
@@ -160,10 +193,14 @@ def create_stations(db, Station):
     station_codes_used = set()
     station_names_used = set()
     
+    stations_created = 0
     for state, cities in indian_states_cities:
         for city in cities:
-            # Create multiple stations per city
-            for i in range(random.randint(3, 8)):
+            if stations_created >= num_stations:
+                break
+            # Create fewer stations per city for smaller datasets
+            stations_per_city = min(random.randint(1, 3), num_stations - stations_created)
+            for i in range(stations_per_city):
                 # Generate unique station code
                 while True:
                     code = ''.join(random.choices(string.ascii_uppercase, k=3)) + str(random.randint(0, 9))
@@ -206,14 +243,19 @@ def create_stations(db, Station):
                     created_at=fake.date_time_between(start_date='-5y', end_date='now')
                 )
                 stations.append(station)
+                stations_created += 1
+                if stations_created >= num_stations:
+                    break
+        if stations_created >= num_stations:
+            break
     
     db.session.add_all(stations)
     db.session.commit()
     
     logger.info(f"Created {len(stations)} stations")
 
-def create_trains(db, Train):
-    """Create 1250 trains with realistic configurations"""
+def create_trains(db, Train, num_trains=50):
+    """Create trains with realistic configurations"""
     trains = []
     train_numbers_used = set()
     
@@ -232,7 +274,7 @@ def create_trains(db, Train):
         ('Delhi', 'Ahmedabad'), ('Mumbai', 'Ahmedabad'), ('Chennai', 'Ahmedabad')
     ]
     
-    for i in range(1250):
+    for i in range(num_trains):
         # Generate unique train number
         while True:
             train_number = str(random.randint(10000, 99999))

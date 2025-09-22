@@ -26,50 +26,34 @@ app = Flask(__name__,
 
 # Load configuration
 # Load configuration - require SESSION_SECRET for security
-app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+app.secret_key = os.environ.get("SESSION_SECRET")
 if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
-# Use DATABASE_URL with fallback to local database
-database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
-
-use_local_db = False
+# Database configuration - use provided DATABASE_URL or fallback to local SQLite
+database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
-    # Check if DATABASE_URL is just a password (from user input) and construct full URL
-    if not database_url.startswith('postgresql://') and not database_url.startswith('sqlite://'):
-        # Treat it as password and construct full Supabase URL
-        password = database_url
-        database_url = f"postgresql://postgres:Htnameh509h@@db.wymtiyvuelhqvazskofo.supabase.co:5432/postgres"
-        logging.info("Constructed Supabase connection string from provided password")
+    # Validate that DATABASE_URL is a proper connection string
+    if database_url.startswith(('postgresql://', 'sqlite://')):
+        # Test connection to database
+        try:
+            import sqlalchemy
+            test_engine = sqlalchemy.create_engine(database_url)
+            with test_engine.connect() as conn:
+                conn.execute(sqlalchemy.text("SELECT 1"))
+            logging.info("Database connection successful")
+        except Exception as e:
+            logging.warning(f"Database connection failed: {e}")
+            logging.info("Falling back to local SQLite database")
+            database_url = "sqlite:///local_railway.db"
     else:
-        logging.info("Using provided DATABASE_URL")
-    
-    # Test connection to online database
-    try:
-        import sqlalchemy
-        test_engine = sqlalchemy.create_engine(database_url)
-        with test_engine.connect() as conn:
-            conn.execute(sqlalchemy.text("SELECT 1"))
-        logging.info("Online database connection successful")
-    except Exception as e:
-        logging.warning(f"Online database connection failed: {e}")
-        logging.info("Falling back to local SQLite database")
-        use_local_db = True
-else:
-    logging.info("No DATABASE_URL provided, using offline database")
-    use_local_db = True
-
-if use_local_db:
-    # First try Replit's built-in PostgreSQL database
-    replit_db_url = os.environ.get("DATABASE_URL")
-    if replit_db_url and replit_db_url.startswith('postgresql://'):
-        database_url = replit_db_url
-        logging.info("Using Replit's built-in PostgreSQL database")
-    else:
-        # Final fallback to SQLite for offline use
+        logging.warning("Invalid DATABASE_URL format, using local SQLite")
         database_url = "sqlite:///local_railway.db"
-        logging.info("Using SQLite database for offline mode: local_railway.db")
+else:
+    # Use local SQLite database for development
+    database_url = "sqlite:///local_railway.db"
+    logging.info("Using SQLite database for development: local_railway.db")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {

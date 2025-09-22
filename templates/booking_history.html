@@ -194,10 +194,6 @@
                                            title="Download ticket as PDF">
                                             <i class="fas fa-download"></i> Download PDF
                                         </a>
-                                        <a href="{{ url_for('food.restaurants_for_booking', booking_id=booking.id) }}" 
-                                           class="btn btn-success btn-sm">
-                                            <i class="fas fa-utensils"></i> Order Food
-                                        </a>
                                     {% endif %}
                                     
                                     {% if booking.status in ['confirmed', 'waitlisted'] %}
