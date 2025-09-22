@@ -455,12 +455,364 @@
     }
 }
 
+/* ===== ADMIN PANEL RESPONSIVE FIXES ===== */
+.admin-container, .complaint-container, .pricing-container, .waitlist-container {
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .admin-container, .complaint-container, .pricing-container, .waitlist-container {
+        padding: 0.75rem;
+    }
+    
+    .admin-sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        background: var(--bg-secondary);
+        z-index: 1000;
+        transition: left 0.3s ease;
+    }
+    
+    .admin-sidebar.active {
+        left: 0;
+    }
+    
+    .admin-main {
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .stats-grid, .pricing-overview, .search-controls {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons .btn, .action-buttons .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ===== DASHBOARD RESPONSIVE FIXES ===== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.stat-card, .overview-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+}
+
+@media (max-width: 768px) {
+    .stat-card, .overview-card {
+        padding: 1rem;
+    }
+}
+
+/* ===== BOOKING FORM RESPONSIVE FIXES ===== */
+.booking-form {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+@media (max-width: 768px) {
+    .booking-form {
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .booking-steps {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .passenger-form {
+        grid-template-columns: 1fr;
+    }
+    
+    .fare-summary {
+        position: static;
+        margin-top: 2rem;
+    }
+}
+
+/* ===== TRAIN SEARCH RESPONSIVE FIXES ===== */
+.search-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .search-filters {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .train-results {
+        padding: 0;
+    }
+    
+    .train-card {
+        margin: 0.5rem 0;
+        padding: 1rem;
+    }
+    
+    .train-info {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .booking-options {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* ===== PNR ENQUIRY RESPONSIVE FIXES ===== */
+.pnr-form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+@media (max-width: 768px) {
+    .pnr-form {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .pnr-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 1rem;
+    }
+}
+
+/* ===== PROFILE PAGE RESPONSIVE FIXES ===== */
+.profile-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .profile-sidebar {
+        order: 2;
+    }
+    
+    .profile-main {
+        order: 1;
+    }
+}
+
+.booking-history {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.booking-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .booking-item {
+        padding: 1rem;
+    }
+    
+    .booking-details {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .booking-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+/* ===== MODAL RESPONSIVE FIXES ===== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--card-hover-shadow);
+    border: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 20% auto;
+        padding: 1.5rem;
+        width: 95%;
+        border-radius: 8px;
+    }
+}
+
+/* ===== ADVANCED THEME FIXES ===== */
+
+/* Ensure all interactive elements have proper theme support */
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-inverse: #0f172a;
+    --border-color: #334155;
+    --accent-color: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --card-hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.4);
+    --bg-table-header: #1e293b;
+    --text-table-header: #f1f5f9;
+    --bg-table-hover: #334155;
+    
+    /* Alert colors for dark theme */
+    --alert-success-bg: rgba(16, 185, 129, 0.1);
+    --alert-success-text: #34d399;
+    --alert-success-border: rgba(16, 185, 129, 0.3);
+    --alert-error-bg: rgba(239, 68, 68, 0.1);
+    --alert-error-text: #f87171;
+    --alert-error-border: rgba(239, 68, 68, 0.3);
+    --alert-info-bg: rgba(59, 130, 246, 0.1);
+    --alert-info-text: #60a5fa;
+    --alert-info-border: rgba(59, 130, 246, 0.3);
+    
+    /* Admin specific dark theme colors */
+    --admin-bg: #0f172a;
+    --admin-card-bg: #1e293b;
+    --admin-text-primary: #f1f5f9;
+    --admin-text-secondary: #94a3b8;
+    --admin-border-light: #334155;
+    --admin-accent-blue: #3b82f6;
+    --admin-accent-green: #10b981;
+    --admin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --admin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+    --admin-header-bg: linear-gradient(135deg, #1e40af 0%, #1e293b 100%);
+}
+
+[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-inverse: #ffffff;
+    --border-color: #e2e8f0;
+    --accent-color: #3b82f6;
+    --accent-hover: #2563eb;
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --card-hover-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --bg-table-header: #f8fafc;
+    --text-table-header: #0f172a;
+    --bg-table-hover: #f1f5f9;
+    
+    /* Alert colors for light theme */
+    --alert-success-bg: rgba(16, 185, 129, 0.1);
+    --alert-success-text: #065f46;
+    --alert-success-border: rgba(16, 185, 129, 0.3);
+    --alert-error-bg: rgba(239, 68, 68, 0.1);
+    --alert-error-text: #991b1b;
+    --alert-error-border: rgba(239, 68, 68, 0.3);
+    --alert-info-bg: rgba(59, 130, 246, 0.1);
+    --alert-info-text: #1e40af;
+    --alert-info-border: rgba(59, 130, 246, 0.3);
+    
+    /* Admin specific light theme colors */
+    --admin-bg: #f8fafc;
+    --admin-card-bg: #ffffff;
+    --admin-text-primary: #0f172a;
+    --admin-text-secondary: #64748b;
+    --admin-border-light: #e2e8f0;
+    --admin-accent-blue: #3b82f6;
+    --admin-accent-green: #10b981;
+    --admin-shadow-md: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --admin-shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --admin-header-bg: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus indicators for keyboard navigation */
+*:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.btn:focus,
+.nav-link:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
 /* ===== PRINT STYLES ===== */
 @media print {
     .navbar,
     .nav-menu,
     .btn,
-    .no-print {
+    .no-print,
+    .admin-sidebar {
         display: none !important;
     }
     
@@ -473,5 +825,10 @@
         border: 1px solid #000;
         box-shadow: none;
         break-inside: avoid;
+    }
+    
+    .admin-main {
+        margin-left: 0;
+        width: 100%;
     }
 }
