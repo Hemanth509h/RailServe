@@ -650,7 +650,7 @@
                     <input type="date" 
                            name="journey_date" 
                            id="journey_date" 
-                           min="{{ moment().format('YYYY-MM-DD') }}"
+                           min="{{ now().strftime('%Y-%m-%d') }}"
                            required>
                 </div>
                 

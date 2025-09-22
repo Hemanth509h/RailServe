@@ -926,7 +926,8 @@ def waitlist_management():
     
     return render_template('admin/waitlist_management.html',
                          waitlist_stats=waitlist_stats,
-                         recent_waitlist=recent_waitlist)
+                         recent_waitlist=recent_waitlist,
+                         now=datetime.now)
 
 @admin_bp.route('/fare-management')
 @admin_required
@@ -1783,7 +1784,7 @@ def dynamic_pricing_management():
     trains = Train.query.filter_by(active=True).all()
     
     return render_template('admin/dynamic_pricing.html', 
-                         pricing_rules=pricing_rules, trains=trains)
+                         pricing_rules=pricing_rules, trains=trains, now=datetime.now)
 
 @admin_bp.route('/dynamic-pricing/update', methods=['POST'])
 @admin_required
