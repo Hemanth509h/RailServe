@@ -87,6 +87,9 @@
                                     </div>
                                 </td>
                                 <td class="actions">
+                                    <a href="{{ url_for('admin.seat_allocation') }}?train={{ train.number }}" class="btn btn-sm btn-primary" title="Manage Seat Allocation">
+                                        <i class="fas fa-chair"></i> Allocate
+                                    </a>
                                     <button class="btn btn-sm btn-warning" onclick="releaseEmergencySeats({{ train.id }}, '{{ train.number }}', {{ train.available_seats }})"
                                             {% if train.available_seats > 200 %}disabled title="Sufficient seats available"{% endif %}>
                                         <i class="fas fa-bolt"></i> Emergency Release

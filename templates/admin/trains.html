@@ -122,10 +122,19 @@
                                     </span>
                                 </td>
                                 <td>₹{{ "%.2f"|format(train.fare_per_km) }}</td>
+                                <td>₹{{ "%.2f"|format(train.tatkal_fare_per_km or 0) }}</td>
                                 <td>
-                                    {% if train.tatkal_fare_per_km %}
-                                        ₹{{ "%.2f"|format(train.tatkal_fare_per_km) }}
-                                    {% else %}
+                                    <span class="status-badge {% if train.available_seats > 50 %}active{% elif train.available_seats > 20 %}warning{% else %}critical{% endif %}">
+                                        {% if train.available_seats > 50 %}Normal{% elif train.available_seats > 20 %}Low{% else %}Critical{% endif %}
+                                    </span>
+                                </td>
+                                <td class="actions">
+                                    <a href="{{ url_for('admin.seat_allocation') }}?train={{ train.number }}" class="btn btn-sm btn-primary" title="Manage Seat Allocation">
+                                        <i class="fas fa-chair"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTrain({{ train.id }}, '{{ train.number }}')" title="Delete Train">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                         <em>Not set</em>
                                     {% endif %}
                                 </td>

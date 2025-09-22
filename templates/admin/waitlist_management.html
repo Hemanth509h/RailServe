@@ -84,6 +84,9 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
+                                    <a href="{{ url_for('admin.seat_allocation') }}?train={{ stat.number }}" class="btn-action btn-primary" title="Allocate Seats">
+                                        <i class="fas fa-chair"></i> Allocate
+                                    </a>
                                     <button class="btn-action btn-process" onclick="processWaitlist('{{ stat.number }}')">
                                         <i class="fas fa-play"></i> Process
                                     </button>
