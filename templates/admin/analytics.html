@@ -16,6 +16,39 @@
         </a>
     </div>
     
+    <div class="analytics-filters">
+        <div class="filter-card">
+            <h3><i class="fas fa-filter"></i> Filter Analytics</h3>
+            <form method="GET" class="filter-form">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="date_range">Date Range</label>
+                        <select id="date_range" name="date_range" onchange="this.form.submit()">
+                            <option value="7" {{ 'selected' if request.args.get('date_range') == '7' }}>Last 7 Days</option>
+                            <option value="30" {{ 'selected' if request.args.get('date_range', '30') == '30' }}>Last 30 Days</option>
+                            <option value="90" {{ 'selected' if request.args.get('date_range') == '90' }}>Last 90 Days</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="train_search">Search Trains</label>
+                        <input type="text" id="train_search" name="train_search" placeholder="Search by train number/name..." 
+                               value="{{ request.args.get('train_search', '') }}" onchange="this.form.submit()">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="booking_type">Booking Type</label>
+                        <select id="booking_type" name="booking_type" onchange="this.form.submit()">
+                            <option value="">All Types</option>
+                            <option value="general" {{ 'selected' if request.args.get('booking_type') == 'general' }}>General</option>
+                            <option value="tatkal" {{ 'selected' if request.args.get('booking_type') == 'tatkal' }}>Tatkal</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <div class="analytics-grid">
         <div class="analytics-card">
             <h3><i class="fas fa-rupee-sign"></i> Revenue Trends (Last 30 Days)</h3>
@@ -134,6 +167,72 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block head %}
+<style>
+.analytics-filters {
+    margin-bottom: 2rem;
+}
+
+.filter-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-card h3 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+    font-size: 1.1rem;
+}
+
+.filter-form {
+    width: 100%;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 {% endblock %}
 
 {% block scripts %}

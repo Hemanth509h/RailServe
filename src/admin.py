@@ -275,72 +275,154 @@ def promote_user(user_id):
 @admin_bp.route('/analytics')
 @admin_required
 def analytics():
-    """Enhanced analytics dashboard with Tatkal insights"""
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    """Enhanced analytics dashboard with Tatkal insights and search/filtering"""
+    # Get filter parameters
+    date_range = request.args.get('date_range', '30', type=int)
+    train_search = request.args.get('train_search', '').strip()
+    booking_type_filter = request.args.get('booking_type', '').strip()
     
-    # Revenue data for last 30 days
+    # Calculate date range
+    days_ago = datetime.utcnow() - timedelta(days=date_range)
+    
+    # Base query for bookings with optional filters
+    booking_query = Booking.query.filter(Booking.booking_date >= days_ago)
+    payment_query = Payment.query.filter(
+        Payment.status == 'success',
+        Payment.completed_at >= days_ago
+    )
+    
+    # Apply train search filter if provided
+    if train_search:
+        booking_query = booking_query.join(Train).filter(
+            db.or_(
+                Train.number.ilike(f'%{train_search}%'),
+                Train.name.ilike(f'%{train_search}%')
+            )
+        )
+        payment_query = payment_query.join(Booking).join(Train).filter(
+            db.or_(
+                Train.number.ilike(f'%{train_search}%'),
+                Train.name.ilike(f'%{train_search}%')
+            )
+        )
+    
+    # Apply booking type filter if provided
+    if booking_type_filter:
+        booking_query = booking_query.filter(Booking.booking_type == booking_type_filter)
+        if train_search:
+            # Payment query already joined with Booking
+            payment_query = payment_query.filter(Booking.booking_type == booking_type_filter)
+        else:
+            payment_query = payment_query.join(Booking).filter(Booking.booking_type == booking_type_filter)
+    
+    # Revenue data
     daily_revenue = db.session.query(
         db.func.date(Payment.completed_at),
         db.func.sum(Payment.amount)
     ).filter(
         Payment.status == 'success',
-        Payment.completed_at >= thirty_days_ago
+        Payment.completed_at >= days_ago
     ).group_by(db.func.date(Payment.completed_at)).all()
     
-    # Popular trains
-    popular_trains = db.session.query(
+    # Popular trains (with search/filter applied)
+    popular_query = db.session.query(
         Train.name,
         db.func.count(Booking.id)
-    ).join(Booking).group_by(Train.name).order_by(db.func.count(Booking.id).desc()).limit(10).all()
+    ).join(Booking)
+    
+    if train_search:
+        popular_query = popular_query.filter(
+            db.or_(
+                Train.number.ilike(f'%{train_search}%'),
+                Train.name.ilike(f'%{train_search}%')
+            )
+        )
+    
+    if booking_type_filter:
+        popular_query = popular_query.filter(Booking.booking_type == booking_type_filter)
+    
+    popular_trains = popular_query.filter(Booking.booking_date >= days_ago).group_by(Train.name).order_by(db.func.count(Booking.id).desc()).limit(10).all()
     
     # Booking trends by type
-    general_bookings = db.session.query(
+    booking_trends = db.session.query(
         db.func.date(Booking.booking_date),
         db.func.count(Booking.id)
-    ).filter(
-        Booking.booking_date >= thirty_days_ago,
-        Booking.booking_type == 'general'
-    ).group_by(db.func.date(Booking.booking_date)).all()
+    ).filter(Booking.booking_date >= days_ago)
     
-    tatkal_bookings = db.session.query(
-        db.func.date(Booking.booking_date),
+    if train_search:
+        booking_trends = booking_trends.join(Train).filter(
+            db.or_(
+                Train.number.ilike(f'%{train_search}%'),
+                Train.name.ilike(f'%{train_search}%')
+            )
+        )
+    
+    if booking_type_filter:
+        booking_trends = booking_trends.filter(Booking.booking_type == booking_type_filter)
+    
+    booking_trends = booking_trends.group_by(db.func.date(Booking.booking_date)).all()
+    
+    # Booking statistics by status
+    booking_stats = db.session.query(
+        Booking.status,
         db.func.count(Booking.id)
-    ).filter(
-        Booking.booking_date >= thirty_days_ago,
-        Booking.booking_type == 'tatkal'
-    ).group_by(db.func.date(Booking.booking_date)).all()
+    ).filter(Booking.booking_date >= days_ago)
     
-    # Tatkal vs General revenue comparison
-    tatkal_revenue = db.session.query(
-        db.func.sum(Booking.total_amount)
-    ).filter(
-        Booking.booking_type == 'tatkal',
-        Booking.booking_date >= thirty_days_ago
-    ).scalar() or 0
+    if train_search:
+        booking_stats = booking_stats.join(Train).filter(
+            db.or_(
+                Train.number.ilike(f'%{train_search}%'),
+                Train.name.ilike(f'%{train_search}%')
+            )
+        )
     
-    general_revenue = db.session.query(
-        db.func.sum(Booking.total_amount)
-    ).filter(
-        Booking.booking_type == 'general',
-        Booking.booking_date >= thirty_days_ago
-    ).scalar() or 0
+    if booking_type_filter:
+        booking_stats = booking_stats.filter(Booking.booking_type == booking_type_filter)
     
-    # Peak booking hours
-    peak_hours = db.session.query(
-        db.func.extract('hour', Booking.booking_date),
-        db.func.count(Booking.id)
-    ).filter(
-        Booking.booking_date >= thirty_days_ago
-    ).group_by(db.func.extract('hour', Booking.booking_date)).order_by(db.func.count(Booking.id).desc()).limit(5).all()
+    booking_stats = booking_stats.group_by(Booking.status).all()
+    
+    # Revenue comparison
+    tatkal_revenue = 0
+    general_revenue = 0
+    
+    if not booking_type_filter or booking_type_filter == 'tatkal':
+        tatkal_query = db.session.query(db.func.sum(Booking.total_amount)).filter(
+            Booking.booking_type == 'tatkal',
+            Booking.booking_date >= days_ago
+        )
+        if train_search:
+            tatkal_query = tatkal_query.join(Train).filter(
+                db.or_(
+                    Train.number.ilike(f'%{train_search}%'),
+                    Train.name.ilike(f'%{train_search}%')
+                )
+            )
+        tatkal_revenue = tatkal_query.scalar() or 0
+    
+    if not booking_type_filter or booking_type_filter == 'general':
+        general_query = db.session.query(db.func.sum(Booking.total_amount)).filter(
+            Booking.booking_type == 'general',
+            Booking.booking_date >= days_ago
+        )
+        if train_search:
+            general_query = general_query.join(Train).filter(
+                db.or_(
+                    Train.number.ilike(f'%{train_search}%'),
+                    Train.name.ilike(f'%{train_search}%')
+                )
+            )
+        general_revenue = general_query.scalar() or 0
     
     return render_template('admin/analytics.html',
                          daily_revenue=daily_revenue,
                          popular_trains=popular_trains,
-                         general_bookings=general_bookings,
-                         tatkal_bookings=tatkal_bookings,
+                         booking_trends=booking_trends,
+                         booking_stats=booking_stats,
                          tatkal_revenue=tatkal_revenue,
                          general_revenue=general_revenue,
-                         peak_hours=peak_hours)
+                         date_range=date_range,
+                         train_search=train_search,
+                         booking_type_filter=booking_type_filter)
 
 @admin_bp.route('/reports/bookings.csv')
 @admin_required
@@ -625,9 +707,12 @@ def delete_tatkal_timeslot(slot_id):
 @admin_bp.route('/tatkal-management')
 @admin_required
 def tatkal_management():
-    """Tatkal booking management and monitoring"""
-    # Get trains with tatkal bookings
-    trains_with_tatkal = db.session.query(
+    """Tatkal booking management and monitoring with search functionality"""
+    search = request.args.get('search', '').strip()
+    utilization_filter = request.args.get('utilization_filter', '').strip()
+    
+    # Base query for trains with tatkal bookings
+    query = db.session.query(
         Train.id,
         Train.number,
         Train.name,
@@ -636,24 +721,90 @@ def tatkal_management():
         db.func.sum(Booking.total_amount).label('tatkal_revenue')
     ).join(Booking).filter(
         Booking.booking_type == 'tatkal'
-    ).group_by(Train.id, Train.number, Train.name, Train.tatkal_seats).all()
+    )
     
-    # Recent tatkal bookings
-    recent_tatkal = Booking.query.filter_by(booking_type='tatkal').order_by(
-        Booking.booking_date.desc()
-    ).limit(20).all()
+    # Apply search filter
+    if search:
+        query = query.filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%'),
+                Booking.pnr.ilike(f'%{search}%')
+            )
+        )
+    
+    trains_with_tatkal = query.group_by(Train.id, Train.number, Train.name, Train.tatkal_seats).all()
+    
+    # Apply utilization filter
+    if utilization_filter and trains_with_tatkal:
+        filtered_trains = []
+        for train in trains_with_tatkal:
+            if train.tatkal_seats > 0:
+                utilization = (train.tatkal_bookings / train.tatkal_seats) * 100
+                if utilization_filter == 'high' and utilization > 80:
+                    filtered_trains.append(train)
+                elif utilization_filter == 'medium' and 50 <= utilization <= 80:
+                    filtered_trains.append(train)
+                elif utilization_filter == 'low' and utilization < 50:
+                    filtered_trains.append(train)
+        trains_with_tatkal = filtered_trains
+    
+    # Recent tatkal bookings with search
+    recent_query = Booking.query.filter_by(booking_type='tatkal')
+    
+    if search:
+        recent_query = recent_query.join(Train).filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%'),
+                Booking.pnr.ilike(f'%{search}%')
+            )
+        )
+    
+    recent_tatkal = recent_query.order_by(Booking.booking_date.desc()).limit(20).all()
     
     return render_template('admin/tatkal_management.html',
                          trains_with_tatkal=trains_with_tatkal,
-                         recent_tatkal=recent_tatkal)
+                         recent_tatkal=recent_tatkal,
+                         search=search,
+                         utilization_filter=utilization_filter)
 
 @admin_bp.route('/route-management')
 @admin_required
 def route_management():
-    """Train route and scheduling management"""
-    trains = Train.query.all()
+    """Train route and scheduling management with search functionality"""
+    search = request.args.get('search', '').strip()
+    route_status = request.args.get('route_status', '').strip()
+    
+    # Base query for trains
+    query = Train.query
+    
+    # Apply search filter
+    if search:
+        query = query.filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        )
+    
+    # Apply route status filter
+    if route_status == 'configured':
+        # Trains with configured routes (have route entries)
+        query = query.join(TrainRoute).distinct()
+    elif route_status == 'incomplete':
+        # Trains without routes or with incomplete routes
+        subquery = db.session.query(TrainRoute.train_id).distinct().subquery()
+        query = query.filter(~Train.id.in_(subquery))
+    
+    trains = query.all()
     stations = Station.query.filter_by(active=True).all()
-    return render_template('admin/route_management.html', trains=trains, stations=stations)
+    
+    return render_template('admin/route_management.html', 
+                         trains=trains, 
+                         stations=stations,
+                         search=search,
+                         route_status=route_status)
 
 @admin_bp.route('/route-management/<int:train_id>')
 @admin_required
@@ -778,9 +929,42 @@ def waitlist_management():
 @admin_bp.route('/fare-management')
 @admin_required
 def fare_management():
-    """Fare structure and pricing management"""
-    trains = Train.query.all()
-    return render_template('admin/fare_management.html', trains=trains)
+    """Fare structure and pricing management with search functionality"""
+    search = request.args.get('search', '').strip()
+    fare_filter = request.args.get('fare_filter', '').strip()
+    
+    # Base query for trains
+    query = Train.query
+    
+    # Apply search filter
+    if search:
+        query = query.filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        )
+    
+    trains = query.all()
+    
+    # Apply fare filter
+    if fare_filter and trains:
+        filtered_trains = []
+        for train in trains:
+            if train.fare_per_km and train.tatkal_fare_per_km:
+                premium_percentage = ((train.tatkal_fare_per_km / train.fare_per_km) - 1) * 100
+                if fare_filter == 'high_tatkal' and premium_percentage > 50:
+                    filtered_trains.append(train)
+                elif fare_filter == 'low_tatkal' and premium_percentage < 25:
+                    filtered_trains.append(train)
+            elif fare_filter == 'no_tatkal' and (not train.tatkal_fare_per_km or train.tatkal_fare_per_km == 0):
+                filtered_trains.append(train)
+        trains = filtered_trains
+    
+    return render_template('admin/fare_management.html', 
+                         trains=trains,
+                         search=search,
+                         fare_filter=fare_filter)
 
 @admin_bp.route('/fare-management/<int:train_id>', methods=['POST'])
 @admin_required
@@ -801,9 +985,41 @@ def update_fare(train_id):
 @admin_bp.route('/emergency-quota')
 @admin_required
 def emergency_quota():
-    """Emergency quota management"""
-    trains = Train.query.all()
-    return render_template('admin/emergency_quota.html', trains=trains)
+    """Emergency quota management with search functionality"""
+    search = request.args.get('search', '').strip()
+    occupancy_filter = request.args.get('occupancy_filter', '').strip()
+    
+    # Base query for trains
+    query = Train.query
+    
+    # Apply search filter
+    if search:
+        query = query.filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        )
+    
+    trains = query.all()
+    
+    # Apply occupancy filter
+    if occupancy_filter and trains:
+        filtered_trains = []
+        for train in trains:
+            available_seats = getattr(train, 'available_seats', train.total_seats)
+            if occupancy_filter == 'critical' and available_seats < 50:
+                filtered_trains.append(train)
+            elif occupancy_filter == 'high' and available_seats < 100:
+                filtered_trains.append(train)
+            elif occupancy_filter == 'low' and available_seats > 200:
+                filtered_trains.append(train)
+        trains = filtered_trains
+    
+    return render_template('admin/emergency_quota.html', 
+                         trains=trains,
+                         search=search,
+                         occupancy_filter=occupancy_filter)
 
 @admin_bp.route('/emergency-quota/<int:train_id>/release', methods=['POST'])
 @admin_required

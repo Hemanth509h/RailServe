@@ -11,6 +11,31 @@
         </a>
     </div>
     
+    <div class="emergency-search">
+        <div class="search-card">
+            <form method="GET" class="search-form">
+                <div class="search-row">
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" placeholder="Search trains by number or name..." 
+                               value="{{ request.args.get('search', '') }}">
+                    </div>
+                    <div class="search-filters">
+                        <select name="occupancy_filter">
+                            <option value="">All Trains</option>
+                            <option value="critical" {{ 'selected' if request.args.get('occupancy_filter') == 'critical' }}>Critical (<50 seats)</option>
+                            <option value="high" {{ 'selected' if request.args.get('occupancy_filter') == 'high' }}>High Demand (<100 seats)</option>
+                            <option value="low" {{ 'selected' if request.args.get('occupancy_filter') == 'low' }}>Low Demand (>200 seats)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <div class="emergency-notice">
         <div class="notice-icon">
             <i class="fas fa-info-circle"></i>
@@ -146,6 +171,82 @@
 </div>
 
 <style>
+.emergency-search {
+    margin-bottom: 2rem;
+}
+
+.search-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.search-form {
+    width: 100%;
+}
+
+.search-row {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.search-input {
+    flex: 2;
+    position: relative;
+}
+
+.search-input i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    z-index: 1;
+}
+
+.search-input input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.search-input input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-filters {
+    flex: 1;
+}
+
+.search-filters select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.search-filters select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+@media (max-width: 768px) {
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
 .emergency-notice {
     background: linear-gradient(135deg, #fef3c7, #fbbf24);
     border: 1px solid #f59e0b;

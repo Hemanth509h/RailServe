@@ -11,6 +11,31 @@
         </a>
     </div>
     
+    <div class="fare-search">
+        <div class="search-card">
+            <form method="GET" class="search-form">
+                <div class="search-row">
+                    <div class="search-input">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" placeholder="Search trains by number or name..." 
+                               value="{{ request.args.get('search', '') }}">
+                    </div>
+                    <div class="search-filters">
+                        <select name="fare_filter">
+                            <option value="">All Trains</option>
+                            <option value="high_tatkal" {{ 'selected' if request.args.get('fare_filter') == 'high_tatkal' }}>High Tatkal Premium (>50%)</option>
+                            <option value="low_tatkal" {{ 'selected' if request.args.get('fare_filter') == 'low_tatkal' }}>Low Tatkal Premium (<25%)</option>
+                            <option value="no_tatkal" {{ 'selected' if request.args.get('fare_filter') == 'no_tatkal' }}>No Tatkal Fare</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <div class="admin-card">
         <h3><i class="fas fa-chart-line"></i> Pricing & Fare Structure Control</h3>
         <p>Manage fare structures for all trains. Set base fares and Tatkal premium rates.</p>
@@ -121,6 +146,83 @@
 </div>
 
 <style>
+.fare-search {
+    margin-bottom: 2rem;
+}
+
+.search-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.search-form {
+    width: 100%;
+}
+
+.search-row {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+}
+
+.search-input {
+    flex: 2;
+    position: relative;
+}
+
+.search-input i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    z-index: 1;
+}
+
+.search-input input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.search-input input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-filters {
+    flex: 1;
+}
+
+.search-filters select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.search-filters select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+@media (max-width: 768px) {
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 .premium-badge {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
