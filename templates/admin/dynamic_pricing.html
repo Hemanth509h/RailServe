@@ -369,7 +369,11 @@ function editPricing(pricingId) {
 // Auto-populate today's date
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('journey_date').value = today;
+    const dateInput = document.getElementById('journey_date');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = today;
+        dateInput.min = today;
+    }
 });
 </script>
 {% endblock %}

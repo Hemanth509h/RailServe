@@ -79,15 +79,11 @@
                             {% endif %}
                             
                             {% if complaint.status in ['open', 'in_progress'] %}
-                                <button type="button" class="btn-sm btn-success" onclick="openResolveModal({{ complaint.id }}, '{{ complaint.ticket_number }}')">
-                                    Resolve
-                                </button>
+                                <button type="button" class="btn-sm btn-success" onclick="openResolveModal({{ complaint.id }}, '{{ complaint.ticket_number }}')">Resolve</button>
                             {% endif %}
                             
                             {% if complaint.resolution %}
-                                <button type="button" class="btn-sm btn-info" onclick="showResolution('{{ complaint.resolution|replace("'", "\\'") }}')">
-                                    View Resolution
-                                </button>
+                                <button type="button" class="btn-sm btn-info" onclick="showResolution('{{ complaint.resolution|replace(\"'\", \"\\\\'\")|safe }}')">View Resolution</button>
                             {% endif %}
                         </div>
                     </div>
@@ -121,7 +117,9 @@
 
 <style>
 .complaints-list {
-    space-y: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .complaint-card {

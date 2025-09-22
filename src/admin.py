@@ -1667,74 +1667,7 @@ def finalize_chart_manual(train_id, journey_date):
 
 # Real Railway Management System Admin Features
 
-@admin_bp.route('/platform-management')
-@admin_required
-def platform_management():
-    """Platform and track management dashboard"""
-    search = request.args.get('search', '').strip()
-    station_filter = request.args.get('station', '')
-    
-    query = db.session.query(PlatformManagement, Station).join(Station)
-    
-    if search:
-        query = query.filter(
-            db.or_(
-                PlatformManagement.platform_number.ilike(f'%{search}%'),
-                Station.name.ilike(f'%{search}%'),
-                Station.code.ilike(f'%{search}%')
-            )
-        )
-    
-    if station_filter:
-        query = query.filter(PlatformManagement.station_id == station_filter)
-    
-    platforms = query.all()
-    stations = Station.query.filter_by(active=True).all()
-    
-    return render_template('admin/platform_management.html', 
-                         platforms=platforms, stations=stations, 
-                         search=search, station_filter=station_filter)
 
-@admin_bp.route('/platform-management/add', methods=['POST'])
-@admin_required
-def add_platform():
-    """Add new platform to a station"""
-    station_id = request.form.get('station_id', type=int)
-    platform_number = request.form.get('platform_number')
-    track_number = request.form.get('track_number')
-    platform_length = request.form.get('platform_length', type=int)
-    electrified = request.form.get('electrified') == 'on'
-    wheelchair_accessible = request.form.get('wheelchair_accessible') == 'on'
-    facilities = request.form.get('facilities')
-    
-    if not all([station_id, platform_number]):
-        flash('Station and platform number are required', 'error')
-        return redirect(url_for('admin.platform_management'))
-    
-    # Check for duplicate platform at same station
-    existing = PlatformManagement.query.filter_by(
-        station_id=station_id, platform_number=platform_number
-    ).first()
-    
-    if existing:
-        flash('Platform number already exists at this station', 'error')
-        return redirect(url_for('admin.platform_management'))
-    
-    platform = PlatformManagement(
-        station_id=station_id,
-        platform_number=platform_number,
-        track_number=track_number,
-        platform_length=platform_length,
-        electrified=electrified,
-        wheelchair_accessible=wheelchair_accessible,
-        facilities=facilities
-    )
-    
-    db.session.add(platform)
-    db.session.commit()
-    
-    flash('Platform added successfully', 'success')
-    return redirect(url_for('admin.platform_management'))
 
 @admin_bp.route('/complaint-management')
 @admin_required
@@ -1804,44 +1737,6 @@ def resolve_complaint(complaint_id):
     flash(f'Complaint {complaint.ticket_number} resolved successfully', 'success')
     return redirect(url_for('admin.complaint_management'))
 
-@admin_bp.route('/performance-metrics')
-@admin_required
-def performance_metrics():
-    """System performance and KPI monitoring dashboard"""
-    # Get latest metrics
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-    
-    # On-time performance
-    on_time_metrics = PerformanceMetrics.query.filter(
-        PerformanceMetrics.metric_name == 'on_time_performance',
-        PerformanceMetrics.date_recorded >= yesterday
-    ).order_by(PerformanceMetrics.time_recorded.desc()).limit(10).all()
-    
-    # Passenger load metrics
-    load_metrics = PerformanceMetrics.query.filter(
-        PerformanceMetrics.metric_name == 'passenger_load',
-        PerformanceMetrics.date_recorded >= yesterday
-    ).order_by(PerformanceMetrics.time_recorded.desc()).limit(10).all()
-    
-    # Revenue metrics
-    revenue_metrics = PerformanceMetrics.query.filter(
-        PerformanceMetrics.metric_name == 'daily_revenue',
-        PerformanceMetrics.date_recorded >= yesterday
-    ).order_by(PerformanceMetrics.time_recorded.desc()).limit(10).all()
-    
-    # Calculate averages
-    avg_on_time = sum(m.metric_value for m in on_time_metrics) / len(on_time_metrics) if on_time_metrics else 0
-    avg_load = sum(m.metric_value for m in load_metrics) / len(load_metrics) if load_metrics else 0
-    total_revenue = sum(m.metric_value for m in revenue_metrics)
-    
-    return render_template('admin/performance_metrics.html',
-                         on_time_metrics=on_time_metrics,
-                         load_metrics=load_metrics,
-                         revenue_metrics=revenue_metrics,
-                         avg_on_time=avg_on_time,
-                         avg_load=avg_load,
-                         total_revenue=total_revenue)
 
 @admin_bp.route('/pnr-inquiry')
 @admin_required
