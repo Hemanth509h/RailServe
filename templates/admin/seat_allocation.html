@@ -11,12 +11,32 @@
     
     <div class="allocation-controls">
         <div class="control-card">
-            <h3><i class="fas fa-calendar"></i> Select Date</h3>
+            <h3><i class="fas fa-calendar"></i> Date & Search Controls</h3>
             <form method="GET" class="date-form">
-                <input type="date" name="date" value="{{ selected_date.strftime('%Y-%m-%d') if selected_date else '' }}" onchange="this.form.submit()">
-                <button type="button" onclick="location.reload()" class="btn-refresh">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
+                <div class="controls-row">
+                    <div class="control-group">
+                        <label for="date">Select Date</label>
+                        <input type="date" name="date" id="date" value="{{ selected_date.strftime('%Y-%m-%d') if selected_date else '' }}" onchange="this.form.submit()">
+                    </div>
+                    <div class="control-group">
+                        <label for="train_search">Search Trains</label>
+                        <input type="text" name="train_search" id="train_search" placeholder="Search by train number or name..." value="{{ request.args.get('train_search', '') }}" onchange="this.form.submit()">
+                    </div>
+                    <div class="control-group">
+                        <label for="utilization_filter">Filter by Utilization</label>
+                        <select name="utilization_filter" id="utilization_filter" onchange="this.form.submit()">
+                            <option value="">All Trains</option>
+                            <option value="high" {{ 'selected' if request.args.get('utilization_filter') == 'high' }}>High Demand (>90%)</option>
+                            <option value="medium" {{ 'selected' if request.args.get('utilization_filter') == 'medium' }}>Medium Demand (70-90%)</option>
+                            <option value="low" {{ 'selected' if request.args.get('utilization_filter') == 'low' }}>Low Demand (<70%)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <button type="button" onclick="location.reload()" class="btn-refresh">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -131,10 +151,41 @@
 }
 
 .date-form {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
     margin-top: 1rem;
+}
+
+.controls-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.control-group label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.control-group input,
+.control-group select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .controls-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
 }
 
 .date-form input {
