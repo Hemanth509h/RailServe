@@ -117,7 +117,7 @@
                                 </td>
                                 <td>{{ pricing.journey_date.strftime('%d %b %Y') }}</td>
                                 <td>
-                                    <span class="class-badge {{ pricing.coach_class.lower() }}">{{ pricing.coach_class }}</span>
+                                    <span class="class-badge {{ 'second-seating' if pricing.coach_class == '2S' else pricing.coach_class.lower() }}">{{ pricing.coach_class }}</span>
                                 </td>
                                 <td class="base-fare">₹{{ "%.2f"|format(pricing.base_fare) }}</td>
                                 <td>
@@ -287,7 +287,7 @@
 .class-badge.ac2 { background: #dcfce7; color: #166534; }
 .class-badge.ac1 { background: #fef3c7; color: #92400e; }
 .class-badge.cc { background: #ede9fe; color: #6b21a8; }
-.class-badge.2s { background: #fee2e2; color: #991b1b; }
+.class-badge.second-seating { background: #fee2e2; color: #991b1b; }
 
 .base-fare,
 .dynamic-fare {
