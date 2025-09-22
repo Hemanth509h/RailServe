@@ -224,6 +224,67 @@ img.gallery-image:hover {
 
 /* Dark Theme */
 [data-theme="dark"] {
+    --bg-primary: #1a202c;
+    --bg-secondary: #2d3748;
+    --bg-accent: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
+    --bg-table-header: #2d3748;
+    --bg-table-hover: #4a5568;
+    --bg-nav-mobile: #2b6cb0;
+    --text-primary: #f7fafc;
+    --text-secondary: #a0aec0;
+    --text-inverse: #1a202c;
+    --text-table-header: #e2e8f0;
+    --border-color: #4a5568;
+    --btn-primary: #3182ce;
+    --btn-primary-hover: #2c5aa0;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    --hero-gradient: linear-gradient(135deg, #2b6cb0 0%, #3182ce 50%, #0891b2 100%);
+    --status-confirmed-bg: #22543d;
+    --status-confirmed-text: #9ae6b4;
+    --status-waitlist-bg: #744210;
+    --status-waitlist-text: #faf089;
+    --status-cancelled-bg: #742a2a;
+    --status-cancelled-text: #feb2b2;
+    --fare-calc-bg: #2a4365;
+    --fare-calc-border: #4299e1;
+    --fare-calc-text: #bee3f8;
+    --security-bg: #22543d;
+    --security-text: #9ae6b4;
+    --security-icon: #68d391;
+    --accent-color: #3182ce;
+    --accent-hover: #2c5aa0;
+    --success-color: #38a169;
+    --success-hover: #2f855a;
+    --warning-color: #ed8936;
+    --warning-hover: #dd6b20;
+    --danger-color: #e53e3e;
+    --danger-hover: #c53030;
+    --info-color: #4299e1;
+    --info-hover: #3182ce;
+    --alert-success-bg: #22543d;
+    --alert-success-text: #c6f6d5;
+    --alert-success-border: #68d391;
+    --alert-error-bg: #742a2a;
+    --alert-error-text: #fed7d7;
+    --alert-error-border: #fc8181;
+    --alert-info-bg: #2a4365;
+    --alert-info-text: #bee3f8;
+    --alert-info-border: #63b3ed;
+    
+    /* Admin Dark Theme Variables */
+    --admin-header-bg: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
+    --admin-card-bg: #2d3748;
+    --admin-border-light: #4a5568;
+    --admin-text-primary: #f7fafc;
+    --admin-text-secondary: #a0aec0;
+    --admin-accent-blue: #4299e1;
+    --admin-accent-green: #48bb78;
+    --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --admin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --admin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] {
     --bg-primary: #0f172a;
     --bg-secondary: #1e293b;
     --bg-accent: linear-gradient(135deg, #4338ca 0%, #3b82f6 100%);
