@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RailServe App"
+args = "RailServe Frontend"
 
 [[workflows.workflow]]
-name = "RailServe App"
+name = "RailServe Frontend"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -34,10 +34,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 45311
-externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
