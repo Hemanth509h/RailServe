@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - RailServe{% endblock %}
+
+{% block head %}
+<style>
+.error-container {
+    text-align: center;
+    padding: 4rem 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.error-icon {
+    font-size: 6rem;
+    color: #ef4444;
+    margin-bottom: 1.5rem;
+}
+
+.error-code {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.error-title {
+    font-size: 1.5rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+}
+
+.error-description {
+    color: #6b7280;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-actions .btn {
+    padding: 0.75rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .error-actions .btn {
+        width: 200px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    
+    <h1 class="error-code">404</h1>
+    <h2 class="error-title">Page Not Found</h2>
+    
+    <p class="error-description">
+        Sorry, the page you are looking for doesn't exist or has been moved. 
+        Please check the URL or navigate back to our main pages.
+    </p>
+    
+    <div class="error-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> Go Home
+        </a>
+        <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Go Back
+        </a>
+        <a href="{{ url_for('search_trains') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-outline">
+            <i class="fas fa-search"></i> Search Trains
+        </a>
+    </div>
+</div>
+{% endblock %}

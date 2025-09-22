@@ -121,6 +121,41 @@ app.register_blueprint(payment_bp, url_prefix='/payment')
 app.register_blueprint(groups_bp, url_prefix='/groups')
 app.register_blueprint(pdf_bp, url_prefix='/pdf')
 
+# Error handlers
+from flask import render_template
+from werkzeug.exceptions import HTTPException
+
+@app.errorhandler(404)
+def page_not_found(error):
+    """Handle 404 errors with custom page"""
+    return render_template('errors/404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    """Handle 500 errors with custom page"""
+    db.session.rollback()
+    error_message = str(error) if app.debug else None
+    return render_template('errors/500.html', error_message=error_message), 500
+
+@app.errorhandler(403)
+def forbidden_error(error):
+    """Handle 403 errors with custom page"""
+    return render_template('errors/403.html'), 403
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    """Handle unexpected exceptions"""
+    if isinstance(error, HTTPException):
+        return error
+    
+    # Log the error for debugging
+    app.logger.error(f"Unhandled exception: {error}", exc_info=True)
+    
+    # Return 500 error page
+    db.session.rollback()
+    error_message = str(error) if app.debug else None
+    return render_template('errors/500.html', error_message=error_message), 500
+
 with app.app_context():
     # Import models to ensure tables are created
     from . import models
