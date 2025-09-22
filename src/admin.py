@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from functools import wraps
 from .models import (User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, 
                     Waitlist, RefundRequest, PlatformManagement, TrainPlatformAssignment, ComplaintManagement, 
-                    PerformanceMetrics, LostAndFound, DynamicPricing, PNRStatusTracking)
+                    PerformanceMetrics, DynamicPricing, PNRStatusTracking)
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta, date
@@ -1768,67 +1768,6 @@ def pnr_inquiry_system():
     
     return render_template('admin/pnr_inquiry.html', search=search)
 
-
-@admin_bp.route('/lost-and-found')
-@admin_required
-def lost_and_found():
-    """Lost and found item management"""
-    search = request.args.get('search', '').strip()
-    status_filter = request.args.get('status', '')
-    category_filter = request.args.get('category', '')
-    
-    query = LostAndFound.query
-    
-    if search:
-        query = query.filter(
-            db.or_(
-                LostAndFound.item_id.ilike(f'%{search}%'),
-                LostAndFound.item_description.ilike(f'%{search}%'),
-                LostAndFound.found_location.ilike(f'%{search}%')
-            )
-        )
-    
-    if status_filter:
-        query = query.filter(LostAndFound.status == status_filter)
-    if category_filter:
-        query = query.filter(LostAndFound.category == category_filter)
-    
-    items = query.order_by(LostAndFound.found_date.desc()).all()
-    
-    return render_template('admin/lost_and_found.html', 
-                         items=items, search=search,
-                         status_filter=status_filter, category_filter=category_filter)
-
-@admin_bp.route('/lost-and-found/add', methods=['POST'])
-@admin_required
-def add_lost_item():
-    """Add new lost item to the system"""
-    item_description = request.form.get('item_description')
-    found_location = request.form.get('found_location')
-    found_by = request.form.get('found_by')
-    storage_location = request.form.get('storage_location')
-    category = request.form.get('category')
-    estimated_value = request.form.get('estimated_value', type=float)
-    
-    if not all([item_description, found_location, storage_location]):
-        flash('Item description, found location, and storage location are required', 'error')
-        return redirect(url_for('admin.lost_and_found'))
-    
-    item = LostAndFound(
-        item_description=item_description,
-        found_location=found_location,
-        found_date=date.today(),
-        found_by=found_by,
-        storage_location=storage_location,
-        category=category,
-        estimated_value=estimated_value
-    )
-    
-    db.session.add(item)
-    db.session.commit()
-    
-    flash(f'Lost item {item.item_id} added successfully', 'success')
-    return redirect(url_for('admin.lost_and_found'))
 
 @admin_bp.route('/dynamic-pricing')
 @admin_required

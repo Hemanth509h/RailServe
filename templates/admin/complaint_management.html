@@ -79,11 +79,11 @@
                             {% endif %}
                             
                             {% if complaint.status in ['open', 'in_progress'] %}
-                                <button type="button" class="btn-sm btn-success" onclick="openResolveModal({{ complaint.id }}, '{{ complaint.ticket_number }}')">Resolve</button>
+                                <button type="button" class="btn-sm btn-success" data-complaint-id="{{ complaint.id }}" data-ticket-number="{{ complaint.ticket_number }}" onclick="openResolveModal(this.dataset.complaintId, this.dataset.ticketNumber)">Resolve</button>
                             {% endif %}
                             
                             {% if complaint.resolution %}
-                                <button type="button" class="btn-sm btn-info" onclick="showResolution('{{ complaint.resolution|replace(\"'\", \"\\\\'\")|safe }}')">View Resolution</button>
+                                <button type="button" class="btn-sm btn-info" data-resolution="{{ complaint.resolution }}" onclick="showResolution(this.dataset.resolution)">View Resolution</button>
                             {% endif %}
                         </div>
                     </div>

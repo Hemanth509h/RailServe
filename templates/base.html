@@ -49,6 +49,11 @@
                 <a href="{{ url_for('pnr_enquiry') }}" class="nav-link">
                     <i class="fas fa-search"></i> PNR Enquiry
                 </a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('submit_complaint') }}" class="nav-link">
+                    <i class="fas fa-headset"></i> Submit Complaint
+                </a>
+                {% endif %}
                 <div class="nav-search">
                     <form method="GET" action="{{ url_for('universal_search') }}" class="search-form">
                         <input type="text" name="search_query" placeholder="Search trains..." class="search-input" value="{{ request.args.get('search_query', '') }}">

@@ -2,9 +2,10 @@ import os
 from src.app import app, db
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
-from src.models import Train, Station, Booking, TrainRoute
+from src.models import Train, Station, Booking, TrainRoute, ComplaintManagement
 from src.utils import get_running_trains, search_trains
 from datetime import datetime
+import random
 
 @app.route('/')
 def index():
@@ -103,6 +104,50 @@ def universal_search():
                          trains=trains, 
                          search_query=search_query,
                          search_type=search_type)
+
+
+@app.route('/submit-complaint', methods=['GET', 'POST'])
+@login_required
+def submit_complaint():
+    """User complaint submission system"""
+    if request.method == 'POST':
+        category = request.form.get('category')
+        priority = request.form.get('priority', 'medium')
+        booking_pnr = request.form.get('booking_pnr')
+        subcategory = request.form.get('subcategory')
+        subject = request.form.get('subject')
+        description = request.form.get('description')
+        
+        if not all([category, subject, description]):
+            flash('Please fill in all required fields', 'error')
+            return render_template('submit_complaint.html')
+        
+        # Find related booking if PNR provided
+        booking = None
+        if booking_pnr:
+            booking = Booking.query.filter_by(pnr=booking_pnr).first()
+            if not booking:
+                flash('PNR not found, but complaint will be submitted without booking reference', 'warning')
+        
+        # Create complaint
+        complaint = ComplaintManagement(
+            user_id=current_user.id,
+            booking_id=booking.id if booking else None,
+            category=category,
+            subcategory=subcategory if subcategory else None,
+            priority=priority,
+            subject=subject,
+            description=description,
+            status='open'
+        )
+        
+        db.session.add(complaint)
+        db.session.commit()
+        
+        flash(f'Complaint submitted successfully! Your ticket number is {complaint.ticket_number}', 'success')
+        return redirect(url_for('submit_complaint'))
+    
+    return render_template('submit_complaint.html')
 
 
 if __name__ == '__main__':
