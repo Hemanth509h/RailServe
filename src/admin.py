@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from functools import wraps
-from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, Waitlist
+from .models import User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, Waitlist, RefundRequest
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta, date
@@ -282,7 +282,7 @@ def analytics():
     booking_type_filter = request.args.get('booking_type', '').strip()
     
     # Calculate date range
-    days_ago = datetime.utcnow() - timedelta(days=date_range)
+    days_ago = datetime.utcnow() - timedelta(days=int(date_range))
     
     # Base query for bookings with optional filters
     booking_query = Booking.query.filter(Booking.booking_date >= days_ago)
@@ -1427,7 +1427,6 @@ def schedule_auto_allocation():
 @admin_required
 def refund_management():
     """Admin refund management dashboard"""
-    from .models import RefundRequest
     
     # Get all refund requests with filtering
     status_filter = request.args.get('status', 'all')
@@ -1541,3 +1540,85 @@ def complete_refund(refund_id):
     
     flash(f'Refund {refund_request.tdr_number} marked as completed', 'success')
     return redirect(url_for('admin.refund_management'))
+
+@admin_bp.route('/chart_preparation')
+@admin_required
+def chart_preparation():
+    """Chart preparation management dashboard"""
+    from .models import ChartPreparation
+    from .utils import prepare_chart, prepare_final_chart
+    
+    # Get today's and upcoming charts
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    
+    # Get charts for today and tomorrow
+    charts_today = db.session.query(ChartPreparation, Train).join(Train).filter(
+        ChartPreparation.journey_date == today
+    ).all()
+    
+    charts_tomorrow = db.session.query(ChartPreparation, Train).join(Train).filter(
+        ChartPreparation.journey_date == tomorrow
+    ).all()
+    
+    # Get trains that need chart preparation
+    trains_needing_charts = db.session.query(Train).filter(
+        Train.active == True,
+        ~Train.id.in_(
+            db.session.query(ChartPreparation.train_id).filter(
+                db.or_(
+                    ChartPreparation.journey_date == today,
+                    ChartPreparation.journey_date == tomorrow
+                )
+            )
+        )
+    ).all()
+    
+    return render_template('admin/chart_preparation.html',
+                         charts_today=charts_today,
+                         charts_tomorrow=charts_tomorrow,
+                         trains_needing_charts=trains_needing_charts,
+                         today=today,
+                         tomorrow=tomorrow)
+
+@admin_bp.route('/chart_preparation/prepare/<int:train_id>/<journey_date>')
+@admin_required
+def prepare_chart_manual(train_id, journey_date):
+    """Manually prepare chart for a specific train and date"""
+    from .utils import prepare_chart
+    from datetime import datetime
+    
+    try:
+        journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+        chart = prepare_chart(train_id, journey_date_obj)
+        
+        if chart:
+            train = Train.query.get(train_id)
+            flash(f'Chart prepared successfully for {train.name} on {journey_date}', 'success')
+        else:
+            flash('Failed to prepare chart', 'error')
+    except Exception as e:
+        flash(f'Error preparing chart: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.chart_preparation'))
+
+@admin_bp.route('/chart_preparation/finalize/<int:train_id>/<journey_date>')
+@admin_required  
+def finalize_chart_manual(train_id, journey_date):
+    """Manually finalize chart for a specific train and date"""
+    from .utils import prepare_final_chart
+    from datetime import datetime
+    
+    try:
+        journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+        chart = prepare_final_chart(train_id, journey_date_obj)
+        
+        if chart:
+            train = Train.query.get(train_id)
+            flash(f'Chart finalized successfully for {train.name} on {journey_date}', 'success')
+        else:
+            flash('Failed to finalize chart', 'error')
+    except Exception as e:
+        flash(f'Error finalizing chart: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.chart_preparation'))

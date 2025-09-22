@@ -30,8 +30,10 @@ class SeatAllocator:
     def allocate_seats(self, booking_id):
         """
         Allocate seat numbers for all passengers in a confirmed booking
+        Enhanced with group booking coordination
         """
         from .app import db
+        from .models import GroupBooking
         
         booking = Booking.query.get(booking_id)
         if not booking or booking.status != 'confirmed':
@@ -45,26 +47,74 @@ class SeatAllocator:
         coach_prefixes = self.coach_prefixes.get(coach_class, ['X'])
         available_berths = self.berth_types.get(coach_class, ['Lower'])
         
+        # Check if this booking is part of a group
+        is_group_booking = booking.group_booking_id is not None
+        group_coach = None
+        
+        if is_group_booking:
+            # Try to find existing coach assignments from other bookings in the same group
+            group_bookings = Booking.query.filter_by(
+                group_booking_id=booking.group_booking_id,
+                train_id=booking.train_id,
+                journey_date=booking.journey_date,
+                coach_class=booking.coach_class,
+                status='confirmed'
+            ).filter(Booking.id != booking_id).all()
+            
+            # Look for passengers who already have seat assignments
+            for other_booking in group_bookings:
+                for other_passenger in other_booking.passengers_details:
+                    if other_passenger.seat_number:
+                        # Extract coach from existing seat number
+                        parts = other_passenger.seat_number.split('-')
+                        if len(parts) == 2:
+                            group_coach = parts[0]
+                            break
+                if group_coach:
+                    break
+        
+        # If no group coach found, select one for coordination
+        if is_group_booking and not group_coach:
+            coach_prefix = random.choice(coach_prefixes)
+            coach_num = random.randint(1, 8)
+            group_coach = f"{coach_prefix}{coach_num}"
+        
         # Generate seat assignments
         assigned_seats = []
+        existing_seats = self._get_existing_seats(booking.train_id, booking.journey_date, coach_class)
+        
         for i, passenger in enumerate(passengers):
-            # Determine coach and seat number
-            coach_num = random.randint(1, 8)  # Typical train has 1-8 coaches per class
-            coach_prefix = random.choice(coach_prefixes)
-            seat_num = random.randint(1, 72)  # Standard coach capacity
+            # For group bookings, try to use the same coach
+            if is_group_booking and group_coach:
+                coach_part = group_coach
+            else:
+                # Non-group booking - use random coach
+                coach_prefix = random.choice(coach_prefixes)
+                coach_num = random.randint(1, 8)
+                coach_part = f"{coach_prefix}{coach_num}"
             
-            seat_number = f"{coach_prefix}{coach_num}-{seat_num}"
+            # Find available seat in the selected coach
+            seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)
+            
+            # If no seat available in preferred coach (group), try other coaches
+            if not seat_number:
+                for attempt in range(5):  # Try up to 5 different coaches
+                    coach_prefix = random.choice(coach_prefixes)
+                    coach_num = random.randint(1, 8)
+                    coach_part = f"{coach_prefix}{coach_num}"
+                    seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)
+                    if seat_number:
+                        break
+            
+            # Fallback to completely random if still no seat found
+            if not seat_number:
+                seat_number = self._generate_fallback_seat(coach_prefixes, assigned_seats, existing_seats)
             
             # Assign berth type based on preference or randomly
             if passenger.seat_preference and passenger.seat_preference in available_berths:
                 berth_type = passenger.seat_preference
             else:
                 berth_type = random.choice(available_berths)
-            
-            # Ensure no duplicate seats in this booking
-            while seat_number in assigned_seats:
-                seat_num = random.randint(1, 72)
-                seat_number = f"{coach_prefix}{coach_num}-{seat_num}"
             
             assigned_seats.append(seat_number)
             
@@ -79,6 +129,46 @@ class SeatAllocator:
             db.session.rollback()
             print(f"Error allocating seats: {e}")
             return False
+    
+    def _get_existing_seats(self, train_id, journey_date, coach_class):
+        """Get all existing seat allocations for the train/date/class"""
+        from .app import db
+        
+        passengers = db.session.query(Passenger).join(Booking).filter(
+            Booking.train_id == train_id,
+            Booking.journey_date == journey_date,
+            Booking.coach_class == coach_class,
+            Booking.status == 'confirmed',
+            Passenger.seat_number.isnot(None)
+        ).all()
+        
+        return set(p.seat_number for p in passengers)
+    
+    def _find_available_seat(self, coach_part, assigned_seats, existing_seats):
+        """Find an available seat in a specific coach"""
+        for seat_num in range(1, 73):  # Standard coach capacity
+            seat_number = f"{coach_part}-{seat_num}"
+            if seat_number not in assigned_seats and seat_number not in existing_seats:
+                return seat_number
+        return None
+    
+    def _generate_fallback_seat(self, coach_prefixes, assigned_seats, existing_seats):
+        """Generate a fallback seat when preferred options are not available"""
+        for attempt in range(100):  # Try 100 times to find any available seat
+            coach_prefix = random.choice(coach_prefixes)
+            coach_num = random.randint(1, 8)
+            seat_num = random.randint(1, 72)
+            seat_number = f"{coach_prefix}{coach_num}-{seat_num}"
+            
+            if seat_number not in assigned_seats and seat_number not in existing_seats:
+                return seat_number
+        
+        # Ultimate fallback - generate a unique seat number
+        base_seat = f"{random.choice(coach_prefixes)}{random.randint(1, 8)}-{random.randint(1, 72)}"
+        counter = 1
+        while f"{base_seat}_{counter}" in assigned_seats or f"{base_seat}_{counter}" in existing_seats:
+            counter += 1
+        return f"{base_seat}_{counter}"
     
     def get_seat_map(self, train_id, journey_date, coach_class):
         """
