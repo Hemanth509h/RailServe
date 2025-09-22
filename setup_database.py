@@ -187,12 +187,7 @@ def create_essential_stations(db, Station):
             name=name,
             code=code,
             city=city,
-            state=state,
-            zone='Northern Railway',  # Simplified - normally this would be more specific
-            latitude=0.0,  # These would be populated with real coordinates
-            longitude=0.0,
-            elevation=0,
-            station_type=station_type
+            state=state
         )
         stations.append(station)
     
