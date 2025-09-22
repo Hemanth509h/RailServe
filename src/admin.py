@@ -1544,25 +1544,46 @@ def complete_refund(refund_id):
 @admin_bp.route('/chart_preparation')
 @admin_required
 def chart_preparation():
-    """Chart preparation management dashboard"""
+    """Chart preparation management dashboard with search functionality"""
     from .models import ChartPreparation
     from .utils import prepare_chart, prepare_final_chart
+    
+    # Get search parameter
+    search = request.args.get('search', '').strip()
+    status_filter = request.args.get('status', '').strip()
     
     # Get today's and upcoming charts
     today = date.today()
     tomorrow = today + timedelta(days=1)
     
-    # Get charts for today and tomorrow
-    charts_today = db.session.query(ChartPreparation, Train).join(Train).filter(
+    # Base queries for charts
+    charts_today_query = db.session.query(ChartPreparation, Train).join(Train).filter(
         ChartPreparation.journey_date == today
-    ).all()
+    )
     
-    charts_tomorrow = db.session.query(ChartPreparation, Train).join(Train).filter(
+    charts_tomorrow_query = db.session.query(ChartPreparation, Train).join(Train).filter(
         ChartPreparation.journey_date == tomorrow
-    ).all()
+    )
+    
+    # Apply search filters if provided
+    if search:
+        search_filter = db.or_(
+            Train.number.ilike(f'%{search}%'),
+            Train.name.ilike(f'%{search}%')
+        )
+        charts_today_query = charts_today_query.filter(search_filter)
+        charts_tomorrow_query = charts_tomorrow_query.filter(search_filter)
+    
+    # Apply status filter if provided
+    if status_filter:
+        charts_today_query = charts_today_query.filter(ChartPreparation.status == status_filter)
+        charts_tomorrow_query = charts_tomorrow_query.filter(ChartPreparation.status == status_filter)
+    
+    charts_today = charts_today_query.all()
+    charts_tomorrow = charts_tomorrow_query.all()
     
     # Get trains that need chart preparation
-    trains_needing_charts = db.session.query(Train).filter(
+    trains_needing_query = db.session.query(Train).filter(
         Train.active == True,
         ~Train.id.in_(
             db.session.query(ChartPreparation.train_id).filter(
@@ -1572,14 +1593,27 @@ def chart_preparation():
                 )
             )
         )
-    ).all()
+    )
+    
+    # Apply search filter to trains needing charts
+    if search:
+        trains_needing_query = trains_needing_query.filter(
+            db.or_(
+                Train.number.ilike(f'%{search}%'),
+                Train.name.ilike(f'%{search}%')
+            )
+        )
+    
+    trains_needing_charts = trains_needing_query.all()
     
     return render_template('admin/chart_preparation.html',
                          charts_today=charts_today,
                          charts_tomorrow=charts_tomorrow,
                          trains_needing_charts=trains_needing_charts,
                          today=today,
-                         tomorrow=tomorrow)
+                         tomorrow=tomorrow,
+                         search=search,
+                         status_filter=status_filter)
 
 @admin_bp.route('/chart_preparation/prepare/<int:train_id>/<journey_date>')
 @admin_required
@@ -1594,7 +1628,10 @@ def prepare_chart_manual(train_id, journey_date):
         
         if chart:
             train = Train.query.get(train_id)
-            flash(f'Chart prepared successfully for {train.name} on {journey_date}', 'success')
+            if train:
+                flash(f'Chart prepared successfully for {train.name} on {journey_date}', 'success')
+            else:
+                flash('Chart prepared successfully', 'success')
         else:
             flash('Failed to prepare chart', 'error')
     except Exception as e:
@@ -1615,7 +1652,10 @@ def finalize_chart_manual(train_id, journey_date):
         
         if chart:
             train = Train.query.get(train_id)
-            flash(f'Chart finalized successfully for {train.name} on {journey_date}', 'success')
+            if train:
+                flash(f'Chart finalized successfully for {train.name} on {journey_date}', 'success')
+            else:
+                flash('Chart finalized successfully', 'success')
         else:
             flash('Failed to finalize chart', 'error')
     except Exception as e:

@@ -97,6 +97,96 @@
     color: #666;
     font-size: 0.875rem;
 }
+
+/* Search and Filter Styles */
+.search-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.search-btn, .filter-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.search-btn:hover, .filter-btn:hover {
+    background-color: #0056b3;
+}
+
+.filter-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.clear-filters-btn {
+    padding: 0.75rem 1rem;
+    background-color: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.clear-filters-btn:hover {
+    background-color: #545b62;
+    text-decoration: none;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .search-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-input-group {
+        min-width: 100%;
+    }
+    
+    .filter-group {
+        justify-content: space-between;
+    }
+}
 </style>
 {% endblock %}
 
@@ -105,6 +195,37 @@
     <div class="admin-header">
         <h1><i class="fas fa-clipboard-list"></i> Chart Preparation</h1>
         <p>Manage chart preparation and seat assignments for trains</p>
+    </div>
+
+    <!-- Search and Filter Controls -->
+    <div class="search-section">
+        <form method="GET" class="search-form">
+            <div class="search-controls">
+                <div class="search-input-group">
+                    <input type="text" name="search" placeholder="Search by train number or name..." 
+                           value="{{ search or '' }}" class="search-input">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div class="filter-group">
+                    <select name="status" class="filter-select">
+                        <option value="">All Statuses</option>
+                        <option value="prepared" {% if status_filter == 'prepared' %}selected{% endif %}>Prepared</option>
+                        <option value="final" {% if status_filter == 'final' %}selected{% endif %}>Final</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    </select>
+                    <button type="submit" class="filter-btn">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                </div>
+                {% if search or status_filter %}
+                    <a href="{{ url_for('admin.chart_preparation') }}" class="clear-filters-btn">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                {% endif %}
+            </div>
+        </form>
     </div>
 
     <div class="chart-section">
