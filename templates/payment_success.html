@@ -101,27 +101,18 @@
                             </div>
                         </div>
                         
-                        {% if passenger.seat_number %}
                         <div class="seat-allocation">
-                            <div class="seat-info">
-                                <i class="fas fa-chair"></i>
-                                <span class="seat-label">Seat:</span>
-                                <span class="seat-number">{{ passenger.seat_number }}</span>
+                            <div class="seat-info-detailed">
+                                <i class="fas fa-info-circle"></i>
+                                <span class="seat-explanation">{{ passenger.get_seat_explanation() }}</span>
                             </div>
-                            {% if passenger.berth_type %}
-                            <div class="berth-info">
-                                <i class="fas fa-bed"></i>
-                                <span class="berth-label">Berth:</span>
-                                <span class="berth-type">{{ passenger.berth_type }}</span>
+                            {% if passenger.comfort_rating and passenger.seat_number %}
+                            <div class="comfort-rating-info">
+                                <i class="fas fa-star"></i>
+                                <span class="comfort-score">Comfort Rating: {{ passenger.comfort_rating }}/10</span>
                             </div>
                             {% endif %}
                         </div>
-                        {% else %}
-                        <div class="seat-allocation pending">
-                            <i class="fas fa-clock"></i>
-                            <span class="pending-text">Seat assignment pending</span>
-                        </div>
-                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
