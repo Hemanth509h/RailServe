@@ -63,7 +63,7 @@ class SeatAllocator:
             
             # Look for passengers who already have seat assignments
             for other_booking in group_bookings:
-                for other_passenger in other_booking.passengers_details:
+                for other_passenger in other_booking.passengers:
                     if other_passenger.seat_number:
                         # Extract coach from existing seat number
                         parts = other_passenger.seat_number.split('-')
@@ -122,13 +122,8 @@ class SeatAllocator:
             passenger.seat_number = seat_number
             passenger.berth_type = berth_type
         
-        try:
-            db.session.commit()
-            return True
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error allocating seats: {e}")
-            return False
+        # Let the caller handle commit/rollback for proper transaction atomicity
+        return True
     
     def _get_existing_seats(self, train_id, journey_date, coach_class):
         """Get all existing seat allocations for the train/date/class"""

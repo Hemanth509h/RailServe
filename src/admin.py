@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from functools import wraps
 from .models import (User, Train, Station, Booking, Payment, TrainRoute, TatkalTimeSlot, TatkalOverride, 
                     Waitlist, RefundRequest, PlatformManagement, TrainPlatformAssignment, ComplaintManagement, 
-                    PerformanceMetrics, FoodCateringManagement, LostAndFound, DynamicPricing, PNRStatusTracking)
+                    PerformanceMetrics, LostAndFound, DynamicPricing, PNRStatusTracking)
 from sqlalchemy import and_
 from .app import db
 from datetime import datetime, timedelta, date
@@ -1873,32 +1873,6 @@ def pnr_inquiry_system():
     
     return render_template('admin/pnr_inquiry.html', search=search)
 
-@admin_bp.route('/food-catering')
-@admin_required
-def food_catering_management():
-    """Food and catering vendor management"""
-    search = request.args.get('search', '').strip()
-    station_filter = request.args.get('station', '')
-    
-    query = db.session.query(FoodCateringManagement, Station).join(Station)
-    
-    if search:
-        query = query.filter(
-            db.or_(
-                FoodCateringManagement.vendor_name.ilike(f'%{search}%'),
-                Station.name.ilike(f'%{search}%')
-            )
-        )
-    
-    if station_filter:
-        query = query.filter(FoodCateringManagement.station_id == station_filter)
-    
-    vendors = query.all()
-    stations = Station.query.filter_by(active=True).all()
-    
-    return render_template('admin/food_catering.html', 
-                         vendors=vendors, stations=stations,
-                         search=search, station_filter=station_filter)
 
 @admin_bp.route('/lost-and-found')
 @admin_required

@@ -94,6 +94,13 @@ def process_payment(booking_id):
         return redirect(url_for('payment.pay', booking_id=booking_id))
     
     try:
+        # Lock the booking record for atomic processing
+        booking = db.session.query(Booking).filter_by(id=booking.id).with_for_update().first()
+        
+        if not booking or booking.user_id != current_user.id:
+            flash('Booking not found or access denied', 'error')
+            return redirect(url_for('index'))
+        
         # Double-check for existing payment (race condition protection)
         existing_payment = Payment.query.filter_by(booking_id=booking.id, status='success').first()
         if existing_payment:
@@ -117,13 +124,32 @@ def process_payment(booking_id):
         db.session.add(payment)
         
         # Update booking status based on current state
+        original_status = booking.status
         if booking.status == 'waitlisted':
             # Keep as waitlisted but mark payment as completed
             pass
         elif booking.status == 'pending_payment':
             booking.status = 'confirmed'
         
-        # Commit all changes
+        # CRITICAL FIX: Allocate seats for confirmed bookings after payment
+        if booking.status == 'confirmed':
+            # Check if seats are already allocated (idempotency)
+            passengers_with_seats = db.session.query(Passenger).filter_by(
+                booking_id=booking.id
+            ).filter(Passenger.seat_number.isnot(None)).count()
+            
+            if passengers_with_seats == 0:
+                from .seat_allocation import SeatAllocator
+                seat_allocator = SeatAllocator()
+                allocation_success = seat_allocator.allocate_seats(booking.id)
+                
+                if not allocation_success:
+                    # Seat allocation failed - rollback everything
+                    db.session.rollback()
+                    flash('Payment failed: Unable to allocate seats. Please try again.', 'error')
+                    return redirect(url_for('payment.pay', booking_id=booking_id))
+        
+        # Commit all changes atomically
         db.session.commit()
         
         flash(f'Payment successful! Transaction ID: {transaction_id}', 'success')
@@ -261,7 +287,14 @@ def process_session_payment():
         if final_status == 'confirmed':
             from .seat_allocation import SeatAllocator
             seat_allocator = SeatAllocator()
-            seat_allocator.allocate_seats(booking.id)
+            allocation_success = seat_allocator.allocate_seats(booking.id)
+            
+            if not allocation_success:
+                # Seat allocation failed - rollback everything
+                db.session.rollback()
+                session.pop('pending_booking', None)
+                flash('Payment failed: Unable to allocate seats. Please try booking again.', 'error')
+                return redirect(url_for('index'))
         
         # Handle waitlist if needed
         if final_status == 'waitlisted':

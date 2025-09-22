@@ -806,26 +806,6 @@ class PerformanceMetrics(db.Model):
     def __init__(self, **kwargs):
         super(PerformanceMetrics, self).__init__(**kwargs)
 
-class FoodCateringManagement(db.Model):
-    """Food and catering service management"""
-    id = db.Column(db.Integer, primary_key=True)
-    vendor_name = db.Column(db.String(100), nullable=False)
-    contact_phone = db.Column(db.String(15), nullable=False)
-    contact_email = db.Column(db.String(120))
-    station_id = db.Column(db.Integer, db.ForeignKey('station.id'), nullable=False)
-    service_type = db.Column(db.String(20), nullable=False)  # pantry_car, platform_delivery, counter
-    cuisine_types = db.Column(db.String(200))  # Indian, Chinese, South Indian, etc.
-    rating = db.Column(db.Float, default=0.0)
-    active = db.Column(db.Boolean, default=True)
-    license_number = db.Column(db.String(50))
-    license_expiry = db.Column(db.Date)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    station = db.relationship('Station', backref='catering_vendors')
-    
-    def __init__(self, **kwargs):
-        super(FoodCateringManagement, self).__init__(**kwargs)
 
 class LostAndFound(db.Model):
     """Lost and found item tracking system"""

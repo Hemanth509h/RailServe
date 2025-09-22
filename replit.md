@@ -11,11 +11,10 @@ RailServe is a comprehensive railway reservation system built with Flask and Pos
 - **Workflow Configuration**: Set up proper webview output for frontend display on port 5000
 - **Production Deployment**: Configured autoscale deployment with Gunicorn WSGI server
 - **Environment Integration**: Fully compatible with Replit's database and hosting environment
-- **Modern UI/UX Redesign**: Completely redesigned food ordering templates with Swiggy/Zomato-inspired modern styling including responsive cards, gradients, and enhanced user experience
+- **Modern UI/UX Redesign**: Enhanced user interface with modern styling including responsive cards, gradients, and improved user experience
 - **Group Booking Enhancement**: Updated group booking templates with modern design, improved form layouts, and better visual hierarchy
 - **Critical Bug Fixes**: Resolved GroupBooking template errors by implementing proper get_total_amount() method calls
-- **Food Cart Functionality**: Enhanced CSRF token handling for food cart operations with proper header configuration
-- **Complete Food Booking System**: All food ordering features are fully operational from restaurant selection to order completion
+- **Enhanced Security**: Improved CSRF token handling and proper header configuration
 - **Complete Group Booking System**: Created missing templates (manage.html, add_booking.html) and fixed all functionality issues
 - **Code Quality Improvements**: Fixed all LSP diagnostic errors in groups.py with proper null checking and type safety
 
@@ -33,7 +32,6 @@ RailServe is a comprehensive railway reservation system built with Flask and Pos
 2. **Booking System** (`src/booking.py`) - Train search, ticket booking, seat allocation
 3. **Admin Panel** (`src/admin.py`) - Comprehensive admin dashboard and management
 4. **Payment System** (`src/payment.py`) - Payment processing and transaction management
-5. **Food Ordering** (`src/food.py`) - Restaurant integration and food delivery to trains
 6. **PDF Generation** (`src/pdf_generator.py`, `src/pdf_routes.py`) - Ticket and document generation
 7. **Group Bookings** (`src/groups.py`) - Family and corporate group booking management
 
@@ -42,7 +40,6 @@ RailServe is a comprehensive railway reservation system built with Flask and Pos
 - **Stations**: 1500+ railway stations across India
 - **Trains**: 1000+ trains with routes and schedules
 - **Bookings**: Comprehensive booking system with waitlist, tatkal, and quota management
-- **Food System**: Restaurants, menus, and order management
 - **Payment Tracking**: Complete payment and transaction history
 
 ### Features
@@ -50,7 +47,6 @@ RailServe is a comprehensive railway reservation system built with Flask and Pos
 - Seat allocation and availability management
 - Waitlist and RAC (Reservation Against Cancellation) handling
 - Tatkal booking system with time slots
-- Food ordering during journey
 - Group bookings for families/corporate
 - Admin dashboard with analytics
 - PDF ticket generation with QR codes
@@ -67,7 +63,6 @@ RailServe is a comprehensive railway reservation system built with Flask and Pos
 │   ├── booking.py         # Booking system
 │   ├── admin.py           # Admin panel
 │   ├── payment.py         # Payment processing
-│   ├── food.py            # Food ordering
 │   ├── groups.py          # Group bookings
 │   ├── pdf_*.py           # PDF generation
 │   └── utils.py           # Utility functions
@@ -98,7 +93,6 @@ Run `python setup_database.py` to initialize the database with comprehensive tes
 - 1500+ railway stations
 - 1000+ trains with realistic routes
 - Sample bookings and transactions
-- Food restaurants and menus
 - Complete system data for testing
 
 ## User Preferences
