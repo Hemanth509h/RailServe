@@ -81,7 +81,7 @@
         <a href="javascript:history.back()" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Go Back
         </a>
-        <a href="{{ url_for('search_trains') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-outline">
+        <a href="{{ url_for('index') }}" class="btn btn-outline">
             <i class="fas fa-search"></i> Search Trains
         </a>
     </div>

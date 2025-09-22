@@ -100,8 +100,8 @@
         <a href="javascript:location.reload()" class="btn btn-secondary">
             <i class="fas fa-sync-alt"></i> Try Again
         </a>
-        <a href="{{ url_for('contact') if url_for('contact') else '#' }}" class="btn btn-outline">
-            <i class="fas fa-envelope"></i> Contact Support
+        <a href="{{ url_for('auth.profile') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-outline">
+            <i class="fas fa-user"></i> My Account
         </a>
     </div>
 </div>
