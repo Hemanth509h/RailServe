@@ -17,15 +17,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Railway Booking App"
+args = "RailServe App"
 
 [[workflows.workflow]]
-name = "Railway Booking App"
+name = "RailServe App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "SESSION_SECRET=\"$(python -c 'import secrets; print(secrets.token_hex(32))')\" python main.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -36,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 35019
+localPort = 34725
 externalPort = 3000
 
 [deployment]
