@@ -61,12 +61,10 @@ def setup_database():
 def populate_test_data(db):
     """Populate database with comprehensive test data using actual models"""
     
-    # Import models
+    # Import actual models (only the ones that exist)
     from src.models import (
         User, Station, Train, TrainRoute, Booking, Passenger, Payment, Waitlist,
         TatkalTimeSlot, RefundRequest, TrainStatus, SeatAvailability, ChartPreparation,
-        Restaurant, MenuItem, FoodOrder, FoodOrderItem, UserDietaryPreference,
-        FoodReview, GroupFoodOrder, FoodOrderTracking, FoodRecommendation,
         GroupBooking, GroupMemberInvitation, GroupMemberPayment, GroupMessage,
         LoyaltyProgram, NotificationPreferences, TatkalOverride
     )
@@ -83,7 +81,6 @@ def populate_test_data(db):
     logger.info("Creating train routes...")
     create_train_routes(db, Train, Station, TrainRoute)
     
-    
     logger.info("Creating bookings and related data...")
     create_bookings_and_related_data(db, User, Train, Station, TrainRoute, GroupBooking, 
                                    Booking, Passenger, Payment, Waitlist)
@@ -91,6 +88,13 @@ def populate_test_data(db):
     logger.info("Creating additional features data...")
     create_additional_features(db, User, TatkalTimeSlot, LoyaltyProgram, 
                              NotificationPreferences, TatkalOverride)
+    
+    logger.info("Creating train status and seat availability data...")
+    create_operational_data(db, Train, Station, TrainStatus, SeatAvailability, ChartPreparation)
+    
+    logger.info("Creating group and loyalty features...")
+    create_group_and_loyalty_data(db, User, GroupBooking, GroupMemberInvitation, 
+                                GroupMemberPayment, GroupMessage, LoyaltyProgram)
 
 def create_users(db, User):
     """Create users including admin and test users"""
@@ -335,7 +339,6 @@ def create_train_routes(db, Train, Station, TrainRoute):
     
     logger.info(f"Created {len(train_routes)} train route entries")
 
-
 def create_bookings_and_related_data(db, User, Train, Station, TrainRoute, GroupBooking, 
                                    Booking, Passenger, Payment, Waitlist):
     """Create bookings, passengers, payments, and related data"""
@@ -545,47 +548,151 @@ def create_additional_features(db, User, TatkalTimeSlot, LoyaltyProgram,
             email_notifications=random.choice([True, False]),
             sms_notifications=random.choice([True, False]),
             push_notifications=random.choice([True, False]),
-            booking_confirmations=True,  # Usually always true
+            booking_confirmations=True,  # Always True for booking confirmations
             journey_reminders=random.choice([True, False]),
             train_delay_alerts=random.choice([True, False]),
-            food_order_updates=random.choice([True, False]),
             promotional_offers=random.choice([True, False])
         )
         notification_prefs.append(prefs)
     
     db.session.add_all(notification_prefs)
     
-    # Create Tatkal override record
+    # Create a Tatkal override record
     tatkal_override = TatkalOverride(
         is_enabled=False,
         enabled_by=users[0].id,  # Admin user
-        enabled_at=datetime.utcnow(),
         override_message='Tatkal booking currently follows normal schedule',
-        coach_classes='',  # Empty means all classes
+        coach_classes='',
         valid_until=None
     )
-    db.session.add(tatkal_override)
     
+    db.session.add(tatkal_override)
     db.session.commit()
     
-    logger.info(f"Created {len(tatkal_slots)} Tatkal time slots, {len(loyalty_programs)} loyalty programs, {len(notification_prefs)} notification preferences, and Tatkal override settings")
+    logger.info(f"Created {len(tatkal_slots)} Tatkal time slots, {len(loyalty_programs)} loyalty programs, and {len(notification_prefs)} notification preferences")
 
-if __name__ == '__main__':
-    setup_database()
+def create_operational_data(db, Train, Station, TrainStatus, SeatAvailability, ChartPreparation):
+    """Create operational data for trains"""
+    trains = Train.query.all()
+    stations = Station.query.all()
     
-    logger.info("=" * 60)
-    logger.info("Database initialization complete!")
-    logger.info("")
-    logger.info("Database now contains:")
-    logger.info("- Users: 101 (1 admin + 100 test users)")
-    logger.info("- Stations: 1500 across Indian states")
-    logger.info("- Trains: 1250 with realistic configurations")
-    logger.info("- Train Routes: Complete route networks")
-    logger.info("- Bookings: 1200+ with passengers and payments")
-    logger.info("- Restaurants & Menus: 200+ stations with food options")
-    logger.info("- Waitlist: Comprehensive waitlist management")
-    logger.info("- Additional Features: Loyalty programs, Tatkal slots, etc.")
-    logger.info("")
-    logger.info("Login credentials:")
-    logger.info("Admin: username=admin, password=admin123")
-    logger.info("Test users: username=user_001-100, password=user123")
+    train_statuses = []
+    seat_availabilities = []
+    chart_preparations = []
+    
+    # Create train status for some trains
+    for train in random.sample(trains, min(200, len(trains))):
+        current_station = random.choice(stations)
+        status = TrainStatus(
+            train_id=train.id,
+            current_station_id=current_station.id,
+            status=random.choice(['On Time', 'Delayed', 'Cancelled']),
+            delay_minutes=random.randint(0, 180) if random.random() < 0.3 else 0,
+            journey_date=fake.date_between(start_date='today', end_date='+30d'),
+            last_updated=fake.date_time_between(start_date='-1h', end_date='now')
+        )
+        train_statuses.append(status)
+    
+    # Create seat availability data
+    for train in random.sample(trains, min(300, len(trains))):
+        from_station = random.choice(stations)
+        to_station = random.choice(stations)
+        if from_station.id != to_station.id:
+            availability = SeatAvailability(
+                train_id=train.id,
+                from_station_id=from_station.id,
+                to_station_id=to_station.id,
+                journey_date=fake.date_between(start_date='today', end_date='+60d'),
+                coach_class=random.choice(['SL', 'AC3', 'AC2', 'AC1', '2S', 'CC']),
+                quota=random.choice(['general', 'tatkal', 'ladies']),
+                available_seats=random.randint(0, 100),
+                waiting_list=random.randint(0, 50),
+                rac_seats=random.randint(0, 20),
+                last_updated=fake.date_time_between(start_date='-1h', end_date='now')
+            )
+            seat_availabilities.append(availability)
+    
+    # Create chart preparation data
+    for train in random.sample(trains, min(150, len(trains))):
+        chart = ChartPreparation(
+            train_id=train.id,
+            journey_date=fake.date_between(start_date='today', end_date='+30d'),
+            status=random.choice(['pending', 'prepared', 'final']),
+            chart_prepared_at=fake.date_time_between(start_date='-4h', end_date='now') if random.random() < 0.7 else None,
+            final_chart_at=fake.date_time_between(start_date='-2h', end_date='now') if random.random() < 0.3 else None,
+            confirmed_from_waitlist=random.randint(0, 20),
+            cancelled_waitlist=random.randint(0, 10)
+        )
+        chart_preparations.append(chart)
+    
+    db.session.add_all(train_statuses)
+    db.session.add_all(seat_availabilities)
+    db.session.add_all(chart_preparations)
+    db.session.commit()
+    
+    logger.info(f"Created {len(train_statuses)} train statuses, {len(seat_availabilities)} seat availabilities, and {len(chart_preparations)} chart preparations")
+
+def create_group_and_loyalty_data(db, User, GroupBooking, GroupMemberInvitation, 
+                                GroupMemberPayment, GroupMessage, LoyaltyProgram):
+    """Create group booking and loyalty related data"""
+    users = User.query.all()
+    group_bookings = GroupBooking.query.all()
+    
+    group_invitations = []
+    group_payments = []
+    group_messages = []
+    
+    # Create group member invitations
+    for group in random.sample(group_bookings, min(30, len(group_bookings))):
+        for _ in range(random.randint(1, 5)):
+            invitation = GroupMemberInvitation(
+                group_booking_id=group.id,
+                inviter_id=group.group_leader_id,
+                invited_email=fake.email(),
+                invited_user_id=random.choice(users).id if random.random() < 0.7 else None,
+                status=random.choice(['pending', 'accepted', 'declined']),
+                message=fake.text(max_nb_chars=150),
+                created_at=fake.date_time_between(start_date='-30d', end_date='now'),
+                responded_at=fake.date_time_between(start_date='-20d', end_date='now') if random.random() < 0.6 else None
+            )
+            group_invitations.append(invitation)
+    
+    # Create group member payments
+    for group in random.sample(group_bookings, min(25, len(group_bookings))):
+        for _ in range(random.randint(1, 4)):
+            payment = GroupMemberPayment(
+                group_booking_id=group.id,
+                booking_id=random.choice(group.individual_bookings).id if group.individual_bookings else None,
+                user_id=random.choice(users).id,
+                amount_due=random.uniform(1000, 5000),
+                amount_paid=random.uniform(0, 5000),
+                payment_method=random.choice(['credit_card', 'debit_card', 'upi', 'wallet']),
+                payment_reference=f"PAY{random.randint(100000, 999999)}",
+                status=random.choice(['pending', 'partial', 'paid']),
+                created_at=fake.date_time_between(start_date='-15d', end_date='now'),
+                paid_at=fake.date_time_between(start_date='-10d', end_date='now') if random.random() < 0.7 else None
+            )
+            group_payments.append(payment)
+    
+    # Create group messages
+    for group in random.sample(group_bookings, min(20, len(group_bookings))):
+        for _ in range(random.randint(2, 8)):
+            message = GroupMessage(
+                group_booking_id=group.id,
+                sender_id=group.group_leader_id if random.random() < 0.6 else random.choice(users).id,
+                message=fake.text(max_nb_chars=300),
+                message_type=random.choice(['general', 'announcement', 'reminder']),
+                is_important=random.choice([True, False]),
+                created_at=fake.date_time_between(start_date='-7d', end_date='now')
+            )
+            group_messages.append(message)
+    
+    db.session.add_all(group_invitations)
+    db.session.add_all(group_payments)
+    db.session.add_all(group_messages)
+    db.session.commit()
+    
+    logger.info(f"Created {len(group_invitations)} group invitations, {len(group_payments)} group payments, and {len(group_messages)} group messages")
+
+if __name__ == "__main__":
+    setup_database()
