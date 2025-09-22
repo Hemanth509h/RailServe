@@ -83,8 +83,6 @@ def populate_test_data(db):
     logger.info("Creating train routes...")
     create_train_routes(db, Train, Station, TrainRoute)
     
-    logger.info("Creating restaurants and menus...")
-    create_restaurants_and_menus(db, Station, Restaurant, MenuItem)
     
     logger.info("Creating bookings and related data...")
     create_bookings_and_related_data(db, User, Train, Station, TrainRoute, GroupBooking, 
@@ -337,115 +335,6 @@ def create_train_routes(db, Train, Station, TrainRoute):
     
     logger.info(f"Created {len(train_routes)} train route entries")
 
-def create_restaurants_and_menus(db, Station, Restaurant, MenuItem):
-    """Create restaurants and their menus"""
-    stations = Station.query.limit(200).all()  # Restaurants in 200 major stations
-    
-    restaurants = []
-    menu_items = []
-    
-    # Indian restaurant names and cuisine types
-    restaurant_names = [
-        'Annapurna Restaurant', 'Bhojanalaya', 'Sagar Restaurant', 'Udupi Restaurant',
-        'Taj Restaurant', 'Royal Restaurant', 'Punjabi Dhaba', 'South Indian Kitchen',
-        'Rajasthani Thali', 'Bengali Sweets', 'Hyderabadi Biryani', 'Chettinad Restaurant',
-        'Gujarat Bhawan', 'Kerala Kitchen', 'Marwari Bhojnalaya', 'Awadhi Kitchen'
-    ]
-    
-    cuisine_types = ['Vegetarian', 'Non-Vegetarian', 'Both']
-    
-    # Menu items by category
-    menu_categories = {
-        'Breakfast': ['Idli Sambar', 'Dosa', 'Poha', 'Upma', 'Paratha', 'Bread Omelette', 'Tea', 'Coffee'],
-        'Lunch': ['Thali', 'Rice Meal', 'Biryani', 'Pulao', 'Dal Rice', 'Curd Rice', 'Chapati Sabzi'],
-        'Dinner': ['Butter Chicken', 'Paneer Makhani', 'Fish Curry', 'Mutton Curry', 'Veg Curry', 'Fried Rice'],
-        'Snacks': ['Samosa', 'Pakora', 'Chaat', 'Sandwich', 'Vadapav', 'Bhelpuri', 'Pav Bhaji'],
-        'Beverages': ['Tea', 'Coffee', 'Lassi', 'Fresh Juice', 'Soft Drinks', 'Buttermilk']
-    }
-    
-    for station in stations:
-        # 1-3 restaurants per station
-        num_restaurants = random.randint(1, 3)
-        
-        for _ in range(num_restaurants):
-            restaurant_name = f"{random.choice(restaurant_names)} - {station.city}"
-            
-            restaurant = Restaurant(
-                name=restaurant_name,
-                station_id=station.id,
-                contact_number=f"+91{random.randint(7000000000, 9999999999)}",
-                email=f"info@{restaurant_name.lower().replace(' ', '').replace('-', '')}restaurant.com",
-                cuisine_type=random.choice(cuisine_types),
-                rating=round(random.uniform(3.5, 4.8), 1),
-                delivery_time=random.randint(20, 45),
-                minimum_order=random.choice([0, 100, 150, 200]),
-                delivery_charge=random.choice([0, 20, 30, 50]),
-                active=True,
-                created_at=fake.date_time_between(start_date='-3y', end_date='now')
-            )
-            restaurants.append(restaurant)
-    
-    db.session.add_all(restaurants)
-    db.session.commit()  # Get restaurant IDs
-    
-    # Create menu items for each restaurant
-    for restaurant in restaurants:
-        # Each restaurant will have 15-30 menu items
-        num_items = random.randint(15, 30)
-        
-        for _ in range(num_items):
-            category = random.choice(list(menu_categories.keys()))
-            item_name = random.choice(menu_categories[category])
-            
-            # Add variation to item names
-            variations = ['Special', 'Deluxe', 'Premium', 'Regular', 'Chef\'s', 'House']
-            if random.random() < 0.3:  # 30% chance of variation
-                item_name = f"{random.choice(variations)} {item_name}"
-            
-            # Determine food type based on restaurant and item
-            if restaurant.cuisine_type == 'Vegetarian':
-                food_type = 'Vegetarian'
-            elif restaurant.cuisine_type == 'Non-Vegetarian' and item_name in ['Butter Chicken', 'Fish Curry', 'Mutton Curry', 'Bread Omelette']:
-                food_type = 'Non-Vegetarian'
-            else:
-                food_type = random.choice(['Vegetarian', 'Non-Vegetarian'] if restaurant.cuisine_type == 'Both' else ['Vegetarian'])
-            
-            # Price based on category and type
-            price_ranges = {
-                'Breakfast': (30, 120),
-                'Lunch': (80, 250),
-                'Dinner': (120, 400),
-                'Snacks': (25, 80),
-                'Beverages': (15, 60)
-            }
-            
-            min_price, max_price = price_ranges[category]
-            if food_type == 'Non-Vegetarian':
-                max_price = int(max_price * 1.5)  # Non-veg is typically more expensive
-            
-            price = random.randint(min_price, max_price)
-            
-            menu_item = MenuItem(
-                restaurant_id=restaurant.id,
-                name=item_name,
-                description=fake.text(max_nb_chars=200),
-                price=price,
-                category=category,
-                food_type=food_type,
-                image_url=f"https://example.com/images/{item_name.lower().replace(' ', '_')}.jpg",
-                preparation_time=random.randint(10, 30),
-                available=random.choice([True] * 9 + [False]),  # 90% available
-                is_popular=random.choice([True] * 2 + [False] * 8),  # 20% popular
-                ingredients=f"Fresh {', '.join(fake.words(nb=5))}",
-                nutrition_info=f"Calories: {random.randint(200, 800)}, Protein: {random.randint(5, 30)}g",
-                created_at=fake.date_time_between(start_date='-2y', end_date='now')
-            )
-            menu_items.append(menu_item)
-    
-    db.session.add_all(menu_items)
-    db.session.commit()
-    
-    logger.info(f"Created {len(restaurants)} restaurants and {len(menu_items)} menu items")
 
 def create_bookings_and_related_data(db, User, Train, Station, TrainRoute, GroupBooking, 
                                    Booking, Passenger, Payment, Waitlist):
