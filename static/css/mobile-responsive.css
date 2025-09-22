@@ -1,0 +1,1018 @@
+/* ===== COMPREHENSIVE MOBILE-RESPONSIVE DESIGN FOR ALL PAGES ===== */
+
+/* ===== BASE MOBILE LAYOUT ===== */
+@media (max-width: 768px) {
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        overflow-x: hidden;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .container {
+        padding: 12px;
+        max-width: 100%;
+    }
+
+    /* Prevent horizontal scrolling */
+    .row {
+        margin: 0;
+    }
+
+    .col {
+        padding: 0 8px;
+    }
+}
+
+/* ===== RESPONSIVE NAVIGATION ===== */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 8px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        backdrop-filter: blur(10px);
+    }
+
+    .nav-container {
+        padding: 0 16px;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .nav-brand {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+    }
+
+    .nav-brand a {
+        font-size: 1.25rem;
+    }
+
+    .nav-toggle {
+        display: block;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+    }
+
+    .nav-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-menu {
+        width: 100%;
+        flex-direction: column;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        margin-top: 8px;
+    }
+
+    .nav-menu.active {
+        max-height: 400px;
+        padding: 8px 0;
+    }
+
+    .nav-link {
+        display: block;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin: 2px 8px;
+        transition: all 0.2s;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-link:hover {
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        text-decoration: none;
+    }
+
+    .nav-search {
+        padding: 8px 16px;
+        width: 100%;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        font-size: 16px; /* Prevents zoom on iOS */
+        min-height: 42px;
+    }
+
+    .search-btn {
+        padding: 10px 16px;
+        border-radius: 6px;
+        min-height: 42px;
+        min-width: 44px;
+    }
+
+    .nav-auth {
+        padding: 8px 16px;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .nav-auth .btn {
+        width: 100%;
+        text-align: center;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .dropdown {
+        position: static;
+    }
+
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        margin-top: 4px;
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .dropdown-content a {
+        padding: 10px 12px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+/* ===== RESPONSIVE HERO SECTION ===== */
+@media (max-width: 768px) {
+    .hero {
+        padding: 40px 20px;
+        text-align: center;
+        min-height: auto;
+    }
+
+    .hero-content {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+        margin-bottom: 16px;
+        line-height: 1.2;
+    }
+
+    .hero p {
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }
+
+    .hero-cta {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .hero-cta .btn {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    #hero-canvas {
+        height: 200px;
+        margin-top: 20px;
+    }
+}
+
+/* ===== RESPONSIVE FORMS ===== */
+@media (max-width: 768px) {
+    .search-container {
+        padding: 20px 16px;
+        margin: 0 16px;
+        border-radius: 12px;
+    }
+
+    .search-form {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .search-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-group {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .search-group label {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .search-group input,
+    .search-group select {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 8px;
+        min-height: 48px;
+    }
+
+    .search-btn {
+        width: 100%;
+        padding: 16px;
+        font-size: 1.1rem;
+        min-height: 52px;
+        margin-top: 8px;
+    }
+
+    .form-container {
+        padding: 20px 16px;
+        margin: 0 16px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 16px;
+        border-radius: 8px;
+        min-height: 48px;
+    }
+
+    .form-group textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        min-height: 48px;
+        font-size: 1rem;
+    }
+
+    .checkbox-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .checkbox-item {
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--bg-secondary);
+    }
+}
+
+/* ===== RESPONSIVE CARDS ===== */
+@media (max-width: 768px) {
+    .train-card {
+        margin: 0 16px 16px 16px;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .train-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .train-info {
+        width: 100%;
+    }
+
+    .train-number {
+        font-size: 1.1rem;
+    }
+
+    .train-name {
+        font-size: 0.9rem;
+    }
+
+    .train-route {
+        flex-direction: column;
+        gap: 8px;
+        text-align: left;
+    }
+
+    .route-station {
+        text-align: left;
+    }
+
+    .route-arrow {
+        transform: rotate(90deg);
+        margin: 4px 0;
+    }
+
+    .train-schedule {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin: 16px 0;
+    }
+
+    .schedule-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+    }
+
+    .train-classes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+        margin: 16px 0;
+    }
+
+    .class-option {
+        padding: 10px 8px;
+        text-align: center;
+        font-size: 0.8rem;
+    }
+
+    .train-actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .train-actions .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .booking-card {
+        margin: 0 16px 16px 16px;
+        padding: 16px;
+    }
+
+    .booking-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .booking-status {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+
+    .booking-details {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .detail-group {
+        padding: 10px;
+        background: var(--bg-secondary);
+        border-radius: 6px;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+    }
+
+    .detail-value {
+        font-size: 0.9rem;
+    }
+
+    .booking-actions {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .booking-actions .btn {
+        width: 100%;
+        min-height: 42px;
+    }
+}
+
+/* ===== RESPONSIVE TABLES ===== */
+@media (max-width: 768px) {
+    .table-responsive {
+        margin: 0 16px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .data-table {
+        font-size: 0.8rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 6px;
+        white-space: nowrap;
+    }
+
+    /* Convert tables to cards on very small screens */
+    @media (max-width: 480px) {
+        .table-responsive {
+            overflow: visible;
+        }
+
+        .data-table {
+            display: none;
+        }
+
+        .mobile-table {
+            display: block;
+        }
+
+        .mobile-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .mobile-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mobile-row:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .mobile-value {
+            font-weight: 500;
+            color: var(--text-primary);
+            text-align: right;
+        }
+    }
+}
+
+/* ===== RESPONSIVE BUTTONS ===== */
+@media (max-width: 768px) {
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        min-height: 36px;
+    }
+
+    .btn-lg {
+        padding: 16px 24px;
+        font-size: 1rem;
+        min-height: 52px;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+    }
+
+    .floating-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ===== RESPONSIVE MODALS ===== */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 20px;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: none;
+        max-height: 90vh;
+        margin: 0;
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        padding: 20px 20px 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+    }
+
+    .modal-close {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+    }
+
+    .modal-body {
+        padding: 20px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        padding: 16px 20px 20px 20px;
+        flex-direction: column;
+        gap: 8px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+}
+
+/* ===== RESPONSIVE SEAT SELECTION ===== */
+@media (max-width: 768px) {
+    .seat-map-container {
+        padding: 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .seat-map {
+        min-width: 300px;
+        font-size: 0.8rem;
+    }
+
+    .seat {
+        width: 24px;
+        height: 24px;
+        margin: 2px;
+        font-size: 0.7rem;
+    }
+
+    .seat-legend {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px;
+        margin: 16px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+    }
+
+    .seat-info {
+        padding: 16px;
+        margin: 0 16px;
+        border-radius: 8px;
+        background: var(--bg-secondary);
+    }
+
+    .selected-seats {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .selected-seat {
+        padding: 4px 8px;
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+}
+
+/* ===== RESPONSIVE PAYMENT ===== */
+@media (max-width: 768px) {
+    .payment-container {
+        padding: 16px;
+    }
+
+    .payment-summary {
+        margin-bottom: 20px;
+        padding: 16px;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .payment-method {
+        padding: 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .payment-method.selected {
+        border-color: var(--accent-color);
+        background: var(--accent-color-light);
+    }
+
+    .payment-method-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .payment-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        border-radius: 6px;
+    }
+
+    .card-form {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 12px;
+    }
+
+    .card-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* ===== RESPONSIVE ALERTS & MESSAGES ===== */
+@media (max-width: 768px) {
+    .alert {
+        margin: 8px 16px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+
+    .flash-messages {
+        padding: 0 16px;
+    }
+
+    .flash-message {
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .toast {
+        right: 16px;
+        top: 16px;
+        max-width: calc(100% - 32px);
+        min-width: 280px;
+    }
+
+    .notification {
+        padding: 12px 16px;
+        margin: 8px 16px;
+        border-radius: 8px;
+    }
+}
+
+/* ===== RESPONSIVE FOOTER ===== */
+@media (max-width: 768px) {
+    .footer {
+        padding: 32px 16px 20px 16px;
+        text-align: center;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .footer-section {
+        text-align: center;
+    }
+
+    .footer-section h4 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+
+    .footer-section ul {
+        gap: 8px;
+    }
+
+    .footer-section a {
+        font-size: 0.9rem;
+        padding: 6px 0;
+        display: block;
+    }
+
+    .footer-social {
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .social-link {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .footer-bottom {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-color);
+        text-align: center;
+        font-size: 0.8rem;
+    }
+}
+
+/* ===== RESPONSIVE UTILITIES ===== */
+@media (max-width: 768px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block !important;
+    }
+
+    .mobile-flex {
+        display: flex !important;
+    }
+
+    .mobile-grid {
+        display: grid !important;
+    }
+
+    .mobile-text-center {
+        text-align: center !important;
+    }
+
+    .mobile-text-left {
+        text-align: left !important;
+    }
+
+    .mobile-full-width {
+        width: 100% !important;
+    }
+
+    .mobile-no-padding {
+        padding: 0 !important;
+    }
+
+    .mobile-small-padding {
+        padding: 8px !important;
+    }
+
+    .mobile-margin-bottom {
+        margin-bottom: 16px !important;
+    }
+
+    .mobile-no-margin {
+        margin: 0 !important;
+    }
+}
+
+/* ===== LANDSCAPE TABLET (481px - 768px) ===== */
+@media (min-width: 481px) and (max-width: 768px) {
+    .search-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .search-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .train-header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .train-classes {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .booking-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .payment-methods {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-footer {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+
+    .modal-footer .btn {
+        width: auto;
+        min-width: 120px;
+    }
+}
+
+/* ===== VERY SMALL SCREENS (320px - 480px) ===== */
+@media (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+
+    .container {
+        padding: 8px;
+    }
+
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .hero p {
+        font-size: 0.9rem;
+    }
+
+    .train-card {
+        margin: 0 8px 12px 8px;
+        padding: 12px;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        min-height: 40px;
+    }
+
+    .search-group input,
+    .search-group select {
+        padding: 12px 14px;
+        min-height: 44px;
+    }
+
+    .nav-link {
+        padding: 10px 12px;
+        min-height: 40px;
+    }
+
+    .modal-content {
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+}
+
+/* ===== DARK MODE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    [data-theme="dark"] .mobile-card,
+    [data-theme="dark"] .detail-group,
+    [data-theme="dark"] .summary-row,
+    [data-theme="dark"] .payment-method {
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] .nav-menu {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    [data-theme="dark"] .search-container,
+    [data-theme="dark"] .form-container {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+    }
+}
+
+/* ===== TOUCH IMPROVEMENTS ===== */
+@media (max-width: 768px) {
+    /* Larger touch targets */
+    button, .btn, .nav-link, .clickable {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Prevent text selection on touch */
+    .btn, .nav-link, .seat, .tab, .card-clickable {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Better scrolling */
+    .scrollable, .table-responsive, .modal-body {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Remove tap highlights */
+    button, .btn, .nav-link, a {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Prevent zoom on form inputs */
+    input, select, textarea {
+        font-size: 16px !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* Custom select styling for mobile */
+    select {
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        padding-right: 40px;
+    }
+}

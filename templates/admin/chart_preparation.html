@@ -19,7 +19,7 @@
 
 .chart-header {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
 }
@@ -173,6 +173,301 @@
     color: white;
 }
 
+/* Enhanced Filter Styles */
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 150px;
+}
+
+.filter-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.custom-date-section {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.date-input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Bulk Actions Styles */
+.bulk-actions-section {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bulk-actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.bulk-actions-header h3 {
+    margin: 0;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auto-refresh-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #007bff;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.bulk-actions-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bulk-btn {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bulk-prepare { background: #3b82f6; color: white; }
+.bulk-finalize { background: #10b981; color: white; }
+.bulk-export { background: #8b5cf6; color: white; }
+.bulk-refresh { background: #6b7280; color: white; }
+
+.bulk-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Enhanced Chart Stats Grid */
+.chart-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.text-pending {
+    color: #f59e0b;
+    font-style: italic;
+}
+
+/* Booking Progress Bar */
+.booking-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #3b82f6);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    min-width: 40px;
+}
+
+/* Seat Breakdown */
+.seat-breakdown {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.seat-item {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.seat-item.booked {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.seat-item.available {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Waitlist Info */
+.waitlist-info {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.waitlist-count {
+    color: #059669;
+    font-weight: 500;
+}
+
+.waitlist-cancelled {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+/* Revenue Display */
+.revenue-amount {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #059669;
+}
+
+/* Chart Conditions & Alerts */
+.chart-conditions {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.condition-alert {
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.condition-alert.low-booking {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.condition-alert.high-demand {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.condition-alert.waitlist-activity {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left: 4px solid #3b82f6;
+}
+
 @media (max-width: 768px) {
     .search-controls {
         flex-direction: column;
@@ -183,8 +478,29 @@
         min-width: 100%;
     }
     
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
     .filter-group {
-        justify-content: space-between;
+        min-width: 100%;
+    }
+    
+    .bulk-actions-controls {
+        flex-direction: column;
+    }
+    
+    .bulk-btn {
+        justify-content: center;
+    }
+    
+    .chart-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .custom-date-section {
+        flex-direction: column;
     }
 }
 </style>
@@ -197,35 +513,111 @@
         <p>Manage chart preparation and seat assignments for trains</p>
     </div>
 
-    <!-- Search and Filter Controls -->
+    <!-- Enhanced Search and Filter Controls -->
     <div class="search-section">
         <form method="GET" class="search-form">
             <div class="search-controls">
                 <div class="search-input-group">
-                    <input type="text" name="search" placeholder="Search by train number or name..." 
+                    <input type="text" name="search" placeholder="Search by train number, name, or route..." 
                            value="{{ search or '' }}" class="search-input">
                     <button type="submit" class="search-btn">
                         <i class="fas fa-search"></i> Search
                     </button>
                 </div>
-                <div class="filter-group">
-                    <select name="status" class="filter-select">
-                        <option value="">All Statuses</option>
-                        <option value="prepared" {% if status_filter == 'prepared' %}selected{% endif %}>Prepared</option>
-                        <option value="final" {% if status_filter == 'final' %}selected{% endif %}>Final</option>
-                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
-                    </select>
+                
+                <!-- Enhanced Filters Row -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select name="status" class="filter-select">
+                            <option value="">All Statuses</option>
+                            <option value="prepared" {% if status_filter == 'prepared' %}selected{% endif %}>Prepared</option>
+                            <option value="final" {% if status_filter == 'final' %}selected{% endif %}>Final</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Date Range:</label>
+                        <select name="date_range" class="filter-select">
+                            <option value="today_tomorrow" {% if date_range_filter == 'today_tomorrow' %}selected{% endif %}>Today & Tomorrow</option>
+                            <option value="this_week" {% if date_range_filter == 'this_week' %}selected{% endif %}>This Week</option>
+                            <option value="next_week" {% if date_range_filter == 'next_week' %}selected{% endif %}>Next Week</option>
+                            <option value="custom" {% if date_range_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Booking %:</label>
+                        <select name="booking_percentage" class="filter-select">
+                            <option value="">All Bookings</option>
+                            <option value="high" {% if booking_filter == 'high' %}selected{% endif %}>>80% Booked</option>
+                            <option value="medium" {% if booking_filter == 'medium' %}selected{% endif %}>50-80% Booked</option>
+                            <option value="low" {% if booking_filter == 'low' %}selected{% endif %}><50% Booked</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Waitlist:</label>
+                        <select name="waitlist_filter" class="filter-select">
+                            <option value="">All</option>
+                            <option value="has_waitlist" {% if waitlist_filter == 'has_waitlist' %}selected{% endif %}>Has Waitlist</option>
+                            <option value="no_waitlist" {% if waitlist_filter == 'no_waitlist' %}selected{% endif %}>No Waitlist</option>
+                        </select>
+                    </div>
+                    
                     <button type="submit" class="filter-btn">
-                        <i class="fas fa-filter"></i> Filter
+                        <i class="fas fa-filter"></i> Apply Filters
                     </button>
                 </div>
-                {% if search or status_filter %}
+                
+                <!-- Custom Date Range Inputs (shown when custom selected) -->
+                <div class="custom-date-section" id="customDateSection" style="display: none;">
+                    <div class="date-input-group">
+                        <label>From Date:</label>
+                        <input type="date" name="from_date" value="{{ from_date or '' }}" class="date-input">
+                    </div>
+                    <div class="date-input-group">
+                        <label>To Date:</label>
+                        <input type="date" name="to_date" value="{{ to_date or '' }}" class="date-input">
+                    </div>
+                </div>
+                
+                {% if search or status_filter or date_range_filter != 'today_tomorrow' or booking_filter or waitlist_filter %}
                     <a href="{{ url_for('admin.chart_preparation') }}" class="clear-filters-btn">
-                        <i class="fas fa-times"></i> Clear Filters
+                        <i class="fas fa-times"></i> Clear All Filters
                     </a>
                 {% endif %}
             </div>
         </form>
+    </div>
+    
+    <!-- Bulk Actions Section -->
+    <div class="bulk-actions-section">
+        <div class="bulk-actions-header">
+            <h3><i class="fas fa-tasks"></i> Bulk Operations</h3>
+            <div class="auto-refresh-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoRefresh">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span>Auto-refresh (30s)</span>
+            </div>
+        </div>
+        <div class="bulk-actions-controls">
+            <button type="button" class="bulk-btn bulk-prepare" id="bulkPrepareBtn">
+                <i class="fas fa-clipboard-list"></i> Bulk Prepare Charts
+            </button>
+            <button type="button" class="bulk-btn bulk-finalize" id="bulkFinalizeBtn">
+                <i class="fas fa-check-double"></i> Bulk Finalize Charts
+            </button>
+            <button type="button" class="bulk-btn bulk-export" id="bulkExportBtn">
+                <i class="fas fa-download"></i> Export Chart Data
+            </button>
+            <button type="button" class="bulk-btn bulk-refresh" id="bulkRefreshBtn">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+        </div>
     </div>
 
     <div class="chart-section">
@@ -247,18 +639,88 @@
                         </div>
                     </div>
                     <div class="chart-details">
-                        <p><strong>Chart Prepared:</strong> 
-                            {% if chart.chart_prepared_at %}
-                                {{ chart.chart_prepared_at.strftime('%Y-%m-%d %H:%M:%S') }}
-                            {% else %}
-                                Not prepared
+                        <div class="chart-stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Chart Prepared</div>
+                                <div class="stat-value">
+                                    {% if chart.chart_prepared_at %}
+                                        {{ chart.chart_prepared_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                        <span class="text-pending">Not prepared</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if chart.final_chart_at %}
+                            <div class="stat-item">
+                                <div class="stat-label">Final Chart</div>
+                                <div class="stat-value">{{ chart.final_chart_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
                             {% endif %}
-                        </p>
-                        {% if chart.final_chart_at %}
-                            <p><strong>Final Chart:</strong> {{ chart.final_chart_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                        {% endif %}
-                        <p><strong>Confirmed from Waitlist:</strong> {{ chart.confirmed_from_waitlist or 0 }}</p>
-                        <p><strong>Cancelled Waitlist:</strong> {{ chart.cancelled_waitlist or 0 }}</p>
+                            
+                            <div class="stat-item">
+                                <div class="stat-label">Booking Progress</div>
+                                <div class="stat-value">
+                                    {% set booking_percent = (((train.total_seats or 0) - (train.available_seats or 0)) / (train.total_seats or 1) * 100) if (train.total_seats or 0) > 0 else 0 %}
+                                    <div class="booking-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: {{ booking_percent }}%"></div>
+                                        </div>
+                                        <span class="progress-text">{{ "%.1f"|format(booking_percent) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-label">Seats Status</div>
+                                <div class="stat-value">
+                                    <div class="seat-breakdown">
+                                        <span class="seat-item booked">{{ (train.total_seats or 0) - (train.available_seats or 0) }} Booked</span>
+                                        <span class="seat-item available">{{ train.available_seats or 0 }} Available</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-label">Waitlist</div>
+                                <div class="stat-value">
+                                    <div class="waitlist-info">
+                                        <span class="waitlist-count">{{ chart.confirmed_from_waitlist or 0 }} Confirmed</span>
+                                        <span class="waitlist-cancelled">{{ chart.cancelled_waitlist or 0 }} Cancelled</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-item">
+                                <div class="stat-label">Revenue Estimate</div>
+                                <div class="stat-value">
+                                    {% set revenue = (((train.total_seats or 0) - (train.available_seats or 0)) * (train.fare_per_km or 0) * 100) if (train.fare_per_km or 0) > 0 else 0 %}
+                                    <span class="revenue-amount">₹{{ "%.0f"|format(revenue) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Conditions & Alerts -->
+                        <div class="chart-conditions">
+                            {% if booking_percent < 30 %}
+                                <div class="condition-alert low-booking">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Low booking - Consider promotional measures
+                                </div>
+                            {% elif booking_percent > 95 %}
+                                <div class="condition-alert high-demand">
+                                    <i class="fas fa-fire"></i>
+                                    High demand - Monitor waitlist closely
+                                </div>
+                            {% endif %}
+                            
+                            {% if (chart.confirmed_from_waitlist or 0) > 0 %}
+                                <div class="condition-alert waitlist-activity">
+                                    <i class="fas fa-users"></i>
+                                    Active waitlist confirmations
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="chart-actions">
                         {% if chart.status != 'final' %}
@@ -358,4 +820,136 @@
         </a>
     </div>
 </div>
+
+<script>
+// Auto-refresh functionality
+let autoRefreshInterval;
+const autoRefreshCheckbox = document.getElementById('autoRefresh');
+
+function startAutoRefresh() {
+    autoRefreshInterval = setInterval(() => {
+        window.location.reload();
+    }, 30000); // 30 seconds
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+}
+
+if (autoRefreshCheckbox) {
+    autoRefreshCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            startAutoRefresh();
+            console.log('Auto-refresh enabled');
+        } else {
+            stopAutoRefresh();
+            console.log('Auto-refresh disabled');
+        }
+    });
+}
+
+// Custom date range handling
+const dateRangeSelect = document.querySelector('select[name="date_range"]');
+const customDateSection = document.getElementById('customDateSection');
+
+function toggleCustomDateSection() {
+    if (dateRangeSelect && customDateSection) {
+        if (dateRangeSelect.value === 'custom') {
+            customDateSection.style.display = 'flex';
+        } else {
+            customDateSection.style.display = 'none';
+        }
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCustomDateSection();
+    
+    // Set minimum date for custom inputs to today
+    const today = new Date().toISOString().split('T')[0];
+    const dateInputs = document.querySelectorAll('.date-input');
+    dateInputs.forEach(input => {
+        input.min = today;
+    });
+    
+    // Bind bulk action buttons
+    const bulkPrepareBtn = document.getElementById('bulkPrepareBtn');
+    const bulkFinalizeBtn = document.getElementById('bulkFinalizeBtn');
+    const bulkExportBtn = document.getElementById('bulkExportBtn');
+    const bulkRefreshBtn = document.getElementById('bulkRefreshBtn');
+    
+    if (bulkPrepareBtn) bulkPrepareBtn.addEventListener('click', bulkPrepareCharts);
+    if (bulkFinalizeBtn) bulkFinalizeBtn.addEventListener('click', bulkFinalizeCharts);
+    if (bulkExportBtn) bulkExportBtn.addEventListener('click', exportChartData);
+    if (bulkRefreshBtn) bulkRefreshBtn.addEventListener('click', refreshChartData);
+});
+
+if (dateRangeSelect) {
+    dateRangeSelect.addEventListener('change', toggleCustomDateSection);
+}
+
+// Bulk operations
+function bulkPrepareCharts() {
+    alert('Bulk chart preparation feature will be implemented in the next version. For now, please use individual chart preparation buttons.');
+}
+
+function bulkFinalizeCharts() {
+    alert('Bulk finalization feature will be implemented in the next version. For now, please use individual finalize buttons.');
+}
+
+function exportChartData() {
+    alert('Chart data export feature will be implemented in the next version.');
+}
+
+function refreshChartData() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    btn.disabled = true;
+    
+    // Add visual refresh effect
+    document.querySelectorAll('.chart-card').forEach(card => {
+        card.style.opacity = '0.7';
+    });
+    
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
+}
+
+// Utility functions for chart management
+
+// Initialize tooltips for enhanced features
+document.addEventListener('DOMContentLoaded', function() {
+    // Add tooltips to bulk action buttons
+    const tooltips = {
+        '.bulk-prepare': 'Prepare charts for all trains that need preparation',
+        '.bulk-finalize': 'Finalize all charts that are currently in prepared status',
+        '.bulk-export': 'Export current chart data to CSV format',
+        '.bulk-refresh': 'Refresh all chart data and statistics'
+    };
+    
+    Object.entries(tooltips).forEach(([selector, text]) => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.title = text;
+        }
+    });
+});
+
+// Enhanced progress bar animation
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 200);
+    });
+});
+</script>
 {% endblock %}
