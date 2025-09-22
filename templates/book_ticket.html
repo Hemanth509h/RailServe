@@ -587,8 +587,35 @@
     
     // Function to proceed to Tatkal booking
     function proceedToTatkal() {
-        // Simply redirect to Tatkal booking page to show the dedicated form
-        window.location.href = '{{ url_for("booking.tatkal_booking", train_id=train.id) }}';
+        // Get selected station data to pass to Tatkal page
+        const fromStationId = document.getElementById('from_station').value;
+        const toStationId = document.getElementById('to_station').value;
+        const journeyDate = document.getElementById('journey_date').value;
+        const passengers = document.getElementById('passengers').value;
+        const coachClass = document.getElementById('coach_class').value;
+        
+        // Validate required fields before proceeding
+        if (!fromStationId || !toStationId) {
+            alert('Please select both departure and destination stations before proceeding to Tatkal booking.');
+            return;
+        }
+        
+        // Build URL with station data parameters
+        let tatkalUrl = '{{ url_for("booking.tatkal_booking", train_id=train.id) }}';
+        const params = new URLSearchParams();
+        
+        if (fromStationId) params.append('from_station', fromStationId);
+        if (toStationId) params.append('to_station', toStationId);
+        if (journeyDate) params.append('journey_date', journeyDate);
+        if (passengers) params.append('passengers', passengers);
+        if (coachClass) params.append('coach_class', coachClass);
+        
+        if (params.toString()) {
+            tatkalUrl += '?' + params.toString();
+        }
+        
+        // Redirect to Tatkal booking page with station data
+        window.location.href = tatkalUrl;
     }
     
     // Make function globally available

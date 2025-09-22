@@ -298,6 +298,13 @@ def tatkal_booking(train_id):
             TrainRoute.train_id == train_id
         ).order_by(TrainRoute.sequence).all()
         
+        # Get pre-filled form data from URL parameters (from booking page navigation)
+        selected_from_station = request.args.get('from_station', type=int)
+        selected_to_station = request.args.get('to_station', type=int)
+        selected_journey_date = request.args.get('journey_date')
+        selected_passengers = request.args.get('passengers', type=int)
+        selected_coach_class = request.args.get('coach_class')
+        
         # Aadhaar verification requirement removed for simplified booking process
         
         # Get current tatkal booking status
@@ -312,7 +319,13 @@ def tatkal_booking(train_id):
                              train_stations=train_stations,
                              is_ac_open=is_ac_open,
                              is_non_ac_open=is_non_ac_open,
-                             current_time=now.strftime('%H:%M'))
+                             current_time=now.strftime('%H:%M'),
+                             # Pre-fill form data from previous page
+                             selected_from_station=selected_from_station,
+                             selected_to_station=selected_to_station,
+                             selected_journey_date=selected_journey_date,
+                             selected_passengers=selected_passengers,
+                             selected_coach_class=selected_coach_class)
     
     # Handle POST - process Tatkal booking with all data from previous form
     # All form validation and processing logic is the same as regular booking

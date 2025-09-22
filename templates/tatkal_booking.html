@@ -96,7 +96,7 @@
                             <select name="from_station" id="from_station" required>
                                 <option value="">Select Departure Station</option>
                                 {% for station in train_stations %}
-                                    <option value="{{ station.id }}">
+                                    <option value="{{ station.id }}" {% if selected_from_station == station.id %}selected{% endif %}>
                                         {{ station.name }} ({{ station.code }})
                                     </option>
                                 {% endfor %}
@@ -110,7 +110,7 @@
                             <select name="to_station" id="to_station" required>
                                 <option value="">Select Destination Station</option>
                                 {% for station in train_stations %}
-                                    <option value="{{ station.id }}">
+                                    <option value="{{ station.id }}" {% if selected_to_station == station.id %}selected{% endif %}>
                                         {{ station.name }} ({{ station.code }})
                                     </option>
                                 {% endfor %}
@@ -123,7 +123,7 @@
                             <label for="journey_date">
                                 <i class="fas fa-calendar"></i> Journey Date *
                             </label>
-                            <input type="date" name="journey_date" id="journey_date" required>
+                            <input type="date" name="journey_date" id="journey_date" required {% if selected_journey_date %}value="{{ selected_journey_date }}"{% endif %}>
                             <small class="form-help">Only tomorrow's date available for Tatkal</small>
                         </div>
                         
@@ -133,10 +133,10 @@
                             </label>
                             <select name="passengers" id="passengers" required>
                                 <option value="">Select</option>
-                                <option value="1">1 Passenger</option>
-                                <option value="2">2 Passengers</option>
-                                <option value="3">3 Passengers</option>
-                                <option value="4">4 Passengers</option>
+                                <option value="1" {% if selected_passengers == 1 %}selected{% endif %}>1 Passenger</option>
+                                <option value="2" {% if selected_passengers == 2 %}selected{% endif %}>2 Passengers</option>
+                                <option value="3" {% if selected_passengers == 3 %}selected{% endif %}>3 Passengers</option>
+                                <option value="4" {% if selected_passengers == 4 %}selected{% endif %}>4 Passengers</option>
                             </select>
                             <small class="form-help">Maximum 4 passengers for Tatkal</small>
                         </div>
@@ -148,7 +148,7 @@
                     <h4><i class="fas fa-train"></i> Coach Class Selection</h4>
                     <div class="coach-selection">
                         <div class="coach-option">
-                            <input type="radio" id="ac1" name="coach_class" value="AC1" required>
+                            <input type="radio" id="ac1" name="coach_class" value="AC1" required {% if selected_coach_class == 'AC1' %}checked{% endif %}>
                             <label for="ac1" class="coach-label">
                                 <div class="coach-icon"><i class="fas fa-star"></i></div>
                                 <div class="coach-info">
@@ -160,7 +160,7 @@
                         </div>
                         
                         <div class="coach-option">
-                            <input type="radio" id="ac2" name="coach_class" value="AC2" required>
+                            <input type="radio" id="ac2" name="coach_class" value="AC2" required {% if selected_coach_class == 'AC2' %}checked{% endif %}>
                             <label for="ac2" class="coach-label">
                                 <div class="coach-icon"><i class="fas fa-bed"></i></div>
                                 <div class="coach-info">
@@ -172,7 +172,7 @@
                         </div>
                         
                         <div class="coach-option">
-                            <input type="radio" id="ac3" name="coach_class" value="AC3" required>
+                            <input type="radio" id="ac3" name="coach_class" value="AC3" required {% if selected_coach_class == 'AC3' %}checked{% endif %}>
                             <label for="ac3" class="coach-label">
                                 <div class="coach-icon"><i class="fas fa-snowflake"></i></div>
                                 <div class="coach-info">
@@ -184,7 +184,7 @@
                         </div>
                         
                         <div class="coach-option">
-                            <input type="radio" id="cc" name="coach_class" value="CC" required>
+                            <input type="radio" id="cc" name="coach_class" value="CC" required {% if selected_coach_class == 'CC' %}checked{% endif %}>
                             <label for="cc" class="coach-label">
                                 <div class="coach-icon"><i class="fas fa-chair"></i></div>
                                 <div class="coach-info">
