@@ -848,70 +848,15 @@ document.addEventListener('DOMContentLoaded', function() {
         input.min = today;
     });
     
-    // Bind bulk action buttons
-    const bulkPrepareBtn = document.getElementById('bulkPrepareBtn');
-    const bulkFinalizeBtn = document.getElementById('bulkFinalizeBtn');
-    const bulkExportBtn = document.getElementById('bulkExportBtn');
-    const bulkRefreshBtn = document.getElementById('bulkRefreshBtn');
-    
-    if (bulkPrepareBtn) bulkPrepareBtn.addEventListener('click', bulkPrepareCharts);
-    if (bulkFinalizeBtn) bulkFinalizeBtn.addEventListener('click', bulkFinalizeCharts);
-    if (bulkExportBtn) bulkExportBtn.addEventListener('click', exportChartData);
-    if (bulkRefreshBtn) bulkRefreshBtn.addEventListener('click', refreshChartData);
 });
 
 if (dateRangeSelect) {
     dateRangeSelect.addEventListener('change', toggleCustomDateSection);
 }
 
-// Bulk operations
-function bulkPrepareCharts() {
-    alert('Bulk chart preparation feature will be implemented in the next version. For now, please use individual chart preparation buttons.');
-}
-
-function bulkFinalizeCharts() {
-    alert('Bulk finalization feature will be implemented in the next version. For now, please use individual finalize buttons.');
-}
-
-function exportChartData() {
-    alert('Chart data export feature will be implemented in the next version.');
-}
-
-function refreshChartData() {
-    const btn = event.target;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-    btn.disabled = true;
-    
-    // Add visual refresh effect
-    document.querySelectorAll('.chart-card').forEach(card => {
-        card.style.opacity = '0.7';
-    });
-    
-    setTimeout(() => {
-        window.location.reload();
-    }, 500);
-}
 
 // Utility functions for chart management
 
-// Initialize tooltips for enhanced features
-document.addEventListener('DOMContentLoaded', function() {
-    // Add tooltips to bulk action buttons
-    const tooltips = {
-        '.bulk-prepare': 'Prepare charts for all trains that need preparation',
-        '.bulk-finalize': 'Finalize all charts that are currently in prepared status',
-        '.bulk-export': 'Export current chart data to CSV format',
-        '.bulk-refresh': 'Refresh all chart data and statistics'
-    };
-    
-    Object.entries(tooltips).forEach(([selector, text]) => {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.title = text;
-        }
-    });
-});
 
 // Enhanced progress bar animation
 document.addEventListener('DOMContentLoaded', function() {

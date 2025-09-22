@@ -265,48 +265,114 @@ def create_south_indian_stations(db, Station):
     stations.extend([Station(name=name, code=code, city=city, state=state) 
                      for code, name, city, state in major_stations])
     
+    # Keep track of generated station names to avoid duplicates
+    existing_names = {station.name for station in stations}
+    existing_codes = {station.code for station in stations}
+    
     # Generate additional stations
     station_code_counter = 1000
     
     # Tamil Nadu stations (400 total)
-    for i, district in enumerate(tn_districts * 10):
-        if len(stations) >= 500:  # 500 TN stations
+    tn_count = 0
+    for i in range(1000):  # Prevent infinite loop
+        if tn_count >= 400 or len(stations) >= 500:
             break
+        district = tn_districts[i % len(tn_districts)]
+        suffix_num = i // len(tn_districts) + 1
         code = f"TN{station_code_counter}"
-        name = f"{district} {'Junction' if i % 3 == 0 else 'Railway Station'}"
-        stations.append(Station(name=name, code=code, city=district, state='TN'))
+        
+        # Create unique name
+        if suffix_num == 1:
+            station_type = 'Junction' if i % 3 == 0 else 'Railway Station'
+            name = f"{district} {station_type}"
+        else:
+            station_type = random.choice(['Junction', 'Railway Station', 'Halt', 'Terminal'])
+            name = f"{district} {station_type} {suffix_num}"
+        
+        if name not in existing_names and code not in existing_codes:
+            stations.append(Station(name=name, code=code, city=district, state='TN'))
+            existing_names.add(name)
+            existing_codes.add(code)
+            tn_count += 1
         station_code_counter += 1
     
-    # Karnataka stations (350 total)
-    for i, district in enumerate(ka_districts * 12):
-        if len([s for s in stations if s.state == 'KA']) >= 300:  # 300 KA stations
+    # Karnataka stations (300 total)
+    ka_count = 0
+    for i in range(1000):
+        if ka_count >= 300:
             break
+        district = ka_districts[i % len(ka_districts)]
+        suffix_num = i // len(ka_districts) + 1
         code = f"KA{station_code_counter}"
-        name = f"{district} {'Junction' if i % 4 == 0 else 'Railway Station'}"
-        stations.append(Station(name=name, code=code, city=district, state='KA'))
+        
+        if suffix_num == 1:
+            station_type = 'Junction' if i % 4 == 0 else 'Railway Station'
+            name = f"{district} {station_type}"
+        else:
+            station_type = random.choice(['Junction', 'Railway Station', 'Halt', 'Terminal'])
+            name = f"{district} {station_type} {suffix_num}"
+        
+        if name not in existing_names and code not in existing_codes:
+            stations.append(Station(name=name, code=code, city=district, state='KA'))
+            existing_names.add(name)
+            existing_codes.add(code)
+            ka_count += 1
         station_code_counter += 1
     
-    # Kerala stations (250 total)
-    for i, district in enumerate(kl_districts * 18):
-        if len([s for s in stations if s.state == 'KL']) >= 200:  # 200 KL stations
+    # Kerala stations (200 total)
+    kl_count = 0
+    for i in range(1000):
+        if kl_count >= 200:
             break
+        district = kl_districts[i % len(kl_districts)]
+        suffix_num = i // len(kl_districts) + 1
         code = f"KL{station_code_counter}"
-        name = f"{district} {'Junction' if i % 5 == 0 else 'Railway Station'}"
-        stations.append(Station(name=name, code=code, city=district, state='KL'))
+        
+        if suffix_num == 1:
+            station_type = 'Junction' if i % 5 == 0 else 'Railway Station'
+            name = f"{district} {station_type}"
+        else:
+            station_type = random.choice(['Junction', 'Railway Station', 'Halt', 'Terminal'])
+            name = f"{district} {station_type} {suffix_num}"
+        
+        if name not in existing_names and code not in existing_codes:
+            stations.append(Station(name=name, code=code, city=district, state='KL'))
+            existing_names.add(name)
+            existing_codes.add(code)
+            kl_count += 1
         station_code_counter += 1
     
     # Andhra Pradesh & Telangana stations (250 total)
-    for i, district in enumerate(ap_ts_districts * 6):
-        if len([s for s in stations if s.state in ['AP', 'TS']]) >= 250:  # 250 AP/TS stations
+    ap_ts_count = 0
+    for i in range(1000):
+        if ap_ts_count >= 250:
             break
+        district = ap_ts_districts[i % len(ap_ts_districts)]
+        suffix_num = i // len(ap_ts_districts) + 1
         state = 'TS' if 'Hyderabad' in district or i % 2 == 0 else 'AP'
         code = f"{state}{station_code_counter}"
-        name = f"{district} {'Junction' if i % 4 == 0 else 'Railway Station'}"
-        stations.append(Station(name=name, code=code, city=district, state=state))
+        
+        if suffix_num == 1:
+            station_type = 'Junction' if i % 4 == 0 else 'Railway Station'
+            name = f"{district} {station_type}"
+        else:
+            station_type = random.choice(['Junction', 'Railway Station', 'Halt', 'Terminal'])
+            name = f"{district} {station_type} {suffix_num}"
+        
+        if name not in existing_names and code not in existing_codes:
+            stations.append(Station(name=name, code=code, city=district, state=state))
+            existing_names.add(name)
+            existing_codes.add(code)
+            ap_ts_count += 1
         station_code_counter += 1
     
     # Fill remaining slots with mixed South Indian stations
-    while len(stations) < 1250:
+    remaining = 1250 - len(stations)
+    mixed_count = 0
+    for i in range(2000):  # Prevent infinite loop
+        if mixed_count >= remaining:
+            break
+        
         state = random.choice(['TN', 'KA', 'KL', 'AP', 'TS'])
         if state == 'TN':
             city = random.choice(tn_districts)
@@ -319,8 +385,13 @@ def create_south_indian_stations(db, Station):
         
         code = f"{state}{station_code_counter}"
         station_type = random.choice(['Junction', 'Railway Station', 'Halt', 'Terminal'])
-        name = f"{city} {station_type}"
-        stations.append(Station(name=name, code=code, city=city, state=state))
+        name = f"{city} {station_type} {random.randint(1, 100)}"
+        
+        if name not in existing_names and code not in existing_codes:
+            stations.append(Station(name=name, code=code, city=city, state=state))
+            existing_names.add(name)
+            existing_codes.add(code)
+            mixed_count += 1
         station_code_counter += 1
     
     db.session.add_all(stations)
