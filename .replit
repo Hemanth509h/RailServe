@@ -17,15 +17,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flask Railway App"
+args = "Railway App"
 
 [[workflows.workflow]]
-name = "Flask Railway App"
+name = "Railway App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "SESSION_SECRET=\"$(python -c 'import secrets; print(secrets.token_hex(32))')\" FLASK_ENV=production gunicorn --workers 2 --worker-class gthread --bind 0.0.0.0:5000 --timeout 120 --access-logfile - --error-logfile - main:app"
+args = "python -m gunicorn --bind 0.0.0.0:5000 --reload --access-logfile - --error-logfile - main:app"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
