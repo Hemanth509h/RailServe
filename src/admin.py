@@ -1792,7 +1792,11 @@ def update_dynamic_pricing():
         flash('All fields are required', 'error')
         return redirect(url_for('admin.dynamic_pricing_management'))
     
-    journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+    try:
+        journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        flash('Invalid date format', 'error')
+        return redirect(url_for('admin.dynamic_pricing_management'))
     
     # Get or create pricing rule
     pricing = DynamicPricing.query.filter_by(
@@ -1803,6 +1807,10 @@ def update_dynamic_pricing():
     
     if not pricing:
         train = Train.query.get(train_id)
+        if not train:
+            flash('Train not found', 'error')
+            return redirect(url_for('admin.dynamic_pricing_management'))
+        
         pricing = DynamicPricing(
             train_id=train_id,
             journey_date=journey_date_obj,
