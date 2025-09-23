@@ -132,7 +132,7 @@
                                     <a href="{{ url_for('admin.seat_allocation') }}?train={{ train.number }}" class="btn btn-sm btn-primary" title="Manage Seat Allocation">
                                         <i class="fas fa-chair"></i>
                                     </a>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteTrain({{ train.id }}, '{{ train.number }}')" title="Delete Train">
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTrain({{ train.id }})" title="Delete Train">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
