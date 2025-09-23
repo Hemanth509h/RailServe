@@ -258,6 +258,9 @@
     const toStation = document.getElementById('to_station');
     const passengers = document.getElementById('passengers');
     const journeyDate = document.getElementById('journey_date');
+    const coachClass = document.getElementById('coach_class');
+    const bookingType = document.getElementById('booking_type');
+    const quota = document.getElementById('quota');
     const fareCalculator = document.getElementById('fareCalculator');
     const submitBtn = document.getElementById('submitBtn');
     const form = document.querySelector('.booking-form');
@@ -323,6 +326,18 @@
             }
         }
         
+        if (!coachClass || !coachClass.value) {
+            errors.push('Please select coach class');
+        }
+        
+        if (!bookingType || !bookingType.value) {
+            errors.push('Please select booking type');
+        }
+        
+        if (!quota || !quota.value) {
+            errors.push('Please select quota');
+        }
+        
         return errors;
     }
     
@@ -350,8 +365,8 @@
         const from = fromStation.value;
         const to = toStation.value;
         const passengerCount = passengers.value;
-        const bookingType = document.getElementById('booking_type').value;
-        const selectedCoachClass = coachClass.value;
+        const selectedBookingType = bookingType ? bookingType.value : '';
+        const selectedCoachClass = coachClass ? coachClass.value : '';
         
         if (from && to && passengerCount && selectedCoachClass && from !== to) {
             // Simplified distance calculation based on station sequence
@@ -373,7 +388,7 @@
             
             // Apply Tatkal surcharge if selected
             let tatkalSurcharge = 0;
-            if (bookingType === 'tatkal') {
+            if (selectedBookingType === 'tatkal') {
                 const tatkalMultiplier = 1.3; // 30% premium
                 const maxSurcharge = ['AC1', 'AC2', 'AC3', 'CC'].includes(selectedCoachClass) ? 400 : 200;
                 tatkalSurcharge = Math.min(baseFare * 0.2, maxSurcharge);
@@ -386,7 +401,7 @@
             document.getElementById('distance').textContent = estimatedDistance + ' km';
             document.getElementById('baseFare').textContent = '₹' + baseFare.toFixed(2);
             document.getElementById('serviceCharges').textContent = '₹' + serviceCharges.toFixed(2);
-            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2) + (bookingType === 'tatkal' ? ' (Tatkal)' : '') + ' - ' + selectedCoachClass;
+            document.getElementById('totalFare').textContent = '₹' + totalFare.toFixed(2) + (selectedBookingType === 'tatkal' ? ' (Tatkal)' : '') + ' - ' + selectedCoachClass;
             
             fareCalculator.style.display = 'block';
         } else {
@@ -412,6 +427,9 @@
             passengerSection.style.display = 'none';
             passengerContainer.innerHTML = '';
         }
+        
+        // Trigger validation after generating passenger forms
+        showValidationFeedback();
     }
     
     function createPassengerForm(number, index) {
@@ -517,73 +535,75 @@
         return passengerDiv;
     }
     
-    // Event listeners for real-time validation
-    const bookingType = document.getElementById('booking_type');
-    const quota = document.getElementById('quota');
-    const coachClass = document.getElementById('coach_class');
+    
+    // Additional variables
     const tatkalWarning = document.getElementById('tatkalWarning');
     const tatkalBtn = document.getElementById('tatkalBtn');
     
-    [fromStation, toStation, passengers, journeyDate, bookingType, quota, coachClass].forEach(element => {
-        element.addEventListener('change', showValidationFeedback);
-        element.addEventListener('blur', showValidationFeedback);
-    });
-    
-    // Generate passenger forms when passenger count changes
-    passengers.addEventListener('change', function() {
-        generatePassengerForms();
-        showValidationFeedback();
-    });
-    
-    // Auto-generate passenger forms on page load if passengers already selected
-    document.addEventListener('DOMContentLoaded', function() {
-        if (passengers.value) {
-            generatePassengerForms();
-        }
-    });
-    
     // Handle Tatkal booking flow and warnings
     function handleTatkalSelection() {
-        const isTatkal = bookingType.value === 'tatkal' || quota.value === 'tatkal';
+        const isTatkal = bookingType && (bookingType.value === 'tatkal') || quota && (quota.value === 'tatkal');
         
-        if (isTatkal) {
+        if (isTatkal && tatkalWarning && tatkalBtn) {
             tatkalWarning.style.display = 'block';
             tatkalBtn.style.display = 'inline-block';
             submitBtn.style.display = 'none';
-            document.getElementById('submitText').textContent = 'Continue to Tatkal Booking';
+            const submitText = document.getElementById('submitText');
+            if (submitText) submitText.textContent = 'Continue to Tatkal Booking';
         } else {
-            tatkalWarning.style.display = 'none';
-            tatkalBtn.style.display = 'none';
+            if (tatkalWarning) tatkalWarning.style.display = 'none';
+            if (tatkalBtn) tatkalBtn.style.display = 'none';
             submitBtn.style.display = 'inline-block';
-            document.getElementById('submitText').textContent = 'Proceed to Payment';
+            const submitText = document.getElementById('submitText');
+            if (submitText) submitText.textContent = 'Proceed to Payment';
         }
     }
     
-    // Sync booking type with quota
-    bookingType.addEventListener('change', function() {
-        if (this.value === 'tatkal') {
-            quota.value = 'tatkal';
-        } else if (quota.value === 'tatkal') {
-            quota.value = 'general';
+    // Add event listeners for real-time validation
+    function addEventListeners() {
+        // Station change events
+        fromStation.addEventListener('change', showValidationFeedback);
+        toStation.addEventListener('change', showValidationFeedback);
+        
+        // Date change events
+        journeyDate.addEventListener('change', showValidationFeedback);
+        
+        // Passenger count change
+        passengers.addEventListener('change', function() {
+            generatePassengerForms();
+        });
+        
+        // Coach class change
+        if (coachClass) {
+            coachClass.addEventListener('change', showValidationFeedback);
         }
-        handleTatkalSelection();
-        calculateFare();
-    });
-    
-    quota.addEventListener('change', function() {
-        if (this.value === 'tatkal') {
-            bookingType.value = 'tatkal';
-        } else if (bookingType.value === 'tatkal' && this.value !== 'tatkal') {
-            bookingType.value = 'general';
+        
+        // Booking type change with Tatkal handling
+        if (bookingType) {
+            bookingType.addEventListener('change', function() {
+                if (this.value === 'tatkal' && quota) {
+                    quota.value = 'tatkal';
+                } else if (quota && quota.value === 'tatkal') {
+                    quota.value = 'general';
+                }
+                handleTatkalSelection();
+                showValidationFeedback();
+            });
         }
-        handleTatkalSelection();
-        calculateFare();
-    });
-    
-    // Coach class change handler
-    coachClass.addEventListener('change', function() {
-        calculateFare();
-    });
+        
+        // Quota change with Tatkal handling
+        if (quota) {
+            quota.addEventListener('change', function() {
+                if (this.value === 'tatkal' && bookingType) {
+                    bookingType.value = 'tatkal';
+                } else if (bookingType && bookingType.value === 'tatkal' && this.value !== 'tatkal') {
+                    bookingType.value = 'general';
+                }
+                handleTatkalSelection();
+                showValidationFeedback();
+            });
+        }
+    }
     
     // Function to proceed to Tatkal booking
     function proceedToTatkal() {
@@ -621,21 +641,6 @@
     // Make function globally available
     window.proceedToTatkal = proceedToTatkal;
     
-    // Prevent selecting same station
-    fromStation.addEventListener('change', function() {
-        if (this.value === toStation.value && this.value) {
-            toStation.value = '';
-            showValidationFeedback();
-        }
-    });
-    
-    toStation.addEventListener('change', function() {
-        if (this.value === fromStation.value && this.value) {
-            fromStation.value = '';
-            showValidationFeedback();
-        }
-    });
-    
     // Form submission with loading state
     form.addEventListener('submit', function(e) {
         const errors = validateForm();
@@ -651,7 +656,8 @@
         submitBtn.disabled = true;
     });
     
-    // Initial validation check
-    showValidationFeedback();
+    // Initialize everything when page loads
+    addEventListeners();
+    showValidationFeedback(); // Initial validation check
 </script>
 {% endblock %}
