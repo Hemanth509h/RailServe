@@ -603,13 +603,13 @@
                         </div>
                         
                         <div class="chart-actions">
-                            <form method="POST" action="{{ url_for('admin.create_chart', train_id=train.id, journey_date=today.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                            <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=today.strftime('%Y-%m-%d')) }}" style="display: inline;">
                                 <button type="submit" class="action-btn btn-prepare">
                                     <i class="fas fa-clipboard"></i> Create Today's Chart
                                 </button>
                             </form>
                             
-                            <form method="POST" action="{{ url_for('admin.create_chart', train_id=train.id, journey_date=tomorrow.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                            <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=tomorrow.strftime('%Y-%m-%d')) }}" style="display: inline;">
                                 <button type="submit" class="action-btn btn-prepare">
                                     <i class="fas fa-calendar-plus"></i> Create Tomorrow's Chart
                                 </button>
