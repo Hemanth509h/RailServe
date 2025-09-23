@@ -73,6 +73,9 @@ def populate_south_indian_data(db):
     # Create admin user if requested
     create_admin_user(db, User)
     
+    # Create sample user for testing
+    create_sample_user(db, User)
+    
     # Create 1250 stations (mostly South Indian)
     logger.info("Creating 1250 railway stations...")
     create_south_indian_stations(db, Station)
@@ -114,6 +117,32 @@ def create_admin_user(db, User):
         logger.info("Created admin user with provided password")
     else:
         logger.info("Skipping admin user creation (set CREATE_ADMIN=1 and ADMIN_PASSWORD to create)")
+
+def create_sample_user(db, User):
+    """Create a sample regular user for testing purposes"""
+    
+    # Check if sample user already exists
+    existing_user = User.query.filter_by(email='user@example.com').first()
+    if existing_user:
+        logger.info("Sample user already exists, skipping creation")
+        return
+    
+    from werkzeug.security import generate_password_hash
+    password_hash = generate_password_hash('password123')
+    
+    sample_user = User(
+        username='sampleuser',
+        email='user@example.com',
+        password_hash=password_hash,
+        role='user',
+        active=True,
+        reset_token=None,
+        reset_token_expiry=None
+    )
+    
+    db.session.add(sample_user)
+    db.session.commit()
+    logger.info("Created sample user: username='sampleuser', email='user@example.com', password='password123'")
 
 def create_south_indian_stations(db, Station):
     """Create 1250 railway stations focused on South India"""
