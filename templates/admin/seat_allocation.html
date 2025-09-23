@@ -16,15 +16,15 @@
                 <div class="controls-row">
                     <div class="control-group">
                         <label for="date">Select Date</label>
-                        <input type="date" name="date" id="date" value="{{ selected_date.strftime('%Y-%m-%d') if selected_date else '' }}" onchange="this.form.submit()">
+                        <input type="date" name="date" id="date" value="{{ selected_date.strftime('%Y-%m-%d') if selected_date else '' }}">
                     </div>
                     <div class="control-group">
                         <label for="train_search">Search Trains</label>
-                        <input type="text" name="train_search" id="train_search" placeholder="Search by train number or name..." value="{{ request.args.get('train_search', '') }}" onchange="this.form.submit()">
+                        <input type="text" name="train_search" id="train_search" placeholder="Search by train number or name..." value="{{ request.args.get('train_search', '') }}">
                     </div>
                     <div class="control-group">
                         <label for="utilization_filter">Filter by Utilization</label>
-                        <select name="utilization_filter" id="utilization_filter" onchange="this.form.submit()">
+                        <select name="utilization_filter" id="utilization_filter">
                             <option value="">All Trains</option>
                             <option value="high" {{ 'selected' if request.args.get('utilization_filter') == 'high' }}>High Demand (>90%)</option>
                             <option value="medium" {{ 'selected' if request.args.get('utilization_filter') == 'medium' }}>Medium Demand (70-90%)</option>
@@ -32,6 +32,9 @@
                         </select>
                     </div>
                     <div class="control-group">
+                        <button type="submit" class="btn-search">
+                            <i class="fas fa-search"></i> Search
+                        </button>
                         <button type="button" onclick="location.reload()" class="btn-refresh">
                             <i class="fas fa-sync-alt"></i> Refresh
                         </button>
@@ -94,8 +97,7 @@
                     <h5><i class="fas fa-users"></i> General Quota</h5>
                     <div class="quota-bar">
                         <div class="quota-fill general" 
-                             style="width: {{ (train.general_booked / general_quota * 100) if general_quota else 0 }}%">
-                        </div>
+                             style="width: {{ (train.general_booked / general_quota * 100) if general_quota else 0 }}%;"></div>
                         <div class="quota-text">
                             {{ train.general_booked }} / {{ general_quota }}
                         </div>
@@ -111,8 +113,7 @@
                     <h5><i class="fas fa-bolt"></i> Tatkal Quota</h5>
                     <div class="quota-bar">
                         <div class="quota-fill tatkal" 
-                             style="width: {{ (train.tatkal_booked / train.tatkal_seats * 100) if train.tatkal_seats else 0 }}%">
-                        </div>
+                             style="width: {{ (train.tatkal_booked / train.tatkal_seats * 100) if train.tatkal_seats else 0 }}%;"></div>
                         <div class="quota-text">
                             {{ train.tatkal_booked }} / {{ train.tatkal_seats }}
                         </div>
@@ -192,6 +193,19 @@
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+}
+
+.btn-search {
+    padding: 0.5rem 1rem;
+    background: #10b981;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .btn-refresh {
