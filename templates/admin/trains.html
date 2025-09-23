@@ -135,24 +135,6 @@
                                     <button class="btn btn-sm btn-danger" onclick="deleteTrain({{ train.id }}, '{{ train.number }}')" title="Delete Train">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                        <em>Not set</em>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="status-badge {% if train.active %}status-active{% else %}status-inactive{% endif %}">
-                                        {{ 'Active' if train.active else 'Inactive' }}
-                                    </span>
-                                </td>
-                                <td class="actions">
-                                    <a href="{{ url_for('admin.toggle_train', train_id=train.id) }}" 
-                                       class="btn btn-sm {% if train.active %}btn-warning{% else %}btn-success{% endif %}"
-                                       onclick="return confirm('Are you sure?')">
-                                        {% if train.active %}
-                                            <i class="fas fa-pause"></i> Deactivate
-                                        {% else %}
-                                            <i class="fas fa-play"></i> Activate
-                                        {% endif %}
-                                    </a>
                                 </td>
                             </tr>
                         {% endfor %}
