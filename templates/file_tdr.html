@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}File TDR - {{ booking.pnr }} - RailServe{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/book_ticket.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="booking-container">
+        <div class="train-info-card">
+            <h2><i class="fas fa-receipt"></i> File TDR (Ticket Deposit Receipt)</h2>
+            <div class="booking-summary">
+                <div class="detail-item">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>PNR: {{ booking.pnr }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-train"></i>
+                    <span>{{ booking.train.number }} - {{ booking.train.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-route"></i>
+                    <span>{{ booking.from_station.name }} → {{ booking.to_station.name }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-rupee-sign"></i>
+                    <span>Amount Paid: ₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="booking-form-card">
+            <h3><i class="fas fa-file-alt"></i> TDR Filing Details</h3>
+            
+            <div class="tdr-info">
+                <div class="info-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <div>
+                        <h4>What is TDR?</h4>
+                        <p>Ticket Deposit Receipt (TDR) is a refund claim for tickets due to train delays, cancellations, or service issues. Processing typically takes 3-5 working days.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="POST" class="booking-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <div class="form-group">
+                    <label for="reason">
+                        <i class="fas fa-exclamation-triangle"></i> Reason for Refund *
+                    </label>
+                    <select name="reason" id="reason" required>
+                        <option value="">Select Reason</option>
+                        <option value="train_cancelled">Train Cancelled by Railways</option>
+                        <option value="delay_more_than_3_hours">Train Delayed More Than 3 Hours</option>
+                        <option value="ac_failure">Air Conditioning Failure</option>
+                        <option value="coach_not_attached">Coach Not Attached</option>
+                        <option value="medical_emergency">Medical Emergency</option>
+                        <option value="berth_not_available">Berth/Seat Not Available</option>
+                        <option value="train_accident">Train Accident/Derailment</option>
+                        <option value="natural_disaster">Natural Disaster/Force Majeure</option>
+                        <option value="other">Other Reason</option>
+                    </select>
+                    <small class="form-help">Select the primary reason for filing TDR</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">
+                        <i class="fas fa-edit"></i> Description (Optional)
+                    </label>
+                    <textarea name="description" 
+                              id="description" 
+                              rows="4" 
+                              placeholder="Provide additional details about the incident, date and time of occurrence, any announcements made, etc."></textarea>
+                    <small class="form-help">Additional details will help process your refund faster</small>
+                </div>
+                
+                <div class="refund-calculation" id="refundCalculation" style="display: none;">
+                    <h4><i class="fas fa-calculator"></i> Estimated Refund</h4>
+                    <div class="refund-details">
+                        <div class="refund-item">
+                            <span>Amount Paid:</span>
+                            <span>₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                        </div>
+                        <div class="refund-item" id="cancellationCharges">
+                            <span>Cancellation Charges:</span>
+                            <span id="chargesAmount">₹0.00</span>
+                        </div>
+                        <div class="refund-item total">
+                            <span><strong>Expected Refund:</strong></span>
+                            <span id="refundAmount"><strong>₹{{ "%.2f"|format(booking.total_amount) }}</strong></span>
+                        </div>
+                    </div>
+                    <div class="refund-note">
+                        <i class="fas fa-info-circle"></i>
+                        <small>Actual refund amount may vary based on railway rules and verification</small>
+                    </div>
+                </div>
+                
+                <div class="tdr-terms">
+                    <div class="terms-notice">
+                        <h4><i class="fas fa-scroll"></i> Important Terms & Conditions</h4>
+                        <ul>
+                            <li>TDR must be filed within 365 days of journey date</li>
+                            <li>Refund processing takes 3-5 working days after approval</li>
+                            <li>Cancellation charges apply as per railway rules</li>
+                            <li>For train delays less than 3 hours, no refund is applicable</li>
+                            <li>Refund will be credited to the original payment method</li>
+                            <li>Supporting documents may be required for verification</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Profile
+                    </a>
+                    <button type="submit" class="btn btn-warning" id="submitBtn">
+                        <i class="fas fa-file-alt"></i> File TDR Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.tdr-info {
+    margin-bottom: 2rem;
+}
+
+.info-notice {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.info-notice i {
+    font-size: 1.5rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.info-notice h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.info-notice p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.booking-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.booking-summary .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.booking-summary .detail-item i {
+    color: #3b82f6;
+    width: 20px;
+}
+
+.refund-calculation {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.refund-calculation h4 {
+    margin: 0 0 1rem 0;
+    color: #15803d;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.refund-details {
+    margin-bottom: 1rem;
+}
+
+.refund-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dcfce7;
+}
+
+.refund-item.total {
+    border-top: 2px solid #15803d;
+    border-bottom: none;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.refund-note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #059669;
+    font-style: italic;
+}
+
+.tdr-terms {
+    margin: 2rem 0;
+}
+
+.terms-notice {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.terms-notice h4 {
+    margin: 0 0 1rem 0;
+    color: #92400e;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.terms-notice ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-type: disc;
+}
+
+.terms-notice li {
+    margin-bottom: 0.5rem;
+    color: #78350f;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .booking-summary {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reasonSelect = document.getElementById('reason');
+    const refundCalculation = document.getElementById('refundCalculation');
+    const chargesAmount = document.getElementById('chargesAmount');
+    const refundAmount = document.getElementById('refundAmount');
+    const cancellationCharges = document.getElementById('cancellationCharges');
+    
+    const totalAmount = {{ booking.total_amount }};
+    
+    reasonSelect.addEventListener('change', function() {
+        const reason = this.value;
+        
+        if (reason) {
+            refundCalculation.style.display = 'block';
+            
+            let charges = 0;
+            let refund = totalAmount;
+            
+            // Calculate charges based on reason
+            if (reason === 'train_cancelled' || reason === 'delay_more_than_3_hours' || 
+                reason === 'ac_failure' || reason === 'coach_not_attached' ||
+                reason === 'train_accident' || reason === 'natural_disaster') {
+                // Full refund for valid railway issues
+                charges = 0;
+                refund = totalAmount;
+                cancellationCharges.style.display = 'none';
+            } else {
+                // Normal cancellation charges for other reasons
+                charges = Math.min(totalAmount * 0.1, 250); // 10% or ₹250, whichever is less
+                refund = totalAmount - charges;
+                cancellationCharges.style.display = 'flex';
+                chargesAmount.textContent = '₹' + charges.toFixed(2);
+            }
+            
+            refundAmount.innerHTML = '<strong>₹' + refund.toFixed(2) + '</strong>';
+        } else {
+            refundCalculation.style.display = 'none';
+        }
+    });
+    
+    // Form submission handling
+    document.querySelector('.booking-form').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Filing TDR...';
+    });
+});
+</script>
+{% endblock %}

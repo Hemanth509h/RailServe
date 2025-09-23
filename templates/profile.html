@@ -100,6 +100,20 @@
                                         <i class="fas fa-credit-card"></i> Pay Now
                                     </a>
                                 {% endif %}
+                                
+                                {% if booking.status in ['confirmed', 'cancelled', 'waitlisted'] %}
+                                    {% set existing_tdr = booking.refund_requests|first %}
+                                    {% if existing_tdr %}
+                                        <span class="btn btn-secondary btn-sm disabled">
+                                            <i class="fas fa-receipt"></i> TDR Filed: {{ existing_tdr.tdr_number }}
+                                        </span>
+                                    {% else %}
+                                        <a href="{{ url_for('booking.file_tdr', booking_id=booking.id) }}" 
+                                           class="btn btn-warning btn-sm">
+                                            <i class="fas fa-receipt"></i> File TDR
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
