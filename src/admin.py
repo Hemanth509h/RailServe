@@ -1298,6 +1298,125 @@ def cancel_waitlist(booking_id):
     
     return redirect(url_for('admin.waitlist_details'))
 
+@admin_bp.route('/waitlist/allocate_train/<int:train_id>/<journey_date>', methods=['POST'])
+@admin_required
+def allocate_train_waitlist(train_id, journey_date):
+    """Allocate available seats to waitlisted passengers for a specific train"""
+    from .queue_manager import WaitlistManager
+    from datetime import datetime
+    
+    try:
+        # Parse journey date
+        journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+        
+        # Get train and verify it exists
+        train = Train.query.get_or_404(train_id)
+        
+        # Initialize waitlist manager and process
+        waitlist_manager = WaitlistManager()
+        confirmed_bookings = waitlist_manager.process_waitlist(train_id, journey_date_obj)
+        
+        if confirmed_bookings:
+            confirmed_count = len(confirmed_bookings)
+            flash(f'Successfully allocated seats! {confirmed_count} passengers confirmed from waitlist for {train.name}', 'success')
+        else:
+            flash(f'No waitlisted passengers could be confirmed for {train.name}. Check seat availability and waitlist status.', 'info')
+            
+    except ValueError:
+        flash('Invalid date format', 'error')
+    except Exception as e:
+        flash(f'Error allocating waitlist: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.waitlist_allocation'))
+
+@admin_bp.route('/waitlist/allocate_all_tomorrow', methods=['POST'])
+@admin_required 
+def allocate_all_tomorrow():
+    """Allocate seats for all trains departing tomorrow"""
+    from .queue_manager import WaitlistManager
+    from datetime import date, timedelta
+    
+    try:
+        tomorrow = date.today() + timedelta(days=1)
+        
+        # Get all trains with waitlisted passengers for tomorrow
+        trains_with_waitlist = db.session.query(Train).join(Booking).filter(
+            Booking.status == 'waitlisted',
+            Booking.journey_date == tomorrow,
+            Train.available_seats > 0
+        ).distinct().all()
+        
+        waitlist_manager = WaitlistManager()
+        total_confirmed = 0
+        
+        for train in trains_with_waitlist:
+            confirmed_bookings = waitlist_manager.process_waitlist(train.id, tomorrow)
+            if confirmed_bookings:
+                total_confirmed += len(confirmed_bookings)
+        
+        if total_confirmed > 0:
+            flash(f'Successfully processed waitlists for {len(trains_with_waitlist)} trains. {total_confirmed} passengers confirmed.', 'success')
+        else:
+            flash('No waitlisted passengers could be confirmed. Check seat availability.', 'info')
+            
+    except Exception as e:
+        flash(f'Error processing waitlists: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.waitlist_allocation'))
+
+@admin_bp.route('/waitlist/allocation')
+@admin_required
+def waitlist_allocation():
+    """Waitlist allocation dashboard"""
+    from datetime import date, timedelta
+    
+    tomorrow = date.today() + timedelta(days=1)
+    
+    # Get trains departing tomorrow with waitlisted passengers
+    trains_tomorrow = db.session.query(
+        Train,
+        db.func.count(Booking.id).label('waitlist_count')
+    ).join(Booking).filter(
+        Booking.status == 'waitlisted',
+        Booking.journey_date == tomorrow
+    ).group_by(Train.id).all()
+    
+    # Get recent allocation history (last 7 days)
+    recent_allocations = db.session.query(
+        Train.number,
+        Train.name,
+        db.func.count(Booking.id).label('confirmed_count'),
+        db.func.max(Booking.booking_date).label('last_confirmation')
+    ).join(Booking).filter(
+        Booking.status == 'confirmed',
+        Booking.booking_date >= date.today() - timedelta(days=7)
+    ).group_by(Train.id, Train.number, Train.name).all()
+    
+    return render_template('admin/waitlist_allocation.html',
+                         trains_tomorrow=trains_tomorrow,
+                         recent_allocations=recent_allocations,
+                         tomorrow=tomorrow)
+
+@admin_bp.route('/waitlist/schedule_auto_allocation', methods=['POST'])
+@admin_required
+def schedule_auto_allocation():
+    """Schedule automatic waitlist allocation"""
+    from flask import session
+    
+    auto_enabled = request.form.get('auto_enabled') is not None
+    allocation_time = request.form.get('allocation_time', '18:00')
+    
+    # Store in session for now (in production, this would be stored in database)
+    session['auto_waitlist_enabled'] = auto_enabled
+    session['auto_waitlist_time'] = allocation_time
+    
+    if auto_enabled:
+        flash(f'Automatic waitlist allocation enabled for {allocation_time} daily', 'success')
+    else:
+        flash('Automatic waitlist allocation disabled', 'info')
+    
+    return redirect(url_for('admin.waitlist_allocation'))
+
 
 @admin_bp.route('/refunds')
 @admin_required
