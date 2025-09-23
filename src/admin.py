@@ -1556,8 +1556,32 @@ def chart_preparation():
         ChartPreparation.journey_date == today
     )
     
+    # For tomorrow's charts, include trains with bookings even if they don't have chart preparation records yet
+    from .models import Booking
+    trains_with_tomorrow_bookings = db.session.query(Train.id).filter(
+        Train.active == True,
+        Train.id.in_(
+            db.session.query(Booking.train_id).filter(
+                Booking.journey_date == tomorrow,
+                Booking.status.in_(['confirmed', 'waitlisted', 'rac'])
+            )
+        )
+    ).subquery()
+    
+    # Get existing chart preparation records for tomorrow
     charts_tomorrow_query = db.session.query(ChartPreparation, Train).join(Train).filter(
         ChartPreparation.journey_date == tomorrow
+    )
+    
+    # Also get trains with bookings for tomorrow that don't have chart preparation records yet
+    trains_tomorrow_no_charts = db.session.query(Train).filter(
+        Train.active == True,
+        Train.id.in_(trains_with_tomorrow_bookings),
+        ~Train.id.in_(
+            db.session.query(ChartPreparation.train_id).filter(
+                ChartPreparation.journey_date == tomorrow
+            )
+        )
     )
     
     # Apply search filters if provided
@@ -1568,14 +1592,37 @@ def chart_preparation():
         )
         charts_today_query = charts_today_query.filter(search_filter)
         charts_tomorrow_query = charts_tomorrow_query.filter(search_filter)
+        trains_tomorrow_no_charts = trains_tomorrow_no_charts.filter(search_filter)
     
     # Apply status filter if provided
     if status_filter:
         charts_today_query = charts_today_query.filter(ChartPreparation.status == status_filter)
         charts_tomorrow_query = charts_tomorrow_query.filter(ChartPreparation.status == status_filter)
+        # For trains without chart preparation records, only show if status_filter is 'pending'
+        if status_filter != 'pending':
+            trains_tomorrow_no_charts = trains_tomorrow_no_charts.filter(False)  # Empty result
     
     charts_today = charts_today_query.all()
-    charts_tomorrow = charts_tomorrow_query.all()
+    charts_tomorrow_existing = charts_tomorrow_query.all()
+    trains_tomorrow_new = trains_tomorrow_no_charts.all()
+    
+    # Combine tomorrow's charts: existing chart preparations + trains with bookings but no chart preparation
+    charts_tomorrow = []
+    for chart, train in charts_tomorrow_existing:
+        charts_tomorrow.append((chart, train))
+    
+    # Add trains with bookings but no chart preparation records (create dummy chart objects)
+    for train in trains_tomorrow_new:
+        dummy_chart = type('DummyChart', (), {
+            'train_id': train.id,
+            'journey_date': tomorrow,
+            'status': 'pending',
+            'chart_prepared_at': None,
+            'final_chart_at': None,
+            'confirmed_from_waitlist': 0,
+            'cancelled_waitlist': 0
+        })()
+        charts_tomorrow.append((dummy_chart, train))
     
     # Get trains that need chart preparation
     trains_needing_query = db.session.query(Train).filter(
