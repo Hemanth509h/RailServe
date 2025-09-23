@@ -476,14 +476,14 @@
                         <div class="chart-actions">
                             {% if chart.status == 'pending' %}
                                 <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
-                                    {{ csrf_token() }}
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="action-btn btn-prepare">
                                         <i class="fas fa-clipboard"></i> Prepare Chart
                                     </button>
                                 </form>
                             {% elif chart.status == 'prepared' %}
                                 <form method="POST" action="{{ url_for('admin.finalize_chart_manual', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
-                                    {{ csrf_token() }}
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="action-btn btn-finalize">
                                         <i class="fas fa-check"></i> Finalize Chart
                                     </button>
@@ -554,14 +554,14 @@
                         <div class="chart-actions">
                             {% if chart.status == 'pending' %}
                                 <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
-                                    {{ csrf_token() }}
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="action-btn btn-prepare">
                                         <i class="fas fa-clipboard"></i> Prepare Chart
                                     </button>
                                 </form>
                             {% elif chart.status == 'prepared' %}
                                 <form method="POST" action="{{ url_for('admin.finalize_chart_manual', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
-                                    {{ csrf_token() }}
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="action-btn btn-finalize">
                                         <i class="fas fa-check"></i> Finalize Chart
                                     </button>
