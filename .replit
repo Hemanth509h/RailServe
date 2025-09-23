@@ -25,7 +25,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "SESSION_SECRET=\"$(python -c 'import secrets; print(secrets.token_hex(32))')\" python main.py"
+args = "SESSION_SECRET=\"$(python -c 'import secrets; print(secrets.token_hex(32))')\" FLASK_ENV=production gunicorn --workers 2 --worker-class gthread --bind 0.0.0.0:5000 --timeout 120 --access-logfile - --error-logfile - main:app"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -35,10 +35,6 @@ outputType = "webview"
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 42145
-externalPort = 3000
-
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "--reuse-port", "main:app"]
+run = ["gunicorn", "--workers", "2", "--worker-class", "gthread", "--bind", "0.0.0.0:5000", "--timeout", "120", "main:app"]
