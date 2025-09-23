@@ -859,8 +859,12 @@ def add_station_to_route(train_id):
 @admin_required
 def seat_allocation():
     """Real-time seat allocation monitoring"""
-    # Get date from request parameter or default to today
+    # Get parameters from request
     date_param = request.args.get('date')
+    train_search = request.args.get('train_search', '').strip()
+    utilization_filter = request.args.get('utilization_filter', '')
+    
+    # Handle date parameter
     try:
         if date_param:
             selected_date = datetime.strptime(date_param, '%Y-%m-%d').date()
@@ -870,7 +874,8 @@ def seat_allocation():
         flash('Invalid date format', 'error')
         selected_date = datetime.utcnow().date()
     
-    seat_allocation = db.session.query(
+    # Build base query
+    query = db.session.query(
         Train.id,
         Train.number,
         Train.name,
@@ -892,7 +897,35 @@ def seat_allocation():
         Train.id == Booking.train_id,
         Booking.journey_date == selected_date,
         Booking.status == 'confirmed'
-    )).group_by(Train.id, Train.number, Train.name, Train.total_seats, Train.tatkal_seats).all()
+    ))
+    
+    # Apply train search filter
+    if train_search:
+        query = query.filter(
+            db.or_(
+                Train.number.ilike(f'%{train_search}%'),
+                Train.name.ilike(f'%{train_search}%')
+            )
+        )
+    
+    # Group by and get results
+    seat_allocation = query.group_by(Train.id, Train.number, Train.name, Train.total_seats, Train.tatkal_seats).all()
+    
+    # Apply utilization filter if specified
+    if utilization_filter and seat_allocation:
+        filtered_allocation = []
+        for train in seat_allocation:
+            total_booked = train.general_booked + train.tatkal_booked
+            utilization = (total_booked / train.total_seats * 100) if train.total_seats else 0
+            
+            if utilization_filter == 'high' and utilization > 90:
+                filtered_allocation.append(train)
+            elif utilization_filter == 'medium' and 70 <= utilization <= 90:
+                filtered_allocation.append(train)
+            elif utilization_filter == 'low' and utilization < 70:
+                filtered_allocation.append(train)
+        
+        seat_allocation = filtered_allocation
     
     return render_template('admin/seat_allocation.html',
                          seat_allocation=seat_allocation,
