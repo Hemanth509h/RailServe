@@ -64,3 +64,8 @@ psycopg2-binary
 qrcode[pil]
 reportlab
 sqlalchemy
+email_validator
+flask
+flask-sqlalchemy
+gunicorn
+psycopg2-binary
