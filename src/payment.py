@@ -148,6 +148,11 @@ def process_payment(booking_id):
                     db.session.rollback()
                     flash('Payment failed: Unable to allocate seats. Please try again.', 'error')
                     return redirect(url_for('payment.pay', booking_id=booking_id))
+                
+                # CRITICAL FIX: Update train's available_seats field after successful booking
+                train = Train.query.get(booking.train_id)
+                if train:
+                    train.available_seats = max(0, train.available_seats - booking.passengers)
         
         # Commit all changes atomically
         db.session.commit()
@@ -295,6 +300,39 @@ def process_session_payment():
                 session.pop('pending_booking', None)
                 flash('Payment failed: Unable to allocate seats. Please try booking again.', 'error')
                 return redirect(url_for('index'))
+            
+            # CRITICAL FIX: Update train's available_seats field after successful booking
+            train.available_seats = max(0, train.available_seats - booking_data['passengers'])
+            
+            # Also update SeatAvailability table for real-time tracking
+            from .models import SeatAvailability
+            seat_availability = SeatAvailability.query.filter_by(
+                train_id=booking_data['train_id'],
+                from_station_id=booking_data['from_station_id'],
+                to_station_id=booking_data['to_station_id'],
+                journey_date=journey_date,
+                coach_class=booking_data['coach_class'],
+                quota=booking_data['quota']
+            ).first()
+            
+            if seat_availability:
+                seat_availability.available_seats = max(0, seat_availability.available_seats - booking_data['passengers'])
+                seat_availability.last_updated = datetime.utcnow()
+            else:
+                # Create new seat availability record
+                seat_availability = SeatAvailability(
+                    train_id=booking_data['train_id'],
+                    from_station_id=booking_data['from_station_id'],
+                    to_station_id=booking_data['to_station_id'],
+                    journey_date=journey_date,
+                    coach_class=booking_data['coach_class'],
+                    quota=booking_data['quota'],
+                    available_seats=max(0, available_seats - booking_data['passengers']),
+                    waiting_list=0,
+                    rac_seats=0,
+                    last_updated=datetime.utcnow()
+                )
+                db.session.add(seat_availability)
         
         # Handle waitlist if needed
         if final_status == 'waitlisted':

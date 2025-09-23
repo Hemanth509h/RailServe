@@ -108,6 +108,17 @@ def book_ticket_post(train_id):
             flash('Booking is not available for this date', 'error')
             return redirect(url_for('booking.book_ticket', train_id=train_id))
         
+        # CRITICAL FIX: Check if chart preparation is completed - no new bookings allowed
+        from .models import ChartPreparation
+        chart = ChartPreparation.query.filter_by(
+            train_id=train_id,
+            journey_date=journey_date
+        ).first()
+        
+        if chart and chart.status in ['prepared', 'final']:
+            flash('Booking is closed - chart preparation has been completed for this train', 'error')
+            return redirect(url_for('booking.book_ticket', train_id=train_id))
+        
         # Validate Tatkal booking window with coach class
         if booking_type == 'tatkal' and not check_tatkal_availability(journey_date, coach_class):
             flash('Tatkal booking is not yet open for this date and coach class', 'error')
@@ -244,8 +255,12 @@ def cancel_booking(booking_id):
         # Cancel booking
         booking.status = 'cancelled'
         
-        # If it was a confirmed booking, process waitlist (no need to modify global seats)
+        # If it was a confirmed booking, restore seats and process waitlist
         if original_status == 'confirmed':
+            # CRITICAL FIX: Restore available seats when confirmed booking is cancelled
+            if train:
+                train.available_seats = train.available_seats + booking.passengers
+            
             # Process waitlist after cancellation - availability will be calculated dynamically
             waitlist_manager = WaitlistManager()
             waitlist_manager.process_waitlist(booking.train_id, booking.journey_date)
