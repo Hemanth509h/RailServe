@@ -886,15 +886,19 @@ def create_system_configurations(TatkalTimeSlot, PlatformManagement, db):
     
     platforms = []
     for code, name, platform_count in major_stations:
-        for i in range(1, platform_count + 1):
-            platform = PlatformManagement(
-                station_code=code,
-                platform_number=str(i),
-                platform_type='Main' if i <= 3 else 'Subsidiary',
-                length=400 if i <= 3 else 300,  # meters
-                active=True
-            )
-            platforms.append(platform)
+        # Find station by code
+        station = Station.query.filter_by(code=code).first()
+        if station:
+            for i in range(1, platform_count + 1):
+                platform = PlatformManagement(
+                    station_id=station.id,
+                    platform_number=str(i),
+                    track_number=f"T{i}",
+                    platform_length=400 if i <= 3 else 300,  # meters
+                    electrified=True,
+                    status='active'
+                )
+                platforms.append(platform)
     
     db.session.add_all(platforms)
     db.session.commit()
