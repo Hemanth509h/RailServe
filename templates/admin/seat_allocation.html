@@ -3,7 +3,9 @@
 {% block title %}Seat Allocation Monitor - RailServe Admin{% endblock %}
 
 {% block content %}
-<div class="admin-container">
+<div class="admin-page-container">
+    <div class="admin-content-wrapper">
+        <div class="admin-container">
     <div class="admin-header">
         <h1><i class="fas fa-chair"></i> Real-time Seat Allocation Monitor</h1>
         <p>Monitor current seat availability and allocation across all trains for {{ selected_date.strftime('%d %B %Y') }}</p>
@@ -411,6 +413,36 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Global Admin Page Inner Scrolling Solution */
+.admin-page-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    background: #f8fafc;
+}
+
+.admin-container {
+    max-height: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 1400px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-content-wrapper {
+        padding: 0.5rem;
+    }
+}
 </style>
 
 <script>
@@ -426,4 +458,7 @@ document.querySelectorAll('.btn-action').forEach(btn => {
     });
 });
 </script>
+        </div>
+    </div>
+</div>
 {% endblock %}

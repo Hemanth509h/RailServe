@@ -376,7 +376,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="chart-container chart-preparation-container">
+<div class="admin-page-container">
+    <div class="admin-content-wrapper">
+        <div class="chart-container chart-preparation-container">
     <!-- Page Header -->
     <div class="page-header">
         <h1><i class="fas fa-clipboard-list"></i> Chart Preparation Management</h1>
@@ -474,12 +476,14 @@
                         <div class="chart-actions">
                             {% if chart.status == 'pending' %}
                                 <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                    {{ csrf_token() }}
                                     <button type="submit" class="action-btn btn-prepare">
                                         <i class="fas fa-clipboard"></i> Prepare Chart
                                     </button>
                                 </form>
                             {% elif chart.status == 'prepared' %}
                                 <form method="POST" action="{{ url_for('admin.finalize_chart_manual', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                    {{ csrf_token() }}
                                     <button type="submit" class="action-btn btn-finalize">
                                         <i class="fas fa-check"></i> Finalize Chart
                                     </button>
@@ -550,12 +554,14 @@
                         <div class="chart-actions">
                             {% if chart.status == 'pending' %}
                                 <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                    {{ csrf_token() }}
                                     <button type="submit" class="action-btn btn-prepare">
                                         <i class="fas fa-clipboard"></i> Prepare Chart
                                     </button>
                                 </form>
                             {% elif chart.status == 'prepared' %}
                                 <form method="POST" action="{{ url_for('admin.finalize_chart_manual', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                    {{ csrf_token() }}
                                     <button type="submit" class="action-btn btn-finalize">
                                         <i class="fas fa-check"></i> Finalize Chart
                                     </button>
@@ -635,8 +641,52 @@
         <a href="{{ url_for('admin.dashboard') }}" class="nav-btn">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
+        </div>
     </div>
 </div>
+
+<style>
+/* Global Admin Page Inner Scrolling Solution */
+.admin-page-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.admin-content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    background: #f8fafc;
+}
+
+.chart-container {
+    max-height: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+/* Fix overlapping footer by ensuring proper spacing */
+.navigation {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-content-wrapper {
+        padding: 0.5rem;
+    }
+    
+    .chart-container {
+        padding: 0;
+    }
+}
+</style>
 
 <script>
 // Simple auto-refresh functionality (optional)
