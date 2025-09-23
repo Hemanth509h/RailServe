@@ -478,7 +478,7 @@
                                     </button>
                                 </form>
                             {% elif chart.status == 'prepared' %}
-                                <form method="POST" action="{{ url_for('admin.finalize_chart', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                <form method="POST" action="{{ url_for('admin.finalize_chart_manual', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
                                     <button type="submit" class="action-btn btn-finalize">
                                         <i class="fas fa-check"></i> Finalize Chart
                                     </button>
@@ -554,7 +554,7 @@
                                     </button>
                                 </form>
                             {% elif chart.status == 'prepared' %}
-                                <form method="POST" action="{{ url_for('admin.finalize_chart', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                <form method="POST" action="{{ url_for('admin.finalize_chart_manual', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
                                     <button type="submit" class="action-btn btn-finalize">
                                         <i class="fas fa-check"></i> Finalize Chart
                                     </button>
