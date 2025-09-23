@@ -101,7 +101,7 @@ def setup_database():
             
             # Create essential system configurations
             logger.info("Creating system configurations...")
-            create_system_configurations(TatkalTimeSlot, PlatformManagement, db)
+            create_system_configurations(TatkalTimeSlot, PlatformManagement, Station, db)
             
             logger.info("🎉 Database setup completed successfully!")
             logger.info("Indian Railway System with 1250 stations, 1500 trains, and complete management system is ready")
@@ -848,7 +848,7 @@ def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, db
     
     logger.info(f"✅ Created {len(bookings)} sample bookings with passenger details")
 
-def create_system_configurations(TatkalTimeSlot, PlatformManagement, db):
+def create_system_configurations(TatkalTimeSlot, PlatformManagement, Station, db):
     """Create essential system configurations"""
     from datetime import time
     
