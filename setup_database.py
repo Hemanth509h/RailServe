@@ -89,11 +89,7 @@ def setup_database():
             
             # Create sample bookings
             logger.info("Creating sample bookings for testing...")
-            create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Waitlist, db)
-            
-            # Create chart preparation records
-            logger.info("Creating chart preparation samples...")
-            create_chart_preparation_records(Train, ChartPreparation, db)
+            create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, db)
             
             logger.info("🎉 Database setup completed successfully!")
             logger.info("Indian Railway System with 1250 stations and 1500 trains is ready")
@@ -746,7 +742,7 @@ def add_minutes_to_time(time_obj, minutes):
     dt += timedelta(minutes=minutes)
     return dt.time()
 
-def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Waitlist, db):
+def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, db):
     """Create sample bookings for testing"""
     
     users = User.query.all()
@@ -759,7 +755,6 @@ def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Wa
     bookings = []
     passengers = []
     payments = []
-    waitlists = []
     
     # Create 200 sample bookings
     for i in range(200):
@@ -840,48 +835,6 @@ def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Wa
     
     logger.info(f"✅ Created {len(bookings)} sample bookings with passenger details")
 
-def create_chart_preparation_records(Train, ChartPreparation, db):
-    """Create chart preparation records for today and tomorrow"""
-    
-    trains = Train.query.limit(50).all()  # Chart prep for first 50 trains
-    chart_records = []
-    
-    today = date.today()
-    tomorrow = today + timedelta(days=1)
-    
-    for train in trains:
-        # Chart for today
-        if random.random() < 0.8:  # 80% chance
-            chart_today = ChartPreparation(
-                train_id=train.id,
-                journey_date=today,
-                status=random.choice(['prepared', 'final', 'pending']),
-                chart_prepared_at=datetime.utcnow() - timedelta(hours=random.randint(1, 18)),
-                confirmed_from_waitlist=random.randint(0, 15),
-                cancelled_waitlist=random.randint(0, 8)
-            )
-            
-            if chart_today.status == 'final':
-                chart_today.final_chart_at = chart_today.chart_prepared_at + timedelta(minutes=random.randint(30, 180))
-            
-            chart_records.append(chart_today)
-        
-        # Chart for tomorrow
-        if random.random() < 0.6:  # 60% chance
-            chart_tomorrow = ChartPreparation(
-                train_id=train.id,
-                journey_date=tomorrow,
-                status=random.choice(['pending', 'prepared']),
-                chart_prepared_at=datetime.utcnow() - timedelta(hours=random.randint(1, 8)) if random.random() < 0.7 else None,
-                confirmed_from_waitlist=random.randint(0, 12),
-                cancelled_waitlist=random.randint(0, 6)
-            )
-            chart_records.append(chart_tomorrow)
-    
-    db.session.add_all(chart_records)
-    db.session.commit()
-    
-    logger.info(f"✅ Created {len(chart_records)} chart preparation records")
 
 if __name__ == '__main__':
     setup_database()
