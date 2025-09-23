@@ -56,9 +56,9 @@ def setup_database():
                 ChartPreparation, TrainStatus, SeatAvailability,
                 TatkalTimeSlot, Waitlist, GroupBooking, GroupMessage,
                 GroupMemberPayment, GroupMemberInvitation,
-                Complaint, DynamicPricing, FareRule, PlatformManagement,
-                PerformanceMetrics, QuotaManagement, RouteManagement,
-                WaitlistAllocation
+                LoyaltyProgram, NotificationPreferences, TatkalOverride,
+                PlatformManagement, TrainPlatformAssignment, ComplaintManagement,
+                PerformanceMetrics, DynamicPricing, PNRStatusTracking
             )
             
             logger.info("Dropping existing tables...")
@@ -74,9 +74,10 @@ def setup_database():
                               'passenger', 'payment', 'refund_request', 'chart_preparation', 
                               'train_status', 'seat_availability', 'tatkal_time_slot', 
                               'waitlist', 'group_booking', 'group_message', 'group_member_payment',
-                              'group_member_invitation', 'complaint', 'dynamic_pricing', 'fare_rule',
-                              'platform_management', 'performance_metrics', 'quota_management',
-                              'route_management', 'waitlist_allocation']
+                              'group_member_invitation', 'loyalty_program', 'notification_preferences',
+                              'tatkal_override', 'platform_management', 'train_platform_assignment',
+                              'complaint_management', 'performance_metrics', 'dynamic_pricing',
+                              'pnr_status_tracking']
             
             created_tables = [t for t in essential_tables if t in tables]
             logger.info(f"✅ Created {len(created_tables)} essential tables: {', '.join(created_tables)}")
@@ -98,10 +99,13 @@ def setup_database():
             logger.info("Creating comprehensive train routes...")
             create_comprehensive_routes(Train, Station, TrainRoute, db)
             
-            # Create sample bookings
+            # Create essential system configurations
+            logger.info("Creating system configurations...")
+            create_system_configurations(TatkalTimeSlot, PlatformManagement, db)
             
             logger.info("🎉 Database setup completed successfully!")
-            logger.info("Indian Railway System with 1250 stations and 1500 trains is ready")
+            logger.info("Indian Railway System with 1250 stations, 1500 trains, and complete management system is ready")
+            logger.info(f"Tables created: {', '.join(sorted(created_tables))}")
             
     except Exception as e:
         logger.error(f"❌ Database setup failed: {str(e)}")
@@ -844,6 +848,57 @@ def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, db
     
     logger.info(f"✅ Created {len(bookings)} sample bookings with passenger details")
 
+def create_system_configurations(TatkalTimeSlot, PlatformManagement, db):
+    """Create essential system configurations"""
+    from datetime import time
+    
+    # Create Tatkal time slots
+    tatkal_ac = TatkalTimeSlot(
+        name="AC Classes Tatkal",
+        coach_classes="AC1,AC2,AC3,CC",
+        open_time=time(10, 0),  # 10:00 AM
+        close_time=time(23, 59),  # 11:59 PM
+        days_before_journey=1,
+        active=True
+    )
+    
+    tatkal_nonac = TatkalTimeSlot(
+        name="Non-AC Classes Tatkal", 
+        coach_classes="SL,2S",
+        open_time=time(11, 0),  # 11:00 AM
+        close_time=time(23, 59),  # 11:59 PM
+        days_before_journey=1,
+        active=True
+    )
+    
+    db.session.add_all([tatkal_ac, tatkal_nonac])
+    
+    # Create platform management entries for major stations
+    major_stations = [
+        ('MAS', 'Chennai Central', 12),
+        ('SBC', 'Bangalore City', 10),
+        ('TVC', 'Thiruvananthapuram Central', 6),
+        ('CBE', 'Coimbatore Junction', 8),
+        ('MDU', 'Madurai Junction', 6),
+        ('ERS', 'Ernakulam Junction', 5),
+        ('TPJ', 'Tiruchirapalli Junction', 7)
+    ]
+    
+    platforms = []
+    for code, name, platform_count in major_stations:
+        for i in range(1, platform_count + 1):
+            platform = PlatformManagement(
+                station_code=code,
+                platform_number=str(i),
+                platform_type='Main' if i <= 3 else 'Subsidiary',
+                length=400 if i <= 3 else 300,  # meters
+                active=True
+            )
+            platforms.append(platform)
+    
+    db.session.add_all(platforms)
+    db.session.commit()
+    logger.info(f"✅ Created {len(platforms)} platform entries and Tatkal configurations")
 
 if __name__ == '__main__':
     setup_database()
