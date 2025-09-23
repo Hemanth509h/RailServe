@@ -173,19 +173,27 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 <script>
-    // Prepare data for charts
+    // Prepare data for charts with safe fallbacks
     const revenueData = {
         labels: [
-            {% for date, amount in daily_revenue %}
-                '{{ date.strftime("%d %b") if date else "N/A" }}',
-            {% endfor %}
+            {% if daily_revenue %}
+                {% for date, amount in daily_revenue %}
+                    '{{ date.strftime("%d %b") if date else "N/A" }}',
+                {% endfor %}
+            {% else %}
+                'No Data'
+            {% endif %}
         ],
         datasets: [{
             label: 'Revenue (₹)',
             data: [
-                {% for date, amount in daily_revenue %}
-                    {{ amount or 0 }},
-                {% endfor %}
+                {% if daily_revenue %}
+                    {% for date, amount in daily_revenue %}
+                        {{ amount or 0 }},
+                    {% endfor %}
+                {% else %}
+                    0
+                {% endif %}
             ],
             borderColor: '#2563eb',
             backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -195,15 +203,23 @@
     
     const bookingStatusData = {
         labels: [
-            {% for status, count in booking_stats %}
-                '{{ status.replace("_", " ").title() }}',
-            {% endfor %}
+            {% if booking_stats %}
+                {% for status, count in booking_stats %}
+                    '{{ status.replace("_", " ").title() }}',
+                {% endfor %}
+            {% else %}
+                'No Bookings'
+            {% endif %}
         ],
         datasets: [{
             data: [
-                {% for status, count in booking_stats %}
-                    {{ count }},
-                {% endfor %}
+                {% if booking_stats %}
+                    {% for status, count in booking_stats %}
+                        {{ count }},
+                    {% endfor %}
+                {% else %}
+                    0
+                {% endif %}
             ],
             backgroundColor: [
                 '#10b981', // confirmed - green
@@ -216,16 +232,24 @@
     
     const popularTrainsData = {
         labels: [
-            {% for train_name, count in popular_trains %}
-                '{{ train_name[:20] }}{{ "..." if train_name|length > 20 else "" }}',
-            {% endfor %}
+            {% if popular_trains %}
+                {% for train_name, count in popular_trains %}
+                    '{{ train_name[:20] }}{{ "..." if train_name|length > 20 else "" }}',
+                {% endfor %}
+            {% else %}
+                'No Trains'
+            {% endif %}
         ],
         datasets: [{
             label: 'Bookings',
             data: [
-                {% for train_name, count in popular_trains %}
-                    {{ count }},
-                {% endfor %}
+                {% if popular_trains %}
+                    {% for train_name, count in popular_trains %}
+                        {{ count }},
+                    {% endfor %}
+                {% else %}
+                    0
+                {% endif %}
             ],
             backgroundColor: '#8b5cf6'
         }]
@@ -233,16 +257,24 @@
     
     const bookingTrendsData = {
         labels: [
-            {% for date, count in booking_trends %}
-                '{{ date.strftime("%d %b") if date else "N/A" }}',
-            {% endfor %}
+            {% if booking_trends %}
+                {% for date, count in booking_trends %}
+                    '{{ date.strftime("%d %b") if date else "N/A" }}',
+                {% endfor %}
+            {% else %}
+                'No Data'
+            {% endif %}
         ],
         datasets: [{
             label: 'Bookings',
             data: [
-                {% for date, count in booking_trends %}
-                    {{ count }},
-                {% endfor %}
+                {% if booking_trends %}
+                    {% for date, count in booking_trends %}
+                        {{ count }},
+                    {% endfor %}
+                {% else %}
+                    0
+                {% endif %}
             ],
             borderColor: '#059669',
             backgroundColor: 'rgba(5, 150, 105, 0.1)',

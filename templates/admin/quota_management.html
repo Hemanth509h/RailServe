@@ -59,11 +59,11 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-row">
                     <label>Total Seats:</label>
-                    <input type="number" name="total_seats" value="{{ train.total_seats }}" min="50" max="2000" required>
+                    <input type="number" name="total_seats" value="{{ train.total_seats }}" max="2000" required>
                 </div>
                 <div class="form-row">
                     <label>Tatkal Seats:</label>
-                    <input type="number" name="tatkal_seats" value="{{ train.tatkal_seats or 0 }}" min="0" max="{{ train.total_seats }}">
+                    <input type="number" name="tatkal_seats" value="{{ train.tatkal_seats or 0 }}" max="{{ train.total_seats }}">
                 </div>
                 <div class="form-row">
                     <label>Tatkal Fare/km:</label>
