@@ -23,13 +23,13 @@ args = "Railway App"
 name = "Railway App"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python -m gunicorn --bind 0.0.0.0:5000 --reload --access-logfile - --error-logfile - main:app"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 4 --timeout 60 --access-logfile - --error-logfile - main:app"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000

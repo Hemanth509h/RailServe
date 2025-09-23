@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 """
-Railway Database Setup Script - Essential Tables Only
-Creates clean database schema with core railway booking functionality
+Railway Database Setup Script - Comprehensive Indian Railway System
+Creates complete database schema with extensive Indian railway data
 
-This script creates only the essential tables needed for:
-- User authentication
-- Station and train management  
-- Booking and passenger management
-- Payment processing
-- Waitlist management
-- Chart preparation
+Features:
+- 1250 stations (majority from South India)
+- 1500 trains with realistic routes
+- 2 users (regular user and admin)
+- Comprehensive route network
+- Essential tables only
 
 Usage:
     python setup_database.py
 
 Environment Variables:
     DATABASE_URL: PostgreSQL connection string (optional - defaults to SQLite)
-    CREATE_ADMIN: Set to '1' to create admin user
-    ADMIN_PASSWORD: Admin password (required if CREATE_ADMIN=1)
+    ADMIN_PASSWORD: Admin password (defaults to 'admin123')
 """
 
 import os
@@ -25,13 +23,14 @@ import sys
 from datetime import datetime, date, time, timedelta
 import logging
 import random
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def setup_database():
-    """Initialize database with essential railway data only"""
+    """Initialize database with comprehensive Indian railway data"""
     
     # Safety check - don't run in production
     env = os.environ.get('FLASK_ENV', 'development')
@@ -39,9 +38,9 @@ def setup_database():
         logger.error("Database setup script should not be run in production!")
         sys.exit(1)
     
-    logger.info("Starting Railway Database Setup - Essential Tables Only")
-    logger.info("Creating: Users, Stations, Trains, Routes, Bookings, Payments, Waitlist")
-    logger.info("=" * 70)
+    logger.info("🚂 Starting Comprehensive Railway Database Setup")
+    logger.info("Creating: 1250 stations (South India focus), 1500 trains, 2 users")
+    logger.info("=" * 80)
     
     # Import Flask app and models
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -62,25 +61,41 @@ def setup_database():
             logger.info("Creating essential database schema...")
             db.create_all()
             
-            # Verify essential tables were created
+            # Verify tables were created
             inspector = db.inspect(db.engine)
             tables = inspector.get_table_names()
             essential_tables = ['user', 'station', 'train', 'train_route', 'booking', 
                               'passenger', 'payment', 'waitlist', 'chart_preparation']
             
             created_tables = [t for t in essential_tables if t in tables]
-            logger.info(f"Created {len(created_tables)} essential tables: {', '.join(created_tables)}")
+            logger.info(f"✅ Created {len(created_tables)} essential tables: {', '.join(created_tables)}")
             
-            # Create admin user if requested
-            create_admin_user(User)
+            # Create users
+            logger.info("Creating user accounts...")
+            create_users(User, db)
             
-            # Create sample data for testing
-            logger.info("Creating sample railway data...")
-            create_sample_data(Station, Train, TrainRoute, User, Booking, Passenger, 
-                             Payment, Waitlist, ChartPreparation)
+            # Create comprehensive station data
+            logger.info("Creating 1250 railway stations (South India focus)...")
+            create_comprehensive_stations(Station, db)
             
-            logger.info("✅ Database setup completed successfully!")
-            logger.info("Essential railway booking system is ready")
+            # Create extensive train network
+            logger.info("Creating 1500 trains with realistic routes...")
+            create_comprehensive_trains(Train, db)
+            
+            # Create train routes
+            logger.info("Creating comprehensive train routes...")
+            create_comprehensive_routes(Train, Station, TrainRoute, db)
+            
+            # Create sample bookings
+            logger.info("Creating sample bookings for testing...")
+            create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Waitlist, db)
+            
+            # Create chart preparation records
+            logger.info("Creating chart preparation samples...")
+            create_chart_preparation_records(Train, ChartPreparation, db)
+            
+            logger.info("🎉 Database setup completed successfully!")
+            logger.info("Indian Railway System with 1250 stations and 1500 trains is ready")
             
     except Exception as e:
         logger.error(f"❌ Database setup failed: {str(e)}")
@@ -88,120 +103,357 @@ def setup_database():
         traceback.print_exc()
         sys.exit(1)
 
-def create_admin_user(User):
-    """Create admin user only if explicitly requested"""
-    
-    admin_password = os.environ.get('ADMIN_PASSWORD')
-    create_admin = os.environ.get('CREATE_ADMIN', '').lower() in ['1', 'true', 'yes']
-    
-    if create_admin:
-        if not admin_password:
-            logger.error("CREATE_ADMIN=1 requires ADMIN_PASSWORD environment variable")
-            sys.exit(1)
-        
-        # Check if admin already exists
-        existing_admin = User.query.filter_by(username='admin').first()
-        if existing_admin:
-            logger.info("Admin user already exists, skipping creation")
-            return
-        
-        from werkzeug.security import generate_password_hash
-        password_hash = generate_password_hash(admin_password)
-        
-        admin = User(
-            username='admin',
-            email='admin@railserve.com',
-            password_hash=password_hash,
-            role='super_admin',
-            active=True
-        )
-        
-        from src.app import db
-        db.session.add(admin)
-        db.session.commit()
-        logger.info("✅ Created admin user with provided password")
-    else:
-        logger.info("⏭️  Skipping admin user creation (set CREATE_ADMIN=1 and ADMIN_PASSWORD to create)")
-
-def create_sample_data(Station, Train, TrainRoute, User, Booking, Passenger, Payment, Waitlist, ChartPreparation):
-    """Create essential sample data for testing"""
-    from src.app import db
-    
-    # Create sample user for testing
-    create_sample_user(User)
-    
-    # Create 20 major stations
-    logger.info("Creating 20 major railway stations...")
-    create_major_stations(Station)
-    
-    # Create 30 trains
-    logger.info("Creating 30 trains...")
-    create_essential_trains(Train)
-    
-    # Create routes
-    logger.info("Creating train routes...")
-    create_train_routes(Train, Station, TrainRoute)
-    
-    # Create sample bookings
-    logger.info("Creating sample bookings...")
-    create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Waitlist)
-    
-    # Create chart preparation records
-    logger.info("Creating chart preparation samples...")
-    create_chart_preparation_records(Train, ChartPreparation)
-
-def create_sample_user(User):
-    """Create a sample regular user for testing"""
-    from src.app import db
+def create_users(User, db):
+    """Create admin and regular user accounts"""
     from werkzeug.security import generate_password_hash
     
-    # Check if sample user already exists
-    existing_user = User.query.filter_by(email='user@example.com').first()
-    if existing_user:
-        logger.info("Sample user already exists")
-        return
+    # Admin user
+    admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    admin = User(
+        username='admin',
+        email='admin@railway.gov.in',
+        password_hash=generate_password_hash(admin_password),
+        role='super_admin',
+        active=True
+    )
     
-    sample_user = User(
-        username='testuser',
+    # Regular user
+    user = User(
+        username='user',
         email='user@example.com',
-        password_hash=generate_password_hash('password123'),
+        password_hash=generate_password_hash('user123'),
         role='user',
         active=True
     )
     
-    db.session.add(sample_user)
+    db.session.add_all([admin, user])
     db.session.commit()
-    logger.info("✅ Created sample user: username='testuser', email='user@example.com', password='password123'")
+    logger.info("✅ Created admin (admin/admin123) and user (user/user123) accounts")
 
-def create_major_stations(Station):
-    """Create 20 major Indian railway stations"""
-    from src.app import db
+def create_comprehensive_stations(Station, db):
+    """Create 1250 railway stations with South India focus"""
     
-    major_stations = [
-        ('NDLS', 'New Delhi', 'New Delhi', 'Delhi'),
-        ('CSMT', 'Mumbai CST', 'Mumbai', 'Maharashtra'),
-        ('HWH', 'Howrah Junction', 'Kolkata', 'West Bengal'),
+    # South Indian stations (majority focus)
+    south_stations = [
+        # Tamil Nadu - Major stations
         ('MAS', 'Chennai Central', 'Chennai', 'Tamil Nadu'),
-        ('SBC', 'Bangalore City', 'Bangalore', 'Karnataka'),
-        ('PUNE', 'Pune Junction', 'Pune', 'Maharashtra'),
-        ('ADI', 'Ahmedabad Junction', 'Ahmedabad', 'Gujarat'),
-        ('JP', 'Jaipur Junction', 'Jaipur', 'Rajasthan'),
-        ('LKO', 'Lucknow Junction', 'Lucknow', 'Uttar Pradesh'),
-        ('PNBE', 'Patna Junction', 'Patna', 'Bihar'),
-        ('BPL', 'Bhopal Junction', 'Bhopal', 'Madhya Pradesh'),
-        ('SC', 'Secunderabad Junction', 'Hyderabad', 'Telangana'),
-        ('ERS', 'Ernakulam Junction', 'Kochi', 'Kerala'),
-        ('BZA', 'Vijayawada Junction', 'Vijayawada', 'Andhra Pradesh'),
-        ('BBS', 'Bhubaneswar', 'Bhubaneswar', 'Odisha'),
-        ('CDG', 'Chandigarh', 'Chandigarh', 'Chandigarh'),
-        ('JAT', 'Jammu Tawi', 'Jammu', 'J&K'),
+        ('MSB', 'Chennai Beach', 'Chennai', 'Tamil Nadu'), 
+        ('MS', 'Chennai Egmore', 'Chennai', 'Tamil Nadu'),
+        ('TBM', 'Tambaram', 'Chennai', 'Tamil Nadu'),
+        ('CGL', 'Chengalpattu', 'Chengalpattu', 'Tamil Nadu'),
+        ('VM', 'Villupuram Junction', 'Villupuram', 'Tamil Nadu'),
+        ('VRI', 'Vriddhachalam Junction', 'Vriddhachalam', 'Tamil Nadu'),
+        ('TPJ', 'Tiruchirapalli Junction', 'Tiruchirappalli', 'Tamil Nadu'),
+        ('TJ', 'Thanjavur Junction', 'Thanjavur', 'Tamil Nadu'),
+        ('KMU', 'Kumbakonam', 'Kumbakonam', 'Tamil Nadu'),
+        ('MV', 'Mayiladuthurai Junction', 'Mayiladuthurai', 'Tamil Nadu'),
+        ('CDM', 'Chidambaram', 'Chidambaram', 'Tamil Nadu'),
+        ('CU', 'Cuddalore Port', 'Cuddalore', 'Tamil Nadu'),
+        ('PDY', 'Puducherry', 'Puducherry', 'Puducherry'),
+        ('SHI', 'Shivakasi', 'Shivakasi', 'Tamil Nadu'),
+        ('MDU', 'Madurai Junction', 'Madurai', 'Tamil Nadu'),
+        ('DG', 'Dindigul Junction', 'Dindigul', 'Tamil Nadu'),
+        ('KRR', 'Karur Junction', 'Karur', 'Tamil Nadu'),
+        ('ED', 'Erode Junction', 'Erode', 'Tamil Nadu'),
+        ('SA', 'Salem Junction', 'Salem', 'Tamil Nadu'),
         ('CBE', 'Coimbatore Junction', 'Coimbatore', 'Tamil Nadu'),
-        ('NGP', 'Nagpur', 'Nagpur', 'Maharashtra'),
-        ('ASN', 'Asansol Junction', 'Asansol', 'West Bengal')
+        ('PGT', 'Palakkad Town', 'Palakkad', 'Kerala'),
+        ('TCR', 'Thrissur', 'Thrissur', 'Kerala'),
+        ('AWY', 'Aluva', 'Ernakulam', 'Kerala'),
+        ('ERS', 'Ernakulam Junction', 'Kochi', 'Kerala'),
+        ('ERN', 'Ernakulam Town', 'Kochi', 'Kerala'),
+        ('KTYM', 'Kottayam', 'Kottayam', 'Kerala'),
+        ('CNGR', 'Chengannur', 'Chengannur', 'Kerala'),
+        ('KYJ', 'Kayankulam Junction', 'Kayankulam', 'Kerala'),
+        ('QLN', 'Kollam Junction', 'Kollam', 'Kerala'),
+        ('TVC', 'Thiruvananthapuram Central', 'Thiruvananthapuram', 'Kerala'),
+        ('CAPE', 'Kanyakumari', 'Kanyakumari', 'Tamil Nadu'),
+        ('TEN', 'Tirunelveli Junction', 'Tirunelveli', 'Tamil Nadu'),
+        ('VPT', 'Virudhunagar Junction', 'Virudhunagar', 'Tamil Nadu'),
+        ('RMD', 'Ramanathapuram', 'Ramanathapuram', 'Tamil Nadu'),
+        ('RMM', 'Rameswaram', 'Rameswaram', 'Tamil Nadu'),
+        ('TMV', 'Tindivanam', 'Tindivanam', 'Tamil Nadu'),
+        ('MLDT', 'Malda Town', 'Malda', 'West Bengal'),
+        ('CLT', 'Kozhikode', 'Kozhikode', 'Kerala'),
+        ('TLY', 'Thalassery', 'Thalassery', 'Kerala'),
+        ('CAN', 'Kannur', 'Kannur', 'Kerala'),
+        ('PAY', 'Payyanur', 'Payyanur', 'Kerala'),
+        ('KZE', 'Kanhangad', 'Kanhangad', 'Kerala'),
+        ('MAQ', 'Mangalore Junction', 'Mangalore', 'Karnataka'),
+        ('MAJN', 'Mangalore Junction', 'Mangalore', 'Karnataka'),
+        ('UD', 'Udupi', 'Udupi', 'Karnataka'),
+        ('KUDA', 'Kundapura', 'Kundapura', 'Karnataka'),
+        ('BYNR', 'Byndoor', 'Byndoor', 'Karnataka'),
+        ('BTJL', 'Bhatkal', 'Bhatkal', 'Karnataka'),
+        ('HNA', 'Honnavar', 'Honnavar', 'Karnataka'),
+        ('KT', 'Kumta', 'Kumta', 'Karnataka'),
+        ('GOK', 'Gokarna Road', 'Gokarna', 'Karnataka'),
+        ('ANK', 'Ankola', 'Ankola', 'Karnataka'),
+        ('KUD', 'Kudal', 'Kudal', 'Maharashtra'),
+        
+        # Karnataka - Major stations
+        ('SBC', 'Bangalore City', 'Bangalore', 'Karnataka'),
+        ('BNC', 'Bangalore Cantonment', 'Bangalore', 'Karnataka'),
+        ('YPR', 'Yesvantpur Junction', 'Bangalore', 'Karnataka'),
+        ('KJM', 'Krishnarajapuram', 'Bangalore', 'Karnataka'),
+        ('BAND', 'Banaswadi', 'Bangalore', 'Karnataka'),
+        ('MYS', 'Mysore Junction', 'Mysore', 'Karnataka'),
+        ('ASK', 'Arsikere Junction', 'Arsikere', 'Karnataka'),
+        ('HAS', 'Hassan Junction', 'Hassan', 'Karnataka'),
+        ('SMET', 'Shimoga Town', 'Shimoga', 'Karnataka'),
+        ('DVG', 'Davangere', 'Davangere', 'Karnataka'),
+        ('UBL', 'Hubli Junction', 'Hubli', 'Karnataka'),
+        ('DWR', 'Dharwad', 'Dharwad', 'Karnataka'),
+        ('BGM', 'Belagavi', 'Belagavi', 'Karnataka'),
+        ('GPB', 'Ghatprabha', 'Ghatprabha', 'Karnataka'),
+        ('RNR', 'Ratnagiri', 'Ratnagiri', 'Maharashtra'),
+        ('BAP', 'Belapur CBD', 'Navi Mumbai', 'Maharashtra'),
+        ('TNA', 'Thane', 'Thane', 'Maharashtra'),
+        ('KYN', 'Kalyan Junction', 'Kalyan', 'Maharashtra'),
+        ('LNL', 'Lonavala', 'Lonavala', 'Maharashtra'),
+        ('PUNE', 'Pune Junction', 'Pune', 'Maharashtra'),
+        ('KRD', 'Karad', 'Karad', 'Maharashtra'),
+        ('STR', 'Satara', 'Satara', 'Maharashtra'),
+        ('KOP', 'Kolhapur CSMT', 'Kolhapur', 'Maharashtra'),
+        
+        # Andhra Pradesh & Telangana
+        ('SC', 'Secunderabad Junction', 'Hyderabad', 'Telangana'),
+        ('HYB', 'Hyderabad Deccan', 'Hyderabad', 'Telangana'),
+        ('KCG', 'Kacheguda', 'Hyderabad', 'Telangana'),
+        ('BMT', 'Begumpet', 'Hyderabad', 'Telangana'),
+        ('LPI', 'Lingampalli', 'Hyderabad', 'Telangana'),
+        ('WL', 'Warangal', 'Warangal', 'Telangana'),
+        ('KZJ', 'Kazipet Junction', 'Warangal', 'Telangana'),
+        ('BZA', 'Vijayawada Junction', 'Vijayawada', 'Andhra Pradesh'),
+        ('TEL', 'Tenali Junction', 'Tenali', 'Andhra Pradesh'),
+        ('OGL', 'Ongole', 'Ongole', 'Andhra Pradesh'),
+        ('NLR', 'Nellore', 'Nellore', 'Andhra Pradesh'),
+        ('GDR', 'Gudur Junction', 'Gudur', 'Andhra Pradesh'),
+        ('RU', 'Renigunta Junction', 'Tirupati', 'Andhra Pradesh'),
+        ('TPTY', 'Tirupati', 'Tirupati', 'Andhra Pradesh'),
+        ('PUT', 'Puttur', 'Puttur', 'Andhra Pradesh'),
+        ('KPD', 'Katpadi Junction', 'Vellore', 'Tamil Nadu'),
+        ('JTJ', 'Jolarpettai Junction', 'Jolarpettai', 'Tamil Nadu'),
+        ('BWT', 'Bangarapet', 'Bangarapet', 'Karnataka'),
+        ('KJG', 'Karajgi', 'Karajgi', 'Karnataka'),
+        ('GTL', 'Guntakal Junction', 'Guntakal', 'Andhra Pradesh'),
+        ('ATP', 'Anantapur', 'Anantapur', 'Andhra Pradesh'),
+        ('DMM', 'Dharmavaram Junction', 'Dharmavaram', 'Andhra Pradesh'),
+        ('VSKP', 'Visakhapatnam', 'Visakhapatnam', 'Andhra Pradesh'),
+        ('DVD', 'Duvvada', 'Visakhapatnam', 'Andhra Pradesh'),
+        ('AKP', 'Anakapalle', 'Anakapalle', 'Andhra Pradesh'),
+        ('TUNI', 'Tuni', 'Tuni', 'Andhra Pradesh'),
+        ('RJY', 'Rajahmundry', 'Rajahmundry', 'Andhra Pradesh'),
+        ('EE', 'Eluru', 'Eluru', 'Andhra Pradesh'),
+        ('TEL', 'Tenali Junction', 'Tenali', 'Andhra Pradesh'),
+        
+        # Kerala - Additional stations
+        ('PUU', 'Punalur', 'Punalur', 'Kerala'),
+        ('SCT', 'Sengottai', 'Sengottai', 'Tamil Nadu'),
+        ('TSI', 'Tenkasi Junction', 'Tenkasi', 'Tamil Nadu'),
+        ('VPT', 'Virudhunagar Junction', 'Virudhunagar', 'Tamil Nadu'),
+        ('SRT', 'Shoranur Junction', 'Shoranur', 'Kerala'),
+        ('OTP', 'Ottapalam', 'Ottapalam', 'Kerala'),
+        ('PLL', 'Pallipuram', 'Pallipuram', 'Kerala'),
+        ('TIR', 'Tirur', 'Tirur', 'Kerala'),
+        ('KTU', 'Kuttippuram', 'Kuttippuram', 'Kerala'),
+        ('FK', 'Ferok', 'Ferok', 'Kerala'),
+        ('WKI', 'Wadackanchery', 'Wadackanchery', 'Kerala'),
+        ('TCR', 'Thrissur', 'Thrissur', 'Kerala'),
+        ('PNQ', 'Punkunnam', 'Thrissur', 'Kerala'),
+        ('IJK', 'Irinjalakuda', 'Irinjalakuda', 'Kerala'),
+        ('CKI', 'Chalakudy', 'Chalakudy', 'Kerala'),
+        ('AFK', 'Angamaly', 'Angamaly', 'Kerala'),
+        ('AWY', 'Aluva', 'Aluva', 'Kerala'),
+        ('ERS', 'Ernakulam Junction', 'Ernakulam', 'Kerala'),
+        ('ERN', 'Ernakulam Town', 'Ernakulam', 'Kerala'),
+        ('IPL', 'Idappally', 'Idappally', 'Kerala'),
+        ('TRTR', 'Tripunithura', 'Tripunithura', 'Kerala'),
+        ('KLMR', 'Kalamassery', 'Kalamassery', 'Kerala'),
+        ('AWY', 'Aluva', 'Aluva', 'Kerala'),
     ]
     
+    # Add North, East, West, and Central Indian stations to reach 1250 total
+    other_stations = [
+        # North India - Major stations
+        ('NDLS', 'New Delhi', 'New Delhi', 'Delhi'),
+        ('DEL', 'Delhi Junction', 'Delhi', 'Delhi'),
+        ('DLI', 'Delhi', 'Delhi', 'Delhi'),
+        ('NZM', 'Hazrat Nizamuddin', 'Delhi', 'Delhi'),
+        ('ANVT', 'Anand Vihar Terminal', 'Delhi', 'Delhi'),
+        ('DSB', 'Sadar Bazar', 'Delhi', 'Delhi'),
+        ('LKO', 'Lucknow Junction', 'Lucknow', 'Uttar Pradesh'),
+        ('CNB', 'Kanpur Central', 'Kanpur', 'Uttar Pradesh'),
+        ('PRYJ', 'Prayagraj Junction', 'Prayagraj', 'Uttar Pradesh'),
+        ('BSB', 'Varanasi Junction', 'Varanasi', 'Uttar Pradesh'),
+        ('GKP', 'Gorakhpur Junction', 'Gorakhpur', 'Uttar Pradesh'),
+        ('AGC', 'Agra Cantt', 'Agra', 'Uttar Pradesh'),
+        ('MTJ', 'Mathura Junction', 'Mathura', 'Uttar Pradesh'),
+        ('AF', 'Agra Fort', 'Agra', 'Uttar Pradesh'),
+        ('TDL', 'Tundla Junction', 'Tundla', 'Uttar Pradesh'),
+        ('ETW', 'Etawah Junction', 'Etawah', 'Uttar Pradesh'),
+        ('CNB', 'Kanpur Central', 'Kanpur', 'Uttar Pradesh'),
+        ('ON', 'Unnao Junction', 'Unnao', 'Uttar Pradesh'),
+        ('LJN', 'Lucknow NE Railway', 'Lucknow', 'Uttar Pradesh'),
+        ('GD', 'Gonda Junction', 'Gonda', 'Uttar Pradesh'),
+        ('BST', 'Basti', 'Basti', 'Uttar Pradesh'),
+        ('KLD', 'Khalilabad', 'Khalilabad', 'Uttar Pradesh'),
+        ('GKP', 'Gorakhpur Junction', 'Gorakhpur', 'Uttar Pradesh'),
+        ('DEOS', 'Deoria Sadar', 'Deoria', 'Uttar Pradesh'),
+        ('SV', 'Siwan Junction', 'Siwan', 'Bihar'),
+        ('CPR', 'Chhapra Junction', 'Chhapra', 'Bihar'),
+        ('PNBE', 'Patna Junction', 'Patna', 'Bihar'),
+        ('DNR', 'Danapur', 'Patna', 'Bihar'),
+        ('RJPB', 'Rajendranagar', 'Patna', 'Bihar'),
+        ('KIUL', 'Kiul Junction', 'Kiul', 'Bihar'),
+        ('JAJ', 'Jhajha', 'Jhajha', 'Bihar'),
+        ('JSME', 'Jasidih Junction', 'Jasidih', 'Jharkhand'),
+        ('MDP', 'Madhupur Junction', 'Madhupur', 'Jharkhand'),
+        ('ASN', 'Asansol Junction', 'Asansol', 'West Bengal'),
+        
+        # West India
+        ('CSMT', 'Mumbai CST', 'Mumbai', 'Maharashtra'),
+        ('LTT', 'Lokmanya Tilak Terminus', 'Mumbai', 'Maharashtra'),
+        ('KYN', 'Kalyan Junction', 'Kalyan', 'Maharashtra'),
+        ('NK', 'Nasik Road', 'Nasik', 'Maharashtra'),
+        ('MMR', 'Manmad Junction', 'Manmad', 'Maharashtra'),
+        ('BSL', 'Bhusaval Junction', 'Bhusaval', 'Maharashtra'),
+        ('AK', 'Akola Junction', 'Akola', 'Maharashtra'),
+        ('BD', 'Badnera Junction', 'Badnera', 'Maharashtra'),
+        ('NGP', 'Nagpur', 'Nagpur', 'Maharashtra'),
+        ('G', 'Gondia Junction', 'Gondia', 'Maharashtra'),
+        ('R', 'Raipur Junction', 'Raipur', 'Chhattisgarh'),
+        ('BIA', 'Bilaspur Junction', 'Bilaspur', 'Chhattisgarh'),
+        ('JSG', 'Jharsuguda Junction', 'Jharsuguda', 'Odisha'),
+        ('ROU', 'Rourkela', 'Rourkela', 'Odisha'),
+        ('CKP', 'Chakradharpur', 'Chakradharpur', 'Jharkhand'),
+        ('TATA', 'Tatanagar Junction', 'Jamshedpur', 'Jharkhand'),
+        ('KGP', 'Kharagpur Junction', 'Kharagpur', 'West Bengal'),
+        ('SRC', 'Santragachi Junction', 'Howrah', 'West Bengal'),
+        ('HWH', 'Howrah Junction', 'Kolkata', 'West Bengal'),
+        ('SDAH', 'Sealdah', 'Kolkata', 'West Bengal'),
+        ('BWN', 'Barddhaman Junction', 'Bardhaman', 'West Bengal'),
+        
+        # Gujarat & Rajasthan
+        ('ADI', 'Ahmedabad Junction', 'Ahmedabad', 'Gujarat'),
+        ('BRC', 'Vadodara Junction', 'Vadodara', 'Gujarat'),
+        ('ST', 'Surat', 'Surat', 'Gujarat'),
+        ('BH', 'Bharuch Junction', 'Bharuch', 'Gujarat'),
+        ('RTM', 'Ratlam Junction', 'Ratlam', 'Madhya Pradesh'),
+        ('UJN', 'Ujjain Junction', 'Ujjain', 'Madhya Pradesh'),
+        ('INDB', 'Indore Junction', 'Indore', 'Madhya Pradesh'),
+        ('KOTA', 'Kota Junction', 'Kota', 'Rajasthan'),
+        ('JP', 'Jaipur Junction', 'Jaipur', 'Rajasthan'),
+        ('AF', 'Ajmer Junction', 'Ajmer', 'Rajasthan'),
+        ('JU', 'Jodhpur Junction', 'Jodhpur', 'Rajasthan'),
+        ('JSM', 'Jaisalmer', 'Jaisalmer', 'Rajasthan'),
+        ('UDZ', 'Udaipur City', 'Udaipur', 'Rajasthan'),
+        ('COR', 'Chittorgarh', 'Chittorgarh', 'Rajasthan'),
+        
+        # Central India
+        ('BPL', 'Bhopal Junction', 'Bhopal', 'Madhya Pradesh'),
+        ('HBJ', 'Habibganj', 'Bhopal', 'Madhya Pradesh'),
+        ('JBP', 'Jabalpur', 'Jabalpur', 'Madhya Pradesh'),
+        ('KTE', 'Katni', 'Katni', 'Madhya Pradesh'),
+        ('STA', 'Satna', 'Satna', 'Madhya Pradesh'),
+        ('MKP', 'Manikpur Junction', 'Manikpur', 'Uttar Pradesh'),
+        ('GWL', 'Gwalior', 'Gwalior', 'Madhya Pradesh'),
+        ('JHS', 'Jhansi Junction', 'Jhansi', 'Uttar Pradesh'),
+        ('ORAI', 'Orai', 'Orai', 'Uttar Pradesh'),
+        ('HPP', 'Hamirpur Road', 'Hamirpur', 'Uttar Pradesh'),
+        
+        # East India additional
+        ('BBS', 'Bhubaneswar', 'Bhubaneswar', 'Odisha'),
+        ('CTC', 'Cuttack', 'Cuttack', 'Odisha'),
+        ('PURI', 'Puri', 'Puri', 'Odisha'),
+        ('KUR', 'Khurda Road Junction', 'Khurda', 'Odisha'),
+        ('BHC', 'Bhadrak', 'Bhadrak', 'Odisha'),
+        ('BLS', 'Balasore', 'Balasore', 'Odisha'),
+        
+        # Northeast
+        ('GHY', 'Guwahati', 'Guwahati', 'Assam'),
+        ('KYQ', 'Kamakhya', 'Guwahati', 'Assam'),
+        ('DLG', 'Dimapur', 'Dimapur', 'Nagaland'),
+        ('FKG', 'Furkating Junction', 'Furkating', 'Assam'),
+        ('MXN', 'Mariani Junction', 'Mariani', 'Assam'),
+        ('NTSK', 'New Tinsukia', 'Tinsukia', 'Assam'),
+        
+        # Himachal & J&K
+        ('JAT', 'Jammu Tawi', 'Jammu', 'Jammu & Kashmir'),
+        ('UHP', 'Udhampur', 'Udhampur', 'Jammu & Kashmir'),
+        ('KKDE', 'Kurukshetra', 'Kurukshetra', 'Haryana'),
+        ('UMB', 'Ambala Cantt', 'Ambala', 'Haryana'),
+        ('CDG', 'Chandigarh', 'Chandigarh', 'Chandigarh'),
+        ('LDH', 'Ludhiana Junction', 'Ludhiana', 'Punjab'),
+        ('JRC', 'Jalandhar City', 'Jalandhar', 'Punjab'),
+        ('ASR', 'Amritsar Junction', 'Amritsar', 'Punjab'),
+        ('ATT', 'Attari', 'Attari', 'Punjab'),
+        ('DLI', 'Delhi', 'Delhi', 'Delhi'),
+        ('KLK', 'Kalka', 'Kalka', 'Haryana'),
+        ('SML', 'Shimla', 'Shimla', 'Himachal Pradesh'),
+        ('UNA', 'Una Himachal', 'Una', 'Himachal Pradesh'),
+        ('NLDM', 'Nangal Dam', 'Nangal', 'Punjab'),
+    ]
+    
+    # Generate more stations to reach 1250 total
+    additional_stations = []
+    station_prefixes = ['KK', 'MM', 'NN', 'PP', 'RR', 'SS', 'TT', 'VV', 'WW', 'XX', 'YY', 'ZZ']
+    south_cities = [
+        'Salem', 'Coimbatore', 'Madurai', 'Trichy', 'Vellore', 'Tirunelveli', 
+        'Erode', 'Dindigul', 'Karur', 'Tirupur', 'Namakkal', 'Dharmapuri',
+        'Krishnagiri', 'Sivakasi', 'Rajapalayam', 'Sivaganga', 'Pudukkottai',
+        'Ariyalur', 'Perambalur', 'Nagapattinam', 'Kanchipuram', 'Tiruvallur',
+        'Vellore', 'Tiruvannamalai', 'Cuddalore', 'Kallakurichi', 'Ranipet',
+        'Tenkasi', 'Virudhunagar', 'Theni', 'Kanyakumari', 'Tirunelveli',
+        'Mysore', 'Tumkur', 'Bellary', 'Gulbarga', 'Bijapur', 'Bagalkot',
+        'Bidar', 'Koppal', 'Gadag', 'Haveri', 'Uttara Kannada', 'Udupi',
+        'Dakshina Kannada', 'Hassan', 'Kodagu', 'Mandya', 'Ramanagara', 'Kolar',
+        'Chikkaballapur', 'Chitradurga', 'Davanagere', 'Shivamogga', 'Belagavi',
+        'Vijayapura', 'Bagalkot', 'Bidar', 'Kalaburagi', 'Koppal', 'Raichur',
+        'Yadgir', 'Chamarajanagar', 'Chikkamagaluru', 'Hassan', 'Kodagu',
+        'Thiruvananthapuram', 'Kollam', 'Pathanamthitta', 'Alappuzha', 'Kottayam',
+        'Idukki', 'Ernakulam', 'Thrissur', 'Palakkad', 'Malappuram', 'Kozhikode',
+        'Wayanad', 'Kannur', 'Kasaragod', 'Hyderabad', 'Medchal', 'Rangareddy',
+        'Vikarabad', 'Sangareddy', 'Medak', 'Kamareddy', 'Nizamabad', 'Jagtial',
+        'Peddapalli', 'Jayashankar', 'Bhadradri', 'Mahabubabad', 'Warangal',
+        'Hanamkonda', 'Jangaon', 'Siddipet', 'Yadadri', 'Rajanna', 'Karimnagar',
+        'Mancherial', 'Adilabad', 'Komaram', 'Asifabad', 'Nirmal', 'Nizamabad',
+        'Kamareddy', 'Rajanna Sircilla', 'Karimnagar', 'Peddapalli', 'Mancherial'
+    ]
+    
+    # Generate additional South Indian stations
+    counter = 1000
+    for i in range(1200):  # Generate 1200 more stations to ensure we have enough unique ones
+        prefix = random.choice(station_prefixes)
+        city = random.choice(south_cities)
+        state = random.choice(['Tamil Nadu', 'Karnataka', 'Kerala', 'Telangana', 'Andhra Pradesh'])
+        
+        code = f"{prefix}{counter:03d}"  # Use 3 digits to ensure uniqueness
+        suffix = random.choice(['Junction', 'Central', 'Town', 'Road', 'Halt', 'Terminal', 'City', 'Cantt', 'Park'])
+        name = f"{city} {suffix} {i % 100:02d}"  # Add number to ensure name uniqueness
+        
+        additional_stations.append((code, name, city, state))
+        counter += 1
+    
+    # Combine all stations
+    all_stations = south_stations + other_stations + additional_stations
+    
+    # Remove duplicates by code and name
+    seen_codes = set()
+    seen_names = set()
+    unique_stations = []
+    
+    for code, name, city, state in all_stations:
+        if code not in seen_codes and name not in seen_names:
+            seen_codes.add(code)
+            seen_names.add(name)
+            unique_stations.append((code, name, city, state))
+    
+    # Take first 1250 unique stations
+    stations_data = unique_stations[:1250]
+    
     stations = []
-    for code, name, city, state in major_stations:
+    for code, name, city, state in stations_data:
         station = Station(
             name=name,
             code=code,
@@ -211,142 +463,293 @@ def create_major_stations(Station):
         )
         stations.append(station)
     
-    db.session.add_all(stations)
-    db.session.commit()
-    logger.info(f"✅ Created {len(stations)} major railway stations")
-
-def create_essential_trains(Train):
-    """Create 30 essential trains with realistic configurations"""
-    from src.app import db
+    # Add stations in batches to handle large dataset
+    batch_size = 100
+    for i in range(0, len(stations), batch_size):
+        batch = stations[i:i + batch_size]
+        db.session.add_all(batch)
+        db.session.commit()
+        logger.info(f"Added stations batch {i//batch_size + 1}/{(len(stations)-1)//batch_size + 1}")
     
-    train_data = [
-        ('12001', 'Rajdhani Express', 400, 2.5, 40, 3.5),
-        ('12002', 'Shatabdi Express', 350, 2.0, 35, 3.0),
-        ('12003', 'Duronto Express', 450, 1.8, 45, 2.8),
-        ('12004', 'Superfast Express', 400, 1.2, 40, 2.0),
-        ('12005', 'Tamil Nadu Express', 350, 0.8, 35, 1.5),
-        ('12006', 'Howrah Express', 380, 1.0, 38, 1.8),
-        ('12007', 'Kerala Express', 360, 0.9, 36, 1.6),
-        ('12008', 'Deccan Queen', 320, 1.5, 32, 2.2),
-        ('12009', 'Konkan Kanya Express', 340, 1.1, 34, 1.9),
-        ('12010', 'Punjab Mail', 380, 1.0, 38, 1.8),
-        ('22001', 'Garib Rath', 300, 0.7, 30, 1.2),
-        ('22002', 'Golden Temple Mail', 350, 0.9, 35, 1.6),
-        ('22003', 'Island Express', 320, 0.8, 32, 1.4),
-        ('22004', 'Coromandel Express', 360, 1.0, 36, 1.8),
-        ('22005', 'Brindavan Express', 280, 1.2, 28, 2.0),
-        ('22006', 'Mysore Express', 300, 1.0, 30, 1.8),
-        ('22007', 'Chennai Express', 380, 1.1, 38, 1.9),
-        ('22008', 'Mumbai Express', 400, 1.2, 40, 2.0),
-        ('22009', 'Delhi Express', 420, 1.3, 42, 2.1),
-        ('22010', 'Kolkata Express', 360, 1.0, 36, 1.8),
-        ('11001', 'Intercity Express', 250, 0.8, 25, 1.4),
-        ('11002', 'Jan Shatabdi', 280, 1.0, 28, 1.8),
-        ('11003', 'Passenger Express', 200, 0.5, 20, 0.9),
-        ('11004', 'Mail Express', 300, 0.7, 30, 1.2),
-        ('11005', 'Fast Passenger', 220, 0.6, 22, 1.0),
-        ('11006', 'City Express', 250, 0.8, 25, 1.4),
-        ('11007', 'Local Express', 180, 0.4, 18, 0.8),
-        ('11008', 'Regional Express', 240, 0.7, 24, 1.2),
-        ('11009', 'Valley Express', 200, 0.6, 20, 1.0),
-        ('11010', 'Hills Express', 220, 0.8, 22, 1.4)
+    logger.info(f"✅ Created {len(stations)} railway stations (South India focus)")
+
+def create_comprehensive_trains(Train, db):
+    """Create 1500 trains with realistic configurations"""
+    
+    # Train types with realistic parameters
+    train_types = [
+        ('Rajdhani Express', 400, 3.5, 40, 5.0),
+        ('Shatabdi Express', 350, 3.0, 35, 4.5),
+        ('Vande Bharat Express', 500, 4.0, 50, 6.0),
+        ('Duronto Express', 450, 2.8, 45, 4.0),
+        ('Superfast Express', 400, 2.0, 40, 3.0),
+        ('Mail/Express', 380, 1.5, 38, 2.5),
+        ('Intercity Express', 300, 1.8, 30, 2.8),
+        ('Jan Shatabdi Express', 320, 2.2, 32, 3.2),
+        ('Garib Rath', 350, 1.2, 35, 2.0),
+        ('Humsafar Express', 380, 2.5, 38, 3.8),
+        ('Tejas Express', 400, 3.2, 40, 4.8),
+        ('Double Decker Express', 450, 2.8, 45, 4.2),
+        ('AC Express', 350, 2.5, 35, 3.5),
+        ('Passenger Express', 250, 0.8, 25, 1.2),
+        ('Fast Passenger', 280, 1.0, 28, 1.6),
+        ('MEMU', 200, 0.6, 20, 1.0),
+        ('DMU', 150, 0.5, 15, 0.8),
+        ('Local Express', 220, 0.7, 22, 1.1),
+        ('Regional Express', 280, 1.2, 28, 2.0),
+        ('Premium Express', 420, 3.8, 42, 5.5)
+    ]
+    
+    # Famous Indian train names
+    famous_trains = [
+        'Rajdhani Express', 'Shatabdi Express', 'Duronto Express', 'Tamil Nadu Express',
+        'Kerala Express', 'Karnataka Express', 'Andhra Pradesh Express', 'Deccan Queen',
+        'Chennai Express', 'Mumbai Express', 'Bangalore Express', 'Mysore Express',
+        'Coromandel Express', 'Island Express', 'Konkan Kanya Express', 'Mangalore Express',
+        'Brindavan Express', 'Lalbagh Express', 'Chamundi Express', 'Tippu Express',
+        'Udyan Express', 'Janmabhoomi Express', 'Godavari Express', 'Krishna Express',
+        'Rayalaseema Express', 'Hamsa Express', 'Kaveri Express', 'Ganga Kaveri Express',
+        'Trivandrum Express', 'Kanyakumari Express', 'Madras Mail', 'Grand Trunk Express',
+        'Golden Temple Mail', 'Punjab Mail', 'Howrah Express', 'Kalka Mail',
+        'Himalayan Queen', 'Nilgiri Express', 'Blue Mountain Express', 'Western Express',
+        'Central Express', 'Eastern Express', 'Northern Express', 'Southern Express',
+        'Gomti Express', 'Saryu Yamuna Express', 'Mahananda Express', 'Kanchanjunga Express',
+        'Darjeeling Mail', 'Assam Express', 'Brahmaputra Mail', 'Northeast Express',
+        'Capital Express', 'Rajya Rani Express', 'Jan Seva Express', 'Lok Shakti Express',
+        'Sampark Kranti Express', 'Humsafar Express', 'Antyodaya Express', 'Tejas Express',
+        'Vande Bharat Express', 'Gatimaan Express', 'Double Decker Express', 'AC Express'
     ]
     
     trains = []
-    for number, name, total_seats, fare_per_km, tatkal_seats, tatkal_fare_per_km in train_data:
+    train_number = 12001
+    
+    for i in range(1500):
+        # Select train type and configuration
+        train_type, base_seats, base_fare, base_tatkal_seats, base_tatkal_fare = random.choice(train_types)
+        
+        # Select or generate train name
+        if i < len(famous_trains):
+            train_name = famous_trains[i]
+        else:
+            # Generate names for remaining trains
+            prefixes = ['Super', 'Express', 'Fast', 'Premium', 'Special', 'Intercity', 'Jan', 'Sampark']
+            suffixes = ['Express', 'Mail', 'Passenger', 'Special', 'Link']
+            regions = ['South', 'North', 'East', 'West', 'Central', 'Coast', 'Hill', 'Valley']
+            
+            if random.random() < 0.3:  # 30% regional names
+                train_name = f"{random.choice(regions)} {random.choice(suffixes)}"
+            else:  # 70% prefix-suffix combinations
+                train_name = f"{random.choice(prefixes)} {random.choice(suffixes)}"
+        
+        # Add variation to base parameters
+        total_seats = base_seats + random.randint(-80, 120)
+        fare_per_km = base_fare + random.uniform(-0.5, 0.8)
+        tatkal_seats = base_tatkal_seats + random.randint(-10, 15)
+        tatkal_fare_per_km = base_tatkal_fare + random.uniform(-0.8, 1.2)
+        
+        # Ensure reasonable bounds
+        total_seats = max(120, min(600, total_seats))
+        fare_per_km = max(0.4, min(5.0, fare_per_km))
+        tatkal_seats = max(8, min(total_seats // 8, tatkal_seats))
+        tatkal_fare_per_km = max(0.6, min(7.0, tatkal_fare_per_km))
+        
         train = Train(
-            number=number,
-            name=name,
+            number=str(train_number),
+            name=train_name,
             total_seats=total_seats,
-            available_seats=total_seats,
+            available_seats=random.randint(total_seats - 100, total_seats),  # Some booking variation
             fare_per_km=fare_per_km,
             tatkal_seats=tatkal_seats,
             tatkal_fare_per_km=tatkal_fare_per_km,
             active=True
         )
         trains.append(train)
+        train_number += 1
     
-    db.session.add_all(trains)
-    db.session.commit()
+    # Add trains in batches
+    batch_size = 50
+    for i in range(0, len(trains), batch_size):
+        batch = trains[i:i + batch_size]
+        db.session.add_all(batch)
+        db.session.commit()
+        logger.info(f"Added trains batch {i//batch_size + 1}/{(len(trains)-1)//batch_size + 1}")
+    
     logger.info(f"✅ Created {len(trains)} trains with realistic configurations")
 
-def create_train_routes(Train, Station, TrainRoute):
-    """Create realistic train routes"""
-    from src.app import db
+def create_comprehensive_routes(Train, Station, TrainRoute, db):
+    """Create comprehensive train routes connecting stations"""
     
     trains = Train.query.all()
     stations = Station.query.all()
     
-    routes = []
-    for train in trains:
-        # Create route with 3-6 stations per train
-        route_length = random.randint(3, 6)
-        selected_stations = random.sample(stations, route_length)
-        
-        total_distance = 0
-        current_time = time(6, 0)  # Start at 6:00 AM
-        
-        for sequence, station in enumerate(selected_stations):
-            if sequence == 0:
-                # First station
-                departure_time = current_time
-                arrival_time = None
-                distance = 0
-            elif sequence == len(selected_stations) - 1:
-                # Last station
-                segment_distance = random.randint(80, 250)
-                total_distance += segment_distance
-                
-                # Add travel time
-                travel_minutes = int(segment_distance * 0.8) + random.randint(10, 30)
-                current_time = add_minutes_to_time(current_time, travel_minutes)
-                
-                arrival_time = current_time
-                departure_time = None
-                distance = total_distance
-            else:
-                # Intermediate station
-                segment_distance = random.randint(80, 250)
-                total_distance += segment_distance
-                
-                # Add travel time
-                travel_minutes = int(segment_distance * 0.8) + random.randint(10, 30)
-                current_time = add_minutes_to_time(current_time, travel_minutes)
-                
-                arrival_time = current_time
-                
-                # Add halt time
-                halt_minutes = random.randint(5, 15)
-                current_time = add_minutes_to_time(current_time, halt_minutes)
-                departure_time = current_time
-                distance = total_distance
-            
-            route = TrainRoute(
-                train_id=train.id,
-                station_id=station.id,
-                sequence=sequence + 1,
-                arrival_time=arrival_time,
-                departure_time=departure_time,
-                distance_from_start=distance
-            )
-            routes.append(route)
+    # Create station groups by region for logical routing
+    station_groups = {
+        'South': [s for s in stations if s.state in ['Tamil Nadu', 'Karnataka', 'Kerala', 'Andhra Pradesh', 'Telangana']],
+        'North': [s for s in stations if s.state in ['Delhi', 'Uttar Pradesh', 'Punjab', 'Haryana', 'Himachal Pradesh', 'Jammu & Kashmir']],
+        'West': [s for s in stations if s.state in ['Maharashtra', 'Gujarat', 'Rajasthan', 'Madhya Pradesh']],
+        'East': [s for s in stations if s.state in ['West Bengal', 'Bihar', 'Jharkhand', 'Odisha']],
+        'Northeast': [s for s in stations if s.state in ['Assam', 'Nagaland', 'Manipur', 'Mizoram', 'Tripura', 'Arunachal Pradesh', 'Meghalaya', 'Sikkim']],
+        'Central': [s for s in stations if s.state in ['Chhattisgarh', 'Madhya Pradesh']]
+    }
     
-    db.session.add_all(routes)
-    db.session.commit()
-    logger.info(f"✅ Created realistic routes for {len(trains)} trains")
+    routes = []
+    route_batch_count = 0
+    
+    for train_idx, train in enumerate(trains):
+        try:
+            # Determine route type and length
+            if 'Rajdhani' in train.name or 'Duronto' in train.name:
+                route_length = random.randint(8, 15)  # Long distance
+            elif 'Express' in train.name:
+                route_length = random.randint(4, 10)  # Medium distance
+            else:
+                route_length = random.randint(3, 6)   # Short distance
+            
+            # Select starting region (bias towards South for South India focus)
+            if random.random() < 0.6:  # 60% chance to start from South
+                start_region = 'South'
+            else:
+                start_region = random.choice(list(station_groups.keys()))
+            
+            if not station_groups[start_region]:
+                continue
+                
+            # Build route
+            route_stations = []
+            current_region = start_region
+            
+            # Add starting station
+            start_station = random.choice(station_groups[current_region])
+            route_stations.append(start_station)
+            
+            # Add intermediate stations
+            for i in range(route_length - 2):
+                # 70% chance to stay in same region, 30% to change
+                if random.random() < 0.7 and len(station_groups[current_region]) > 1:
+                    # Stay in same region
+                    available_stations = [s for s in station_groups[current_region] if s not in route_stations]
+                    if available_stations:
+                        route_stations.append(random.choice(available_stations))
+                    else:
+                        # Change region if no stations available
+                        other_regions = [r for r in station_groups.keys() if r != current_region and station_groups[r]]
+                        if other_regions:
+                            current_region = random.choice(other_regions)
+                            route_stations.append(random.choice(station_groups[current_region]))
+                else:
+                    # Change region
+                    other_regions = [r for r in station_groups.keys() if r != current_region and station_groups[r]]
+                    if other_regions:
+                        current_region = random.choice(other_regions)
+                        available_stations = [s for s in station_groups[current_region] if s not in route_stations]
+                        if available_stations:
+                            route_stations.append(random.choice(available_stations))
+            
+            # Add end station from different region if possible
+            end_regions = [r for r in station_groups.keys() if r != start_region and station_groups[r]]
+            if end_regions:
+                end_region = random.choice(end_regions)
+                end_candidates = [s for s in station_groups[end_region] if s not in route_stations]
+                if end_candidates:
+                    route_stations.append(random.choice(end_candidates))
+                else:
+                    # Fallback to any station not in route
+                    all_candidates = [s for s in stations if s not in route_stations]
+                    if all_candidates:
+                        route_stations.append(random.choice(all_candidates))
+            else:
+                # Fallback to any station not in route
+                all_candidates = [s for s in stations if s not in route_stations]
+                if all_candidates:
+                    route_stations.append(random.choice(all_candidates))
+            
+            # Create route entries with realistic timings
+            if len(route_stations) < 2:
+                continue
+                
+            total_distance = 0
+            current_time = time(random.randint(0, 23), random.randint(0, 59))  # Random start time
+            
+            for sequence, station in enumerate(route_stations):
+                if sequence == 0:
+                    # First station
+                    departure_time = current_time
+                    arrival_time = None
+                    distance = 0
+                elif sequence == len(route_stations) - 1:
+                    # Last station
+                    segment_distance = random.randint(80, 300)
+                    total_distance += segment_distance
+                    
+                    # Add travel time (roughly 60-80 km/h average)
+                    travel_minutes = int(segment_distance * random.uniform(0.75, 1.25)) + random.randint(5, 20)
+                    current_time = add_minutes_to_time(current_time, travel_minutes)
+                    
+                    arrival_time = current_time
+                    departure_time = None
+                    distance = total_distance
+                else:
+                    # Intermediate station
+                    segment_distance = random.randint(80, 300)
+                    total_distance += segment_distance
+                    
+                    # Add travel time
+                    travel_minutes = int(segment_distance * random.uniform(0.75, 1.25)) + random.randint(5, 20)
+                    current_time = add_minutes_to_time(current_time, travel_minutes)
+                    
+                    arrival_time = current_time
+                    
+                    # Add halt time (2-20 minutes depending on station importance)
+                    if 'Junction' in station.name or 'Central' in station.name:
+                        halt_minutes = random.randint(8, 20)  # Major stations
+                    else:
+                        halt_minutes = random.randint(2, 8)   # Minor stations
+                        
+                    current_time = add_minutes_to_time(current_time, halt_minutes)
+                    departure_time = current_time
+                    distance = total_distance
+                
+                route = TrainRoute(
+                    train_id=train.id,
+                    station_id=station.id,
+                    sequence=sequence + 1,
+                    arrival_time=arrival_time,
+                    departure_time=departure_time,
+                    distance_from_start=distance
+                )
+                routes.append(route)
+                
+            # Batch commit every 100 trains to manage memory
+            if (train_idx + 1) % 100 == 0:
+                db.session.add_all(routes)
+                db.session.commit()
+                route_batch_count += len(routes)
+                logger.info(f"Added routes for trains 1-{train_idx + 1} (Total routes: {route_batch_count})")
+                routes = []  # Clear batch
+                
+        except Exception as e:
+            logger.warning(f"Failed to create route for train {train.number}: {str(e)}")
+            continue
+    
+    # Add remaining routes
+    if routes:
+        db.session.add_all(routes)
+        db.session.commit()
+        route_batch_count += len(routes)
+    
+    logger.info(f"✅ Created comprehensive routes for 1500 trains (Total routes: {route_batch_count})")
 
 def add_minutes_to_time(time_obj, minutes):
-    """Add minutes to a time object"""
+    """Add minutes to a time object, handling day overflow"""
     dt = datetime.combine(date.today(), time_obj)
     dt += timedelta(minutes=minutes)
     return dt.time()
 
-def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Waitlist):
-    """Create 100 sample bookings for testing"""
-    from src.app import db
+def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Waitlist, db):
+    """Create sample bookings for testing"""
     
     users = User.query.all()
-    trains = Train.query.all()
+    trains = Train.query.limit(100).all()  # Use first 100 trains for bookings
     
     if not users or not trains:
         logger.warning("⚠️  Missing users or trains for creating bookings")
@@ -357,110 +760,89 @@ def create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, Wa
     payments = []
     waitlists = []
     
-    for i in range(100):
-        user = random.choice(users)
-        train = random.choice(trains)
-        
-        # Get route stations
-        route_stations = [route.station for route in train.routes]
-        if len(route_stations) < 2:
+    # Create 200 sample bookings
+    for i in range(200):
+        try:
+            user = random.choice(users)
+            train = random.choice(trains)
+            
+            # Get route stations
+            route_stations = [route.station for route in train.routes]
+            if len(route_stations) < 2:
+                continue
+            
+            from_station = random.choice(route_stations[:-1])
+            remaining_stations = route_stations[route_stations.index(from_station) + 1:]
+            to_station = random.choice(remaining_stations)
+            
+            # Generate booking details
+            journey_date = date.today() + timedelta(days=random.randint(1, 45))
+            passenger_count = random.randint(1, 6)
+            
+            # Calculate amount
+            from_route = next((r for r in train.routes if r.station_id == from_station.id), None)
+            to_route = next((r for r in train.routes if r.station_id == to_station.id), None)
+            
+            if not from_route or not to_route:
+                continue
+            
+            distance = abs(to_route.distance_from_start - from_route.distance_from_start)
+            base_amount = distance * train.fare_per_km * passenger_count
+            total_amount = base_amount + random.uniform(50, 200)  # Add taxes and fees
+            
+            # Generate PNR
+            pnr = f"PNR{2000000 + i}"
+            
+            # Status distribution
+            status_choices = ['confirmed', 'waitlisted', 'cancelled']
+            status = random.choices(status_choices, weights=[75, 20, 5])[0]
+            
+            booking = Booking(
+                pnr=pnr,
+                user_id=user.id,
+                train_id=train.id,
+                from_station_id=from_station.id,
+                to_station_id=to_station.id,
+                journey_date=journey_date,
+                passengers=passenger_count,
+                total_amount=total_amount,
+                booking_type=random.choice(['general', 'tatkal']),
+                quota='general',
+                coach_class=random.choice(['SL', 'AC3', 'AC2', 'AC1', '2S', 'CC']),
+                status=status
+            )
+            bookings.append(booking)
+            
+        except Exception as e:
+            logger.warning(f"Failed to create booking {i}: {str(e)}")
             continue
-        
-        from_station = random.choice(route_stations[:-1])
-        remaining_stations = route_stations[route_stations.index(from_station) + 1:]
-        to_station = random.choice(remaining_stations)
-        
-        # Generate booking details
-        journey_date = date.today() + timedelta(days=random.randint(1, 30))
-        passenger_count = random.randint(1, 4)
-        
-        # Calculate amount
-        from_route = next((r for r in train.routes if r.station_id == from_station.id), None)
-        to_route = next((r for r in train.routes if r.station_id == to_station.id), None)
-        
-        if not from_route or not to_route:
-            continue
-        
-        distance = to_route.distance_from_start - from_route.distance_from_start
-        total_amount = distance * train.fare_per_km * passenger_count + random.uniform(10, 50)
-        
-        # Generate PNR
-        pnr = f"PNR{1000000 + i}"
-        
-        # Status distribution
-        status_choices = ['confirmed', 'waitlisted', 'cancelled']
-        status = random.choices(status_choices, weights=[70, 20, 10])[0]
-        
-        booking = Booking(
-            pnr=pnr,
-            user_id=user.id,
-            train_id=train.id,
-            from_station_id=from_station.id,
-            to_station_id=to_station.id,
-            journey_date=journey_date,
-            passengers=passenger_count,
-            total_amount=total_amount,
-            booking_type=random.choice(['general', 'tatkal']),
-            quota='general',
-            coach_class=random.choice(['SL', 'AC3', 'AC2', '2S']),
-            status=status
-        )
-        bookings.append(booking)
-        
-        # Update train seats
-        if status == 'confirmed':
-            train.available_seats = max(0, train.available_seats - passenger_count)
     
+    # Add bookings in batch
     db.session.add_all(bookings)
     db.session.commit()
     
-    # Create passengers and payments
+    # Create passenger details
     for booking in bookings:
-        # Passengers
         for p_num in range(booking.passengers):
             passenger = Passenger(
                 booking_id=booking.id,
                 name=f"Passenger {p_num + 1}",
-                age=random.randint(18, 70),
+                age=random.randint(18, 75),
                 gender=random.choice(['Male', 'Female']),
                 id_proof_type='Aadhar',
-                id_proof_number=f"XXXX-XXXX-{random.randint(1000, 9999)}"
+                id_proof_number=f"{random.randint(1000, 9999)}-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
             )
             passengers.append(passenger)
-        
-        # Payment
-        if booking.status in ['confirmed', 'cancelled']:
-            payment = Payment(
-                booking_id=booking.id,
-                user_id=booking.user_id,
-                amount=booking.total_amount,
-                payment_method=random.choice(['card', 'upi', 'netbanking']),
-                status='success' if booking.status == 'confirmed' else 'failed',
-                transaction_id=f"TXN{random.randint(10000000, 99999999)}"
-            )
-            payments.append(payment)
-        
-        # Waitlist entry
-        if booking.status == 'waitlisted':
-            waitlist = Waitlist(
-                booking_id=booking.id,
-                train_id=train.id,
-                journey_date=journey_date,
-                position=random.randint(1, 50),
-                waitlist_type='GNWL'
-            )
-            waitlists.append(waitlist)
     
-    db.session.add_all(passengers + payments + waitlists)
+    db.session.add_all(passengers)
     db.session.commit()
     
-    logger.info(f"✅ Created {len(bookings)} sample bookings with passengers and payments")
+    logger.info(f"✅ Created {len(bookings)} sample bookings with passenger details")
 
-def create_chart_preparation_records(Train, ChartPreparation):
+def create_chart_preparation_records(Train, ChartPreparation, db):
     """Create chart preparation records for today and tomorrow"""
-    from src.app import db
     
-    trains = Train.query.limit(10).all()  # Only for first 10 trains
+    trains = Train.query.limit(50).all()  # Chart prep for first 50 trains
     chart_records = []
     
     today = date.today()
@@ -468,30 +850,30 @@ def create_chart_preparation_records(Train, ChartPreparation):
     
     for train in trains:
         # Chart for today
-        if random.random() < 0.7:  # 70% chance to have chart
+        if random.random() < 0.8:  # 80% chance
             chart_today = ChartPreparation(
                 train_id=train.id,
                 journey_date=today,
-                status=random.choice(['prepared', 'final']),
-                chart_prepared_at=datetime.utcnow() - timedelta(hours=random.randint(1, 12)),
-                confirmed_from_waitlist=random.randint(0, 10),
-                cancelled_waitlist=random.randint(0, 5)
+                status=random.choice(['prepared', 'final', 'pending']),
+                chart_prepared_at=datetime.utcnow() - timedelta(hours=random.randint(1, 18)),
+                confirmed_from_waitlist=random.randint(0, 15),
+                cancelled_waitlist=random.randint(0, 8)
             )
             
             if chart_today.status == 'final':
-                chart_today.final_chart_at = chart_today.chart_prepared_at + timedelta(minutes=random.randint(30, 120))
+                chart_today.final_chart_at = chart_today.chart_prepared_at + timedelta(minutes=random.randint(30, 180))
             
             chart_records.append(chart_today)
         
         # Chart for tomorrow
-        if random.random() < 0.5:  # 50% chance to have chart
+        if random.random() < 0.6:  # 60% chance
             chart_tomorrow = ChartPreparation(
                 train_id=train.id,
                 journey_date=tomorrow,
                 status=random.choice(['pending', 'prepared']),
-                chart_prepared_at=datetime.utcnow() - timedelta(hours=random.randint(1, 6)) if random.random() < 0.7 else None,
-                confirmed_from_waitlist=random.randint(0, 8),
-                cancelled_waitlist=random.randint(0, 3)
+                chart_prepared_at=datetime.utcnow() - timedelta(hours=random.randint(1, 8)) if random.random() < 0.7 else None,
+                confirmed_from_waitlist=random.randint(0, 12),
+                cancelled_waitlist=random.randint(0, 6)
             )
             chart_records.append(chart_tomorrow)
     

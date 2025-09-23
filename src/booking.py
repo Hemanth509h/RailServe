@@ -271,9 +271,9 @@ def booking_history():
         # Search within user's bookings by PNR, train number, or train name
         bookings = Booking.query.filter_by(user_id=current_user.id).join(Train).filter(
             db.or_(
-                Booking.pnr.ilike(f'%{search}%'),
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Booking.pnr).contains(search.lower()),
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         ).order_by(
             Booking.booking_date.desc()

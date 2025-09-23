@@ -69,28 +69,28 @@ def universal_search():
             query = Train.query.filter(Train.active == True)
             
             if search_type == 'number':
-                query = query.filter(Train.number.ilike(f'%{search_query}%'))
+                query = query.filter(db.func.lower(Train.number).contains(search_query.lower()))
             elif search_type == 'name':
-                query = query.filter(Train.name.ilike(f'%{search_query}%'))
+                query = query.filter(db.func.lower(Train.name).contains(search_query.lower()))
             elif search_type == 'route':
                 # Search by stations in route
                 station_trains = db.session.query(Train.id).join(TrainRoute).join(Station).filter(
-                    Station.name.ilike(f'%{search_query}%') | 
-                    Station.city.ilike(f'%{search_query}%') |
-                    Station.code.ilike(f'%{search_query}%')
+                    db.func.lower(Station.name).contains(search_query.lower()) | 
+                    db.func.lower(Station.city).contains(search_query.lower()) |
+                    db.func.lower(Station.code).contains(search_query.lower())
                 ).distinct()
                 query = query.filter(Train.id.in_(station_trains))
             else:  # 'all' - search everything
                 station_trains = db.session.query(Train.id).join(TrainRoute).join(Station).filter(
-                    Station.name.ilike(f'%{search_query}%') | 
-                    Station.city.ilike(f'%{search_query}%') |
-                    Station.code.ilike(f'%{search_query}%')
+                    db.func.lower(Station.name).contains(search_query.lower()) | 
+                    db.func.lower(Station.city).contains(search_query.lower()) |
+                    db.func.lower(Station.code).contains(search_query.lower())
                 ).distinct()
                 
                 query = query.filter(
                     db.or_(
-                        Train.number.ilike(f'%{search_query}%'),
-                        Train.name.ilike(f'%{search_query}%'),
+                        db.func.lower(Train.number).contains(search_query.lower()),
+                        db.func.lower(Train.name).contains(search_query.lower()),
                         Train.id.in_(station_trains)
                     )
                 )

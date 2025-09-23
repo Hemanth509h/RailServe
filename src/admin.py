@@ -83,8 +83,8 @@ def trains():
         # Search by train number or name
         trains = Train.query.filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         ).all()
     else:
@@ -163,9 +163,9 @@ def stations():
         # Search by station code, name, or city
         stations = Station.query.filter(
             db.or_(
-                Station.code.ilike(f'%{search}%'),
-                Station.name.ilike(f'%{search}%'),
-                Station.city.ilike(f'%{search}%')
+                db.func.lower(Station.code).contains(search.lower()),
+                db.func.lower(Station.name).contains(search.lower()),
+                db.func.lower(Station.city).contains(search.lower())
             )
         ).all()
     else:
@@ -231,8 +231,8 @@ def users():
         # Search by username or email
         users = User.query.filter(
             db.or_(
-                User.username.ilike(f'%{search}%'),
-                User.email.ilike(f'%{search}%')
+                db.func.lower(User.username).contains(search.lower()),
+                db.func.lower(User.email).contains(search.lower())
             )
         ).all()
     else:
@@ -297,14 +297,14 @@ def analytics():
     if train_search:
         booking_query = booking_query.join(Train).filter(
             db.or_(
-                Train.number.ilike(f'%{train_search}%'),
-                Train.name.ilike(f'%{train_search}%')
+                db.func.lower(Train.number).contains(train_search.lower()),
+                db.func.lower(Train.name).contains(train_search.lower())
             )
         )
         payment_query = payment_query.join(Booking).join(Train).filter(
             db.or_(
-                Train.number.ilike(f'%{train_search}%'),
-                Train.name.ilike(f'%{train_search}%')
+                db.func.lower(Train.number).contains(train_search.lower()),
+                db.func.lower(Train.name).contains(train_search.lower())
             )
         )
     
@@ -335,8 +335,8 @@ def analytics():
     if train_search:
         popular_query = popular_query.filter(
             db.or_(
-                Train.number.ilike(f'%{train_search}%'),
-                Train.name.ilike(f'%{train_search}%')
+                db.func.lower(Train.number).contains(train_search.lower()),
+                db.func.lower(Train.name).contains(train_search.lower())
             )
         )
     
@@ -354,8 +354,8 @@ def analytics():
     if train_search:
         booking_trends = booking_trends.join(Train).filter(
             db.or_(
-                Train.number.ilike(f'%{train_search}%'),
-                Train.name.ilike(f'%{train_search}%')
+                db.func.lower(Train.number).contains(train_search.lower()),
+                db.func.lower(Train.name).contains(train_search.lower())
             )
         )
     
@@ -373,8 +373,8 @@ def analytics():
     if train_search:
         booking_stats = booking_stats.join(Train).filter(
             db.or_(
-                Train.number.ilike(f'%{train_search}%'),
-                Train.name.ilike(f'%{train_search}%')
+                db.func.lower(Train.number).contains(train_search.lower()),
+                db.func.lower(Train.name).contains(train_search.lower())
             )
         )
     
@@ -395,8 +395,8 @@ def analytics():
         if train_search:
             tatkal_query = tatkal_query.join(Train).filter(
                 db.or_(
-                    Train.number.ilike(f'%{train_search}%'),
-                    Train.name.ilike(f'%{train_search}%')
+                    Train.number.contains(train_search),
+                    Train.name.contains(train_search)
                 )
             )
         tatkal_revenue = tatkal_query.scalar() or 0
@@ -409,8 +409,8 @@ def analytics():
         if train_search:
             general_query = general_query.join(Train).filter(
                 db.or_(
-                    Train.number.ilike(f'%{train_search}%'),
-                    Train.name.ilike(f'%{train_search}%')
+                    Train.number.contains(train_search),
+                    Train.name.contains(train_search)
                 )
             )
         general_revenue = general_query.scalar() or 0
@@ -478,10 +478,10 @@ def bookings():
         # Search by PNR, username, or train number
         query = query.join(User).join(Train).filter(
             db.or_(
-                Booking.pnr.ilike(f'%{search}%'),
-                User.username.ilike(f'%{search}%'),
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Booking.pnr).contains(search.lower()),
+                db.func.lower(User.username).contains(search.lower()),
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         )
     
@@ -729,9 +729,9 @@ def tatkal_management():
     if search:
         query = query.filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%'),
-                Booking.pnr.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower()),
+                db.func.lower(Booking.pnr).contains(search.lower())
             )
         )
     
@@ -757,9 +757,9 @@ def tatkal_management():
     if search:
         recent_query = recent_query.join(Train).filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%'),
-                Booking.pnr.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower()),
+                db.func.lower(Booking.pnr).contains(search.lower())
             )
         )
     
@@ -785,8 +785,8 @@ def route_management():
     if search:
         query = query.filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         )
     
@@ -943,8 +943,8 @@ def fare_management():
     if search:
         query = query.filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         )
     
@@ -999,8 +999,8 @@ def emergency_quota():
     if search:
         query = query.filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         )
     
@@ -1212,10 +1212,10 @@ def waitlist_details():
     if search:
         query = query.join(User).join(Train).filter(
             db.or_(
-                Booking.pnr.ilike(f'%{search}%'),
-                User.username.ilike(f'%{search}%'),
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Booking.pnr).contains(search.lower()),
+                db.func.lower(User.username).contains(search.lower()),
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         )
     
@@ -1435,9 +1435,9 @@ def refund_management():
     if search:
         query = query.join(Booking).join(User).filter(
             db.or_(
-                RefundRequest.tdr_number.ilike(f'%{search}%'),
-                User.username.ilike(f'%{search}%'),
-                Booking.pnr.ilike(f'%{search}%')
+                db.func.lower(RefundRequest.tdr_number).contains(search.lower()),
+                db.func.lower(User.username).contains(search.lower()),
+                db.func.lower(Booking.pnr).contains(search.lower())
             )
         )
     
@@ -1563,8 +1563,8 @@ def chart_preparation():
     # Apply search filters if provided
     if search:
         search_filter = db.or_(
-            Train.number.ilike(f'%{search}%'),
-            Train.name.ilike(f'%{search}%')
+            db.func.lower(Train.number).contains(search.lower()),
+            db.func.lower(Train.name).contains(search.lower())
         )
         charts_today_query = charts_today_query.filter(search_filter)
         charts_tomorrow_query = charts_tomorrow_query.filter(search_filter)
@@ -1594,8 +1594,8 @@ def chart_preparation():
     if search:
         trains_needing_query = trains_needing_query.filter(
             db.or_(
-                Train.number.ilike(f'%{search}%'),
-                Train.name.ilike(f'%{search}%')
+                db.func.lower(Train.number).contains(search.lower()),
+                db.func.lower(Train.name).contains(search.lower())
             )
         )
     
@@ -1676,9 +1676,9 @@ def complaint_management():
     if search:
         query = query.join(User).filter(
             db.or_(
-                ComplaintManagement.ticket_number.ilike(f'%{search}%'),
-                ComplaintManagement.subject.ilike(f'%{search}%'),
-                User.username.ilike(f'%{search}%')
+                ComplaintManagement.ticket_number.contains(search),
+                ComplaintManagement.subject.contains(search),
+                User.username.contains(search)
             )
         )
     
@@ -1740,7 +1740,7 @@ def pnr_inquiry_system():
     if search:
         # Search by PNR number
         booking = Booking.query.filter(
-            Booking.pnr.ilike(f'%{search}%')
+            db.func.lower(Booking.pnr).contains(search.lower())
         ).first()
         
         if booking:
@@ -1793,6 +1793,8 @@ def update_dynamic_pricing():
         return redirect(url_for('admin.dynamic_pricing_management'))
     
     try:
+        if not journey_date:
+            raise ValueError("Journey date is required")
         journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
     except (ValueError, TypeError):
         flash('Invalid date format', 'error')
