@@ -7,8 +7,8 @@ Features:
 - 1250 stations (majority from South India)
 - 1500 trains with realistic routes
 - 2 users (regular user and admin)
-- Essential tables only (User, Station, Train, TrainRoute, Booking, Passenger, Payment)
-- Removed all unwanted tables
+- Complete railway functionality including TDR (Ticket Deposit Receipt) system
+- All essential models for booking, refunds, chart preparation, and administration
 
 Usage:
     python setup_database.py
@@ -52,7 +52,9 @@ def setup_database():
             # Import only essential models - removed unwanted tables
             from src.models import (
                 User, Station, Train, TrainRoute, 
-                Booking, Passenger, Payment
+                Booking, Passenger, Payment, RefundRequest,
+                ChartPreparation, TrainStatus, SeatAvailability,
+                TatkalTimeSlot, Waitlist, GroupBooking
             )
             
             logger.info("Dropping existing tables...")
@@ -65,7 +67,9 @@ def setup_database():
             inspector = db.inspect(db.engine)
             tables = inspector.get_table_names()
             essential_tables = ['user', 'station', 'train', 'train_route', 'booking', 
-                              'passenger', 'payment']
+                              'passenger', 'payment', 'refund_request', 'chart_preparation', 
+                              'train_status', 'seat_availability', 'tatkal_time_slot', 
+                              'waitlist', 'group_booking']
             
             created_tables = [t for t in essential_tables if t in tables]
             logger.info(f"✅ Created {len(created_tables)} essential tables: {', '.join(created_tables)}")
