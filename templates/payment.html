@@ -2,78 +2,484 @@
 
 {% block title %}Payment - RailServe{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
+{% block extra_css %}
+<style>
+.payment-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.payment-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.payment-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.card-title {
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.card-icon {
+    color: #667eea;
+    font-size: 1.5rem;
+}
+
+/* Booking Summary Styles */
+.train-details {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.train-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.route-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1rem 0;
+    font-size: 1.1rem;
+}
+
+.route-arrow {
+    color: #cbd5e1;
+    font-size: 1.2rem;
+}
+
+.journey-date {
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.summary-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.info-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.pnr-value {
+    font-family: monospace;
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.amount-breakdown {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.breakdown-title {
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.breakdown-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0 0 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    border-top: 2px solid #667eea;
+    margin-top: 0.5rem;
+}
+
+/* Payment Form Styles */
+.payment-methods {
+    margin-bottom: 2rem;
+}
+
+.methods-title {
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+}
+
+.payment-option {
+    margin-bottom: 1rem;
+}
+
+.payment-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.payment-label:hover {
+    border-color: #667eea;
+    background: #f8fafc;
+}
+
+input[type="radio"]:checked + .payment-label {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.payment-method-icon {
+    color: #667eea;
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+}
+
+.payment-method-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.payment-method-info small {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #667eea;
+}
+
+.card-form {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.card-form.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-title {
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-row {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-row.two-cols {
+    grid-template-columns: 2fr 1fr;
+}
+
+.form-group {
+    margin: 0;
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    background: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.security-notice {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #166534;
+}
+
+.security-icon {
+    color: #16a34a;
+    font-size: 1.25rem;
+}
+
+.payment-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    flex: 1;
+    justify-content: center;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 2px solid #e2e8f0;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+@media (max-width: 768px) {
+    .payment-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .payment-card {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+    
+    .route-display {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-row.two-cols {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-buttons {
+        flex-direction: column;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="payment-container">
-        <div class="booking-summary-card">
-            <h2><i class="fas fa-ticket-alt"></i> Booking Summary</h2>
+<div class="payment-container">
+    <div class="payment-content">
+        <div class="payment-card">
+            <div class="card-header">
+                <i class="fas fa-ticket-alt card-icon"></i>
+                <h2 class="card-title">Booking Summary</h2>
+            </div>
             
-            <div class="summary-details">
-                <div class="train-info">
-                    <h3>{{ booking.train.number }} - {{ booking.train.name }}</h3>
-                    <div class="journey-info">
-                        <span class="station">{{ booking.from_station.name }}</span>
-                        <i class="fas fa-arrow-right"></i>
-                        <span class="station">{{ booking.to_station.name }}</span>
-                    </div>
-                    <p>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</p>
+            <div class="train-details">
+                <h3 class="train-name">{{ booking.train.number }} - {{ booking.train.name }}</h3>
+                <div class="route-display">
+                    <span>{{ booking.from_station.name }}</span>
+                    <i class="fas fa-arrow-right route-arrow"></i>
+                    <span>{{ booking.to_station.name }}</span>
                 </div>
+                <div class="journey-date">{{ booking.journey_date.strftime('%d %b %Y') }}</div>
+            </div>
                 
-                <div class="passenger-info">
-                    <div class="info-item">
-                        <span>PNR Number:</span>
-                        <span class="pnr">{{ booking.pnr }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span>Passengers:</span>
-                        <span>{{ booking.passengers }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span>Status:</span>
-                        <span class="status status-{{ booking.status }}">
-                            {{ booking.status.replace('_', ' ').title() }}
-                        </span>
-                    </div>
+            <div class="summary-grid">
+                <div class="info-row">
+                    <span class="info-label">PNR Number:</span>
+                    <span class="info-value pnr-value">{{ booking.pnr }}</span>
                 </div>
+                <div class="info-row">
+                    <span class="info-label">Passengers:</span>
+                    <span class="info-value">{{ booking.passengers }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-{{ booking.status }}">
+                        {{ booking.status.replace('_', ' ').title() }}
+                    </span>
+                </div>
+            </div>
                 
-                <div class="amount-breakdown">
-                    <h4>Amount Details</h4>
-                    <div class="breakdown-item">
-                        <span>Base Fare:</span>
-                        <span>₹{{ "%.2f"|format(booking.total_amount / 1.1) }}</span>
-                    </div>
-                    <div class="breakdown-item">
-                        <span>Service Charges:</span>
-                        <span>₹{{ "%.2f"|format(booking.total_amount - (booking.total_amount / 1.1)) }}</span>
-                    </div>
-                    <div class="breakdown-total">
-                        <span><strong>Total Amount:</strong></span>
-                        <span><strong>₹{{ "%.2f"|format(booking.total_amount) }}</strong></span>
-                    </div>
+            <div class="amount-breakdown">
+                <h4 class="breakdown-title">
+                    <i class="fas fa-calculator"></i>
+                    Amount Details
+                </h4>
+                <div class="breakdown-item">
+                    <span>Base Fare:</span>
+                    <span>₹{{ "%.2f"|format(booking.total_amount / 1.1) }}</span>
+                </div>
+                <div class="breakdown-item">
+                    <span>Service Charges:</span>
+                    <span>₹{{ "%.2f"|format(booking.total_amount - (booking.total_amount / 1.1)) }}</span>
+                </div>
+                <div class="breakdown-total">
+                    <span>Total Amount:</span>
+                    <span>₹{{ "%.2f"|format(booking.total_amount) }}</span>
                 </div>
             </div>
         </div>
         
-        <div class="payment-form-card">
-            <h2><i class="fas fa-credit-card"></i> Payment Details</h2>
+        <div class="payment-card">
+            <div class="card-header">
+                <i class="fas fa-credit-card card-icon"></i>
+                <h2 class="card-title">Payment Details</h2>
+            </div>
             
             <form method="POST" action="{% if from_session %}{{ url_for('payment.process_session_payment') }}{% else %}{{ url_for('payment.process_payment', booking_id=booking.id) }}{% endif %}" 
                   class="payment-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 
                 <div class="payment-methods">
-                    <h3>Select Payment Method</h3>
+                    <h3 class="methods-title">Select Payment Method</h3>
                     
                     <div class="payment-option">
                         <input type="radio" id="card" name="payment_method" value="card" required>
                         <label for="card" class="payment-label">
-                            <i class="fas fa-credit-card"></i>
-                            <div class="payment-info">
-                                <strong>Credit/Debit Card</strong>
+                            <i class="fas fa-credit-card payment-method-icon"></i>
+                            <div class="payment-method-info">
+                                <h4>Credit/Debit Card</h4>
                                 <small>Visa, MasterCard, RuPay accepted</small>
                             </div>
                         </label>
@@ -82,9 +488,9 @@
                     <div class="payment-option">
                         <input type="radio" id="upi" name="payment_method" value="upi" required>
                         <label for="upi" class="payment-label">
-                            <i class="fas fa-mobile-alt"></i>
-                            <div class="payment-info">
-                                <strong>UPI Payment</strong>
+                            <i class="fas fa-mobile-alt payment-method-icon"></i>
+                            <div class="payment-method-info">
+                                <h4>UPI Payment</h4>
                                 <small>Pay using Google Pay, PhonePe, Paytm</small>
                             </div>
                         </label>
@@ -93,51 +499,54 @@
                     <div class="payment-option">
                         <input type="radio" id="netbanking" name="payment_method" value="netbanking" required>
                         <label for="netbanking" class="payment-label">
-                            <i class="fas fa-university"></i>
-                            <div class="payment-info">
-                                <strong>Net Banking</strong>
+                            <i class="fas fa-university payment-method-icon"></i>
+                            <div class="payment-method-info">
+                                <h4>Net Banking</h4>
                                 <small>All major banks supported</small>
                             </div>
                         </label>
                     </div>
                 </div>
                 
-                <div class="card-details" id="cardDetails" style="display: none;">
-                    <h4>Card Information</h4>
+                <div class="card-form" id="cardDetails">
+                    <h4 class="form-title">
+                        <i class="fas fa-credit-card"></i>
+                        Card Information
+                    </h4>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="card_number">Card Number</label>
+                            <label for="card_number" class="form-label">Card Number</label>
                             <input type="text" id="card_number" name="card_number" 
-                                   placeholder="1234 5678 9012 3456" maxlength="19">
+                                   class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="card_name">Cardholder Name</label>
+                            <label for="card_name" class="form-label">Cardholder Name</label>
                             <input type="text" id="card_name" name="card_name" 
-                                   placeholder="Name as on card">
+                                   class="form-input" placeholder="Name as on card">
                         </div>
                     </div>
-                    <div class="form-row">
+                    <div class="form-row two-cols">
                         <div class="form-group">
-                            <label for="expiry">Expiry Date</label>
+                            <label for="expiry" class="form-label">Expiry Date</label>
                             <input type="text" id="expiry" name="expiry" 
-                                   placeholder="MM/YY" maxlength="5">
+                                   class="form-input" placeholder="MM/YY" maxlength="5">
                         </div>
                         <div class="form-group">
-                            <label for="cvv">CVV</label>
+                            <label for="cvv" class="form-label">CVV</label>
                             <input type="password" id="cvv" name="cvv" 
-                                   placeholder="123" maxlength="4">
+                                   class="form-input" placeholder="123" maxlength="4">
                         </div>
                     </div>
                 </div>
                 
-                <div class="security-info">
-                    <i class="fas fa-shield-alt"></i>
+                <div class="security-notice">
+                    <i class="fas fa-shield-alt security-icon"></i>
                     <p>Your payment is secured with 256-bit SSL encryption</p>
                 </div>
                 
-                <div class="payment-actions">
+                <div class="payment-buttons">
                     {% if from_session %}
                         <a href="{{ url_for('index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Back to Search
@@ -158,7 +567,7 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 <script>
     // Payment method selection
     const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
@@ -167,9 +576,9 @@
     paymentMethods.forEach(method => {
         method.addEventListener('change', function() {
             if (this.value === 'card') {
-                cardDetails.style.display = 'block';
+                cardDetails.classList.add('active');
             } else {
-                cardDetails.style.display = 'none';
+                cardDetails.classList.remove('active');
             }
         });
     });

@@ -2,150 +2,490 @@
 
 {% block title %}Payment Successful - RailServe{% endblock %}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
+{% block extra_css %}
+<style>
+.success-container {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.success-card {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.success-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.success-header {
+    margin-bottom: 3rem;
+}
+
+.success-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem auto;
+    font-size: 3rem;
+    animation: successPulse 2s ease-in-out infinite;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.success-title {
+    color: #065f46;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.success-subtitle {
+    color: #6b7280;
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.confirmation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.confirmation-item {
+    text-align: center;
+}
+
+.confirmation-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.confirmation-value {
+    color: #1f2937;
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: block;
+}
+
+.pnr-highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+    display: inline-block;
+}
+
+.amount-highlight {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    display: inline-block;
+}
+
+.status-confirmed {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    display: inline-block;
+}
+
+.journey-section {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.section-title {
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.section-icon {
+    color: #667eea;
+    font-size: 1.5rem;
+}
+
+.train-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.train-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.route-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.station-info {
+    text-align: center;
+    min-width: 150px;
+}
+
+.station-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
+}
+
+.station-code {
+    color: #6b7280;
+    font-size: 0.875rem;
+    background: #e5e7eb;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.route-connector {
+    color: #667eea;
+    font-size: 2rem;
+}
+
+.journey-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.meta-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.meta-icon {
+    color: #667eea;
+    font-size: 1.25rem;
+}
+
+.next-steps {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.next-steps .section-title {
+    color: #92400e;
+    justify-content: flex-start;
+}
+
+.steps-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.step-item {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    border-left: 4px solid #f59e0b;
+}
+
+.step-icon {
+    color: #f59e0b;
+    font-size: 1.25rem;
+    margin-top: 0.125rem;
+}
+
+.step-text {
+    color: #1f2937;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: none;
+    cursor: pointer;
+    min-width: 150px;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: #10b981;
+    color: white;
+}
+
+.btn-outline {
+    background: white;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary:hover {
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+@media (max-width: 768px) {
+    .success-card {
+        padding: 2rem;
+        border-radius: 16px;
+    }
+    
+    .success-title {
+        font-size: 2rem;
+    }
+    
+    .confirmation-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .route-visual {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .route-connector {
+        transform: rotate(90deg);
+        font-size: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .success-container {
+        padding: 1rem 0;
+    }
+    
+    .success-content {
+        padding: 0 0.5rem;
+    }
+    
+    .success-card {
+        padding: 1.5rem;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="success-container">
+<div class="success-container">
+    <div class="success-content">
         <div class="success-card">
             <div class="success-header">
                 <div class="success-icon">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h1>Payment Successful!</h1>
-                <p>Your ticket has been booked successfully</p>
+                <h1 class="success-title">Payment Successful!</h1>
+                <p class="success-subtitle">Your ticket has been booked successfully</p>
             </div>
             
-            <div class="booking-confirmation">
-                <div class="confirmation-detail">
-                    <span class="label">PNR Number:</span>
-                    <span class="value pnr-highlight">{{ booking.pnr }}</span>
+            <div class="confirmation-grid">
+                <div class="confirmation-item">
+                    <span class="confirmation-label">PNR Number</span>
+                    <span class="confirmation-value pnr-highlight">{{ booking.pnr }}</span>
                 </div>
                 
-                <div class="confirmation-detail">
-                    <span class="label">Transaction ID:</span>
-                    <span class="value">{{ booking.payment.transaction_id }}</span>
+                <div class="confirmation-item">
+                    <span class="confirmation-label">Transaction ID</span>
+                    <span class="confirmation-value">{{ booking.payment.transaction_id }}</span>
                 </div>
                 
-                <div class="confirmation-detail">
-                    <span class="label">Amount Paid:</span>
-                    <span class="value amount">₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                <div class="confirmation-item">
+                    <span class="confirmation-label">Amount Paid</span>
+                    <span class="confirmation-value amount-highlight">₹{{ "%.2f"|format(booking.total_amount) }}</span>
                 </div>
                 
-                <div class="confirmation-detail">
-                    <span class="label">Booking Status:</span>
-                    <span class="value status status-{{ booking.status }}">
+                <div class="confirmation-item">
+                    <span class="confirmation-label">Booking Status</span>
+                    <span class="confirmation-value status-{{ booking.status }}">
                         {{ booking.status.replace('_', ' ').title() }}
                     </span>
                 </div>
             </div>
             
-            <div class="journey-summary">
-                <h3><i class="fas fa-route"></i> Journey Details</h3>
+            <div class="journey-section">
+                <h3 class="section-title">
+                    <i class="fas fa-route section-icon"></i>
+                    Journey Details
+                </h3>
                 
-                <div class="journey-info">
-                    <div class="train-info">
-                        <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                <div class="train-header">
+                    <h4 class="train-name">{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                </div>
+                
+                <div class="route-visual">
+                    <div class="station-info">
+                        <div class="station-name">{{ booking.from_station.name }}</div>
+                        <div class="station-code">{{ booking.from_station.code }}</div>
                     </div>
-                    
-                    <div class="route-info">
-                        <div class="station">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div class="station-details">
-                                <strong>{{ booking.from_station.name }}</strong>
-                                <small>{{ booking.from_station.code }}</small>
-                            </div>
-                        </div>
-                        <div class="route-arrow">
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                        <div class="station">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div class="station-details">
-                                <strong>{{ booking.to_station.name }}</strong>
-                                <small>{{ booking.to_station.code }}</small>
-                            </div>
-                        </div>
+                    <div class="route-connector">
+                        <i class="fas fa-arrow-right"></i>
                     </div>
-                    
-                    <div class="journey-details">
-                        <div class="detail-item">
-                            <i class="fas fa-calendar"></i>
-                            <span>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-users"></i>
-                            <span>Passengers: {{ booking.passengers }}</span>
-                        </div>
+                    <div class="station-info">
+                        <div class="station-name">{{ booking.to_station.name }}</div>
+                        <div class="station-code">{{ booking.to_station.code }}</div>
+                    </div>
+                </div>
+                
+                <div class="journey-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-calendar meta-icon"></i>
+                        <span>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-users meta-icon"></i>
+                        <span>Passengers: {{ booking.passengers }}</span>
                     </div>
                 </div>
             </div>
             
-            <!-- Passenger Details with Seat Assignments -->
-            {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
-            <div class="passenger-confirmation">
-                <h3><i class="fas fa-user-friends"></i> Passenger Details & Seat Allocation</h3>
-                <div class="passengers-grid">
-                    {% for passenger in booking.passengers_details %}
-                    <div class="passenger-card">
-                        <div class="passenger-header">
-                            <div class="passenger-name">
-                                <i class="fas fa-user"></i>
-                                <strong>{{ passenger.name }}</strong>
-                            </div>
-                            <div class="passenger-meta">
-                                <span class="age-gender">{{ passenger.age }}{{ passenger.gender[0] }}</span>
-                                <span class="coach-class">{{ passenger.coach_class }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="seat-allocation">
-                            <div class="seat-info-detailed">
-                                <i class="fas fa-info-circle"></i>
-                                <span class="seat-explanation">{{ passenger.get_seat_explanation() }}</span>
-                            </div>
-                            {% if passenger.comfort_rating and passenger.seat_number %}
-                            <div class="comfort-rating-info">
-                                <i class="fas fa-star"></i>
-                                <span class="comfort-score">Comfort Rating: {{ passenger.comfort_rating }}/10</span>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
             
             <div class="next-steps">
-                <h3><i class="fas fa-info-circle"></i> What's Next?</h3>
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle section-icon"></i>
+                    What's Next?
+                </h3>
                 
                 <div class="steps-list">
                     {% if booking.status == 'confirmed' %}
                         <div class="step-item">
-                            <i class="fas fa-check"></i>
-                            <p>Your seat is confirmed! Please carry a valid ID proof during travel.</p>
+                            <i class="fas fa-check step-icon"></i>
+                            <p class="step-text">Your seat is confirmed! Please carry a valid ID proof during travel.</p>
                         </div>
                         <div class="step-item">
-                            <i class="fas fa-mobile-alt"></i>
-                            <p>Save your PNR number for future reference and station check-ins.</p>
+                            <i class="fas fa-mobile-alt step-icon"></i>
+                            <p class="step-text">Save your PNR number for future reference and station check-ins.</p>
                         </div>
                     {% elif booking.status == 'waitlisted' %}
                         <div class="step-item">
-                            <i class="fas fa-clock"></i>
-                            <p>Your booking is waitlisted. You'll be automatically confirmed if seats become available.</p>
+                            <i class="fas fa-clock step-icon"></i>
+                            <p class="step-text">Your booking is waitlisted. You'll be automatically confirmed if seats become available.</p>
                         </div>
                         <div class="step-item">
-                            <i class="fas fa-bell"></i>
-                            <p>We'll notify you immediately if your waitlist status changes.</p>
+                            <i class="fas fa-bell step-icon"></i>
+                            <p class="step-text">We'll notify you immediately if your waitlist status changes.</p>
                         </div>
                     {% endif %}
                     
                     <div class="step-item">
-                        <i class="fas fa-envelope"></i>
-                        <p>A confirmation email has been sent to {{ current_user.email }}</p>
+                        <i class="fas fa-envelope step-icon"></i>
+                        <p class="step-text">A confirmation email has been sent to {{ current_user.email }}</p>
                     </div>
                 </div>
             </div>
@@ -166,9 +506,32 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
+<script>
+    // Auto-format PNR display
+    document.addEventListener('DOMContentLoaded', function() {
+        const pnrElements = document.querySelectorAll('.pnr-highlight');
+        pnrElements.forEach(function(element) {
+            const pnr = element.textContent.trim();
+            if (pnr.length === 10) {
+                element.textContent = pnr.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+            }
+        });
+        
+        // Celebration animation
+        setTimeout(function() {
+            const successIcon = document.querySelector('.success-icon');
+            if (successIcon) {
+                successIcon.style.transform = 'scale(1.1)';
+                setTimeout(function() {
+                    successIcon.style.transform = 'scale(1)';
+                }, 300);
+            }
+        }, 500);
+    });
+</script>
 <style>
-/* Passenger Confirmation Section */
+/* Legacy passenger confirmation styles for compatibility */
 .passenger-confirmation {
     background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
     border: 2px solid #28a745;
@@ -323,23 +686,4 @@
     background: #2d2017;
 }
 </style>
-
-<script>
-    // Auto-format PNR display
-    document.addEventListener('DOMContentLoaded', function() {
-        const pnrElements = document.querySelectorAll('.pnr-highlight');
-        pnrElements.forEach(function(element) {
-            const pnr = element.textContent;
-            element.textContent = pnr.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
-        });
-    });
-    
-    // Show celebration animation
-    setTimeout(function() {
-        document.querySelector('.success-icon').style.transform = 'scale(1.1)';
-        setTimeout(function() {
-            document.querySelector('.success-icon').style.transform = 'scale(1)';
-        }, 200);
-    }, 500);
-</script>
 {% endblock %}
