@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Railway Frontend"
+args = "Railway Web App"
 
 [[workflows.workflow]]
-name = "Railway Frontend"
+name = "Railway Web App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
