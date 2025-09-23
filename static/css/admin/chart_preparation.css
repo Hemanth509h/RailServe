@@ -311,3 +311,7 @@
 .admin-container > *:last-child {
     margin-bottom: 3rem;
 }
+.chart-section {
+    height: 500px;
+    overflow-y: scroll;
+}

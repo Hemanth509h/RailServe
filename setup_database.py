@@ -92,8 +92,6 @@ def setup_database():
             create_comprehensive_routes(Train, Station, TrainRoute, db)
             
             # Create sample bookings
-            logger.info("Creating sample bookings for testing...")
-            create_sample_bookings(User, Train, Station, Booking, Passenger, Payment, db)
             
             logger.info("🎉 Database setup completed successfully!")
             logger.info("Indian Railway System with 1250 stations and 1500 trains is ready")
