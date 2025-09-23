@@ -490,10 +490,12 @@
                                 </form>
                             {% endif %}
                             
-                            <a href="{{ url_for('admin.allocate_train_waitlist', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" 
-                               class="action-btn btn-allocate">
-                                <i class="fas fa-users"></i> Allocate Waitlist
-                            </a>
+                            <form method="POST" action="{{ url_for('admin.allocate_train_waitlist', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="action-btn btn-allocate">
+                                    <i class="fas fa-users"></i> Allocate Waitlist
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {% endfor %}
@@ -568,10 +570,12 @@
                                 </form>
                             {% endif %}
                             
-                            <a href="{{ url_for('admin.allocate_train_waitlist', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" 
-                               class="action-btn btn-allocate">
-                                <i class="fas fa-users"></i> Allocate Waitlist
-                            </a>
+                            <form method="POST" action="{{ url_for('admin.allocate_train_waitlist', train_id=train.id, journey_date=chart.journey_date.strftime('%Y-%m-%d')) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="action-btn btn-allocate">
+                                    <i class="fas fa-users"></i> Allocate Waitlist
+                                </button>
+                            </form>
                         </div>
                     </div>
                 {% endfor %}
@@ -611,14 +615,14 @@
                         
                         <div class="chart-actions">
                             <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=today.strftime('%Y-%m-%d')) }}" style="display: inline;">
-                                {{ csrf_token() }}
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="action-btn btn-prepare">
                                     <i class="fas fa-clipboard"></i> Create Today's Chart
                                 </button>
                             </form>
                             
                             <form method="POST" action="{{ url_for('admin.prepare_chart', train_id=train.id, journey_date=tomorrow.strftime('%Y-%m-%d')) }}" style="display: inline;">
-                                {{ csrf_token() }}
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="action-btn btn-prepare">
                                     <i class="fas fa-calendar-plus"></i> Create Tomorrow's Chart
                                 </button>

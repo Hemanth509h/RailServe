@@ -1705,7 +1705,7 @@ def prepare_chart_manual(train_id, journey_date):
     
     return redirect(url_for('admin.chart_preparation'))
 
-@admin_bp.route('/chart_preparation/finalize/<int:train_id>/<journey_date>')
+@admin_bp.route('/chart_preparation/finalize/<int:train_id>/<journey_date>', methods=['POST'])
 @admin_required  
 def finalize_chart_manual(train_id, journey_date):
     """Manually finalize chart for a specific train and date"""
