@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Railway Database Setup Script - Comprehensive Indian Railway System
-Creates complete database schema with extensive Indian railway data
+Railway Database Setup Script - South Indian Railway Focus
+Creates essential database schema with South Indian railway data
 
 Features:
 - 1250 stations (majority from South India)
 - 1500 trains with realistic routes
 - 2 users (regular user and admin)
-- Comprehensive route network
-- Essential tables only
+- Essential tables only (User, Station, Train, TrainRoute, Booking, Passenger, Payment)
+- Removed all unwanted tables
 
 Usage:
     python setup_database.py
@@ -49,10 +49,10 @@ def setup_database():
         from src.app import app, db
         
         with app.app_context():
-            # Import only essential models
+            # Import only essential models - removed unwanted tables
             from src.models import (
                 User, Station, Train, TrainRoute, 
-                Booking, Passenger, Payment, Waitlist, ChartPreparation
+                Booking, Passenger, Payment
             )
             
             logger.info("Dropping existing tables...")
@@ -61,14 +61,15 @@ def setup_database():
             logger.info("Creating essential database schema...")
             db.create_all()
             
-            # Verify tables were created
+            # Verify essential tables were created
             inspector = db.inspect(db.engine)
             tables = inspector.get_table_names()
             essential_tables = ['user', 'station', 'train', 'train_route', 'booking', 
-                              'passenger', 'payment', 'waitlist', 'chart_preparation']
+                              'passenger', 'payment']
             
             created_tables = [t for t in essential_tables if t in tables]
             logger.info(f"✅ Created {len(created_tables)} essential tables: {', '.join(created_tables)}")
+            logger.info(f"Removed unwanted tables - keeping only essential railway booking functionality")
             
             # Create users
             logger.info("Creating user accounts...")

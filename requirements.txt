@@ -37,3 +37,14 @@ flask
 flask-sqlalchemy
 gunicorn
 psycopg2-binary
+email-validator
+faker
+flask
+flask-login
+flask-sqlalchemy
+flask-wtf
+gunicorn
+psycopg2-binary
+qrcode[pil]
+reportlab
+werkzeug

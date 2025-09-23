@@ -1610,16 +1610,40 @@ def chart_preparation():
                          search=search,
                          status_filter=status_filter)
 
-@admin_bp.route('/chart_preparation/prepare/<int:train_id>/<journey_date>')
+@admin_bp.route('/chart_preparation/prepare/<int:train_id>/<journey_date>', methods=['GET', 'POST'])
 @admin_required
-def prepare_chart_manual(train_id, journey_date):
-    """Manually prepare chart for a specific train and date"""
-    from .utils import prepare_chart
+def prepare_chart(train_id, journey_date):
+    """Prepare chart for a specific train and date"""
+    from .utils import prepare_chart as prepare_chart_util
     from datetime import datetime
     
     try:
         journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
-        chart = prepare_chart(train_id, journey_date_obj)
+        chart = prepare_chart_util(train_id, journey_date_obj)
+        
+        if chart:
+            train = Train.query.get(train_id)
+            if train:
+                flash(f'Chart prepared successfully for {train.name} on {journey_date}', 'success')
+            else:
+                flash('Chart prepared successfully', 'success')
+        else:
+            flash('Failed to prepare chart', 'error')
+    except Exception as e:
+        flash(f'Error preparing chart: {str(e)}', 'error')
+    
+    return redirect(url_for('admin.chart_preparation'))
+
+@admin_bp.route('/chart_preparation/prepare_manual/<int:train_id>/<journey_date>')
+@admin_required
+def prepare_chart_manual(train_id, journey_date):
+    """Manually prepare chart for a specific train and date"""
+    from .utils import prepare_chart as prepare_chart_util
+    from datetime import datetime
+    
+    try:
+        journey_date_obj = datetime.strptime(journey_date, '%Y-%m-%d').date()
+        chart = prepare_chart_util(train_id, journey_date_obj)
         
         if chart:
             train = Train.query.get(train_id)
@@ -1676,9 +1700,9 @@ def complaint_management():
     if search:
         query = query.join(User).filter(
             db.or_(
-                ComplaintManagement.ticket_number.contains(search),
-                ComplaintManagement.subject.contains(search),
-                User.username.contains(search)
+                db.func.lower(ComplaintManagement.ticket_number).contains(search.lower()),
+                db.func.lower(ComplaintManagement.subject).contains(search.lower()),
+                db.func.lower(User.username).contains(search.lower())
             )
         )
     
