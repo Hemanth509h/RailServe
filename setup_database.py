@@ -49,12 +49,16 @@ def setup_database():
         from src.app import app, db
         
         with app.app_context():
-            # Import only essential models - removed unwanted tables
+            # Import all essential models for comprehensive railway system
             from src.models import (
                 User, Station, Train, TrainRoute, 
                 Booking, Passenger, Payment, RefundRequest,
                 ChartPreparation, TrainStatus, SeatAvailability,
-                TatkalTimeSlot, Waitlist, GroupBooking
+                TatkalTimeSlot, Waitlist, GroupBooking, GroupMessage,
+                GroupMemberPayment, GroupMemberInvitation,
+                Complaint, DynamicPricing, FareRule, PlatformManagement,
+                PerformanceMetrics, QuotaManagement, RouteManagement,
+                WaitlistAllocation
             )
             
             logger.info("Dropping existing tables...")
@@ -69,7 +73,10 @@ def setup_database():
             essential_tables = ['user', 'station', 'train', 'train_route', 'booking', 
                               'passenger', 'payment', 'refund_request', 'chart_preparation', 
                               'train_status', 'seat_availability', 'tatkal_time_slot', 
-                              'waitlist', 'group_booking']
+                              'waitlist', 'group_booking', 'group_message', 'group_member_payment',
+                              'group_member_invitation', 'complaint', 'dynamic_pricing', 'fare_rule',
+                              'platform_management', 'performance_metrics', 'quota_management',
+                              'route_management', 'waitlist_allocation']
             
             created_tables = [t for t in essential_tables if t in tables]
             logger.info(f"✅ Created {len(created_tables)} essential tables: {', '.join(created_tables)}")

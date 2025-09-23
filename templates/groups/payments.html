@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Group Payment Coordination - RailServe{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
+<style>
+.payment-coordinator {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.group-header {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.payment-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.payment-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.payment-card h4 {
+    margin: 0 0 1rem 0;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.amount-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-paid {
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed-text);
+}
+
+.status-pending {
+    background: var(--status-pending-bg);
+    color: var(--status-pending-text);
+}
+
+.status-partial {
+    background: var(--warning-color);
+    color: white;
+}
+
+.member-payments-table {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    margin-top: 2rem;
+}
+
+.table-header {
+    background: var(--accent-color);
+    color: white;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    font-weight: 600;
+}
+
+.member-row {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.member-row:last-child {
+    border-bottom: none;
+}
+
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.payment-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.btn-pay {
+    background: var(--accent-color);
+    color: white;
+}
+
+.btn-pay:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn-remind {
+    background: var(--warning-color);
+    color: white;
+}
+
+.btn-remind:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
+    transition: width 0.3s ease;
+}
+
+.group-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.alert-info {
+    background: var(--info-bg);
+    color: var(--info-text);
+    border: 1px solid var(--info-border);
+}
+
+.alert-warning {
+    background: var(--warning-bg);
+    color: var(--warning-text);
+    border: 1px solid var(--warning-border);
+}
+
+@media (max-width: 768px) {
+    .table-header,
+    .member-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .payment-summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .group-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-coordinator">
+    <div class="group-header">
+        <h1><i class="fas fa-users"></i> {{ group.group_name }} - Payment Coordination</h1>
+        <p>Group Leader: {{ group.leader.username }} | Total Members: {{ group.individual_bookings|length }}</p>
+    </div>
+
+    <!-- Payment Summary -->
+    <div class="payment-summary-grid">
+        <div class="payment-card">
+            <h4><i class="fas fa-calculator"></i> Total Amount</h4>
+            <div class="amount-display">₹{{ "%.2f"|format(payment_summary.total_amount) }}</div>
+            <p>Total group booking cost</p>
+        </div>
+
+        <div class="payment-card">
+            <h4><i class="fas fa-money-bill-wave"></i> Amount Paid</h4>
+            <div class="amount-display">₹{{ "%.2f"|format(payment_summary.paid_amount) }}</div>
+            <span class="status-badge status-{% if payment_summary.paid_amount >= payment_summary.total_amount %}paid{% elif payment_summary.paid_amount > 0 %}partial{% else %}pending{% endif %}">
+                {% if payment_summary.paid_amount >= payment_summary.total_amount %}
+                    Fully Paid
+                {% elif payment_summary.paid_amount > 0 %}
+                    Partial Payment
+                {% else %}
+                    Pending
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="payment-card">
+            <h4><i class="fas fa-hourglass-half"></i> Amount Pending</h4>
+            <div class="amount-display">₹{{ "%.2f"|format(payment_summary.pending_amount) }}</div>
+            <p>Remaining amount to collect</p>
+        </div>
+
+        <div class="payment-card">
+            <h4><i class="fas fa-percentage"></i> Payment Progress</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (payment_summary.paid_amount / payment_summary.total_amount * 100) if payment_summary.total_amount > 0 else 0 }}%"></div>
+            </div>
+            <p>{{ "%.1f"|format((payment_summary.paid_amount / payment_summary.total_amount * 100) if payment_summary.total_amount > 0 else 0) }}% Complete</p>
+        </div>
+    </div>
+
+    <!-- Payment Status Alerts -->
+    {% if payment_summary.pending_amount > 0 %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>Action Required:</strong> ₹{{ "%.2f"|format(payment_summary.pending_amount) }} is still pending from group members. 
+        Use the reminder buttons below to notify pending members.
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-check-circle"></i>
+        <strong>Payment Complete:</strong> All group members have completed their payments. You can proceed with the booking confirmation.
+    </div>
+    {% endif %}
+
+    <!-- Member Payment Details -->
+    <div class="member-payments-table">
+        <div class="table-header">
+            <div>Member</div>
+            <div>Share Amount</div>
+            <div>Paid Amount</div>
+            <div>Status</div>
+            <div>Actions</div>
+        </div>
+
+        {% for booking in group.individual_bookings %}
+        {% set member_payment = member_payments|selectattr('user_id', 'equalto', booking.user_id)|first %}
+        <div class="member-row">
+            <div class="member-info">
+                <div class="member-avatar">
+                    {{ booking.user.username[0].upper() }}
+                </div>
+                <div>
+                    <strong>{{ booking.user.username }}</strong>
+                    <br>
+                    <small>{{ booking.user.email }}</small>
+                </div>
+            </div>
+            
+            <div>₹{{ "%.2f"|format(booking.total_amount) }}</div>
+            
+            <div>
+                {% if member_payment %}
+                    ₹{{ "%.2f"|format(member_payment.amount_paid) }}
+                {% else %}
+                    ₹0.00
+                {% endif %}
+            </div>
+            
+            <div>
+                {% if member_payment and member_payment.amount_paid >= booking.total_amount %}
+                    <span class="status-badge status-paid">Paid</span>
+                {% elif member_payment and member_payment.amount_paid > 0 %}
+                    <span class="status-badge status-partial">Partial</span>
+                {% else %}
+                    <span class="status-badge status-pending">Pending</span>
+                {% endif %}
+            </div>
+            
+            <div class="payment-actions">
+                {% if current_user.id == booking.user_id %}
+                    {% if not member_payment or member_payment.amount_paid < booking.total_amount %}
+                        <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" class="action-btn btn-pay">
+                            <i class="fas fa-credit-card"></i> Pay Now
+                        </a>
+                    {% else %}
+                        <span class="status-badge status-paid">Your payment is complete</span>
+                    {% endif %}
+                {% elif current_user.id == group.group_leader_id %}
+                    {% if not member_payment or member_payment.amount_paid < booking.total_amount %}
+                        <button class="action-btn btn-remind" onclick="sendReminder({{ booking.user_id }})">
+                            <i class="fas fa-bell"></i> Remind
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Group Actions -->
+    <div class="group-actions">
+        {% if current_user.id == group.group_leader_id %}
+            {% if payment_summary.pending_amount <= 0 %}
+                <a href="{{ url_for('groups.confirm_group_booking', group_id=group.id) }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle"></i> Confirm Group Booking
+                </a>
+            {% endif %}
+            <a href="{{ url_for('groups.group_messages', group_id=group.id) }}" class="btn btn-primary">
+                <i class="fas fa-comments"></i> Group Messages
+            </a>
+        {% endif %}
+        
+        <a href="{{ url_for('groups.manage_group', group_id=group.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Group
+        </a>
+    </div>
+</div>
+
+<script>
+function sendReminder(userId) {
+    if (confirm('Send payment reminder to this member?')) {
+        fetch(`{{ url_for('groups.send_payment_reminder', group_id=group.id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                user_id: userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payment reminder sent successfully!');
+            } else {
+                alert('Failed to send reminder: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send reminder');
+        });
+    }
+}
+
+// Auto-refresh payment status every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

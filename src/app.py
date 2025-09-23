@@ -26,13 +26,12 @@ app = Flask(__name__,
 
 # Load configuration
 # Load configuration - require SESSION_SECRET for security
-
-app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+app.secret_key = os.environ.get("SESSION_SECRET")
 if not app.secret_key:
-    raise RuntimeError("SESSION_SECRET environment variable is required")
+    raise RuntimeError("SESSION_SECRET environment variable is required for secure operation")
 
-# Use DATABASE_URL with fallback to local database
-database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
+# Use DATABASE_URL with secure fallback to SQLite for development
+database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
     # Validate that DATABASE_URL is a proper connection string
@@ -52,7 +51,7 @@ if database_url:
         logging.warning("Invalid DATABASE_URL format, using local SQLite")
         database_url = "sqlite:///local_railway.db"
 else:
-    # Use local SQLite database for development
+    # Use local SQLite database for development - no hardcoded credentials
     database_url = "sqlite:///local_railway.db"
     logging.info("Using SQLite database for development: local_railway.db")
 
