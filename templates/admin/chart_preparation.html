@@ -4,6 +4,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/chart_preparation.css') }}">
 <style>
 /* Clean and Modern Chart Preparation Styles */
 .chart-container {
@@ -375,7 +376,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="chart-container">
+<div class="chart-container chart-preparation-container">
     <!-- Page Header -->
     <div class="page-header">
         <h1><i class="fas fa-clipboard-list"></i> Chart Preparation Management</h1>
