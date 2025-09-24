@@ -877,10 +877,12 @@
                 
                 <div class="form-group">
                     <label for="passenger_${index}_id_type">
-                        <i class="fas fa-id-card"></i> ID Proof Type
+                        <i class="fas fa-id-card"></i> ID Proof Type *
                     </label>
                     <select name="passenger_${index}_id_type" 
-                            id="passenger_${index}_id_type">
+                            id="passenger_${index}_id_type" 
+                            required>
+                        <option value="">Select ID Proof</option>
                         <option value="Aadhar">Aadhar Card</option>
                         <option value="PAN">PAN Card</option>
                         <option value="Passport">Passport</option>
@@ -893,12 +895,13 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="passenger_${index}_id_number">
-                        <i class="fas fa-hashtag"></i> ID Proof Number
+                        <i class="fas fa-hashtag"></i> ID Proof Number *
                     </label>
                     <input type="text" 
                            name="passenger_${index}_id_number" 
                            id="passenger_${index}_id_number" 
-                           placeholder="ID Number (optional)">
+                           placeholder="Enter ID Number" 
+                           required>
                 </div>
                 
                 <div class="form-group">
@@ -1053,8 +1056,52 @@
             clearError(coachClass);
         }
         
-        // Passenger validation removed - allow form submission without complete passenger details
-        // Passenger details can be completed in the next step of booking process
+        // Validate passenger details - mandatory for all passengers
+        const passengerCount = parseInt(passengers.value) || 0;
+        if (passengerCount > 0) {
+            for (let i = 0; i < passengerCount; i++) {
+                const nameField = document.getElementById(`passenger_${i}_name`);
+                const ageField = document.getElementById(`passenger_${i}_age`);
+                const genderField = document.getElementById(`passenger_${i}_gender`);
+                const idTypeField = document.getElementById(`passenger_${i}_id_type`);
+                const idNumberField = document.getElementById(`passenger_${i}_id_number`);
+                
+                if (!nameField || !nameField.value.trim()) {
+                    highlightError(nameField);
+                    errors.push(`Enter name for Passenger ${i + 1}`);
+                } else {
+                    clearError(nameField);
+                }
+                
+                if (!ageField || !ageField.value || ageField.value < 1 || ageField.value > 120) {
+                    highlightError(ageField);
+                    errors.push(`Enter valid age for Passenger ${i + 1}`);
+                } else {
+                    clearError(ageField);
+                }
+                
+                if (!genderField || !genderField.value) {
+                    highlightError(genderField);
+                    errors.push(`Select gender for Passenger ${i + 1}`);
+                } else {
+                    clearError(genderField);
+                }
+                
+                if (!idTypeField || !idTypeField.value) {
+                    highlightError(idTypeField);
+                    errors.push(`Select ID proof type for Passenger ${i + 1}`);
+                } else {
+                    clearError(idTypeField);
+                }
+                
+                if (!idNumberField || !idNumberField.value.trim()) {
+                    highlightError(idNumberField);
+                    errors.push(`Enter ID proof number for Passenger ${i + 1}`);
+                } else {
+                    clearError(idNumberField);
+                }
+            }
+        }
         
         return errors;
     }
