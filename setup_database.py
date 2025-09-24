@@ -29,8 +29,9 @@ from decimal import Decimal
 # Add src directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from app import app, db
-from models import (
+from src.app import app
+from src.database import db
+from src.models import (
     User, Station, Train, TrainRoute, Booking, Passenger, 
     Payment, ComplaintManagement, GroupBooking, RefundRequest
 )

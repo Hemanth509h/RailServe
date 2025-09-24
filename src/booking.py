@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from .models import Train, Station, Booking, TrainRoute, Passenger, RefundRequest
-from .app import db
+from .database import db
 from datetime import datetime, date
 from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability, calculate_cancellation_charges, check_seat_availability_detailed, get_live_train_status, check_current_reservation_available, get_waitlist_type
 from .seat_allocation import SeatAllocator

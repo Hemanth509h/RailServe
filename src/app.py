@@ -1,21 +1,15 @@
 import os
 import logging
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
-from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
+from .database import db
 
 # Configure logging with production-ready levels
 flask_env = os.environ.get('FLASK_ENV', 'development')
 log_level = logging.INFO if flask_env == 'production' else logging.DEBUG
 logging.basicConfig(level=log_level)
-
-class Base(DeclarativeBase):
-    pass
-
-db = SQLAlchemy(model_class=Base)
 login_manager = LoginManager()
 csrf = CSRFProtect()
 

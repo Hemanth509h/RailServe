@@ -1,7 +1,7 @@
 from collections import deque
 import threading
 from .models import Waitlist, Booking, Train
-from .app import db
+from .database import db
 from datetime import datetime
 
 class WaitlistManager:

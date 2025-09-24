@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from .models import Booking, Payment, Train, Station, Passenger
-from .app import db
+from .database import db
 from datetime import datetime, date
 from sqlalchemy.exc import IntegrityError
 from .queue_manager import WaitlistManager

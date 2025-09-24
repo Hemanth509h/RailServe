@@ -12,7 +12,7 @@ from .models import (
     GroupMemberPayment, GroupMessage, db
 )
 from .utils import search_trains, calculate_fare
-from .app import app
+from flask import current_app as app
 
 groups_bp = Blueprint('groups', __name__)
 

@@ -1,5 +1,5 @@
 from .models import Train, Station, Booking, TrainRoute, SeatAvailability
-from .app import db
+from .database import db
 from datetime import datetime, date
 from sqlalchemy import and_, or_
 

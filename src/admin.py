@@ -5,7 +5,7 @@ from .models import (User, Train, Station, Booking, Payment, TrainRoute, TatkalT
                     Waitlist, RefundRequest, PlatformManagement, TrainPlatformAssignment, ComplaintManagement, 
                     PerformanceMetrics, DynamicPricing, PNRStatusTracking)
 from sqlalchemy import and_
-from .app import db
+from .database import db
 from datetime import datetime, timedelta, date
 import csv
 import io

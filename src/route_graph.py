@@ -1,6 +1,6 @@
 from collections import defaultdict, deque
 from .models import Train, Station, TrainRoute
-from .app import db
+from .database import db
 
 class RouteGraph:
     """Graph-based train route modeling using adjacency list"""

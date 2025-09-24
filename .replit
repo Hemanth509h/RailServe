@@ -28,7 +28,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python main.py"
+args = "cd /home/runner/workspace && python -m src.app"
 waitForPort = 5000
 
 [[ports]]
@@ -36,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 34539
+localPort = 33443
 externalPort = 3000
 
 [deployment]
