@@ -355,12 +355,11 @@
 .search-form {
     margin-bottom: 20px;
 }
-
 .form-row {
     display: flex;
     gap: 15px;
     align-items: flex-end;
-    flex-wrap: wrap;
+    flex-direction: row;
 }
 
 .form-group {
