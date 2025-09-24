@@ -2,49 +2,103 @@
 
 {% block title %}Page Not Found - RailServe{% endblock %}
 
-{% block head %}
+{% block extra_css %}
 <style>
+/* Modern Error Page with Gradient Design */
+.error-page-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
 .error-container {
+    background: white;
+    border-radius: 20px;
+    padding: 4rem 3rem;
     text-align: center;
-    padding: 4rem 1rem;
     max-width: 600px;
     margin: 0 auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
 .error-icon {
     font-size: 6rem;
-    color: #ef4444;
-    margin-bottom: 1.5rem;
+    color: #f56565;
+    margin-bottom: 2rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 .error-code {
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 0.5rem;
-}
-
-.error-title {
-    font-size: 1.5rem;
-    color: #4b5563;
+    color: #2d3748;
     margin-bottom: 1rem;
 }
 
+.error-title {
+    font-size: 2rem;
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
 .error-description {
-    color: #6b7280;
-    margin-bottom: 2rem;
+    color: #718096;
+    margin-bottom: 3rem;
     line-height: 1.6;
+    font-size: 1.1rem;
 }
 
 .error-actions {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .error-actions .btn {
-    padding: 0.75rem 1.5rem;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+    color: #4a5568;
+    text-decoration: none;
 }
 
 @media (max-width: 768px) {
@@ -61,7 +115,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="error-container">
+<div class="error-page-container">
+    <div class="error-container">
     <div class="error-icon">
         <i class="fas fa-exclamation-triangle"></i>
     </div>
@@ -84,6 +139,7 @@
         <a href="{{ url_for('index') }}" class="btn btn-outline">
             <i class="fas fa-search"></i> Search Trains
         </a>
+    </div>
     </div>
 </div>
 {% endblock %}

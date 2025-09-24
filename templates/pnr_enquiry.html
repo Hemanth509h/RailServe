@@ -2,44 +2,53 @@
 
 {% block title %}PNR Enquiry - RailServe{% endblock %}
 
-{% block head %}
+{% block extra_css %}
 <style>
-/* PNR Enquiry Page Styling */
-.pnr-enquiry-container {
+/* Modern PNR Enquiry Page with Gradient Design */
+.pnr-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.content-wrapper {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 1rem;
 }
 
 .enquiry-header {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
     text-align: center;
-    margin-bottom: 30px;
-    padding: 40px 30px;
-    background: var(--bg-accent);
-    color: var(--text-inverse);
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
 }
 
 .enquiry-header h1 {
-    margin: 0 0 15px 0;
+    color: #2d3748;
     font-size: 2.5rem;
-    font-weight: 600;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
 }
 
 .enquiry-header p {
+    color: #718096;
+    font-size: 1.1rem;
     margin: 0;
-    opacity: 0.9;
-    font-size: 1.2rem;
 }
 
 .enquiry-form-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 15px;
-    padding: 40px;
-    margin-bottom: 30px;
-    box-shadow: var(--card-shadow);
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
 .pnr-form .form-group {
@@ -48,10 +57,13 @@
 
 .pnr-form label {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 0.75rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #2d3748;
     font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .pnr-form .input-group {
@@ -62,16 +74,23 @@
 
 .pnr-form input {
     flex: 1;
-    padding: 15px 20px;
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    padding: 1.25rem 1.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #2d3748;
     font-size: 1.2rem;
     letter-spacing: 2px;
     text-align: center;
     font-weight: 600;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.pnr-form input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
 }
 
 .pnr-form input:focus {
@@ -180,45 +199,54 @@
 }
 
 .info-item {
-    background: var(--bg-secondary);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    border-color: #667eea;
 }
 
 .info-item .label {
     display: block;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    margin-bottom: 5px;
+    font-size: 0.875rem;
+    color: #718096;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
 }
 
 .info-item .value {
     display: block;
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    font-weight: 600;
+    font-size: 1.25rem;
+    color: #2d3748;
+    font-weight: 700;
 }
 
 .pnr-highlight {
-    background: var(--accent-color) !important;
-    color: var(--text-inverse) !important;
-    padding: 8px 12px !important;
-    border-radius: 8px !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
     letter-spacing: 2px !important;
     font-family: 'Courier New', monospace !important;
     font-size: 1.2rem !important;
     font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
 }
 
 /* Journey Route */
 .journey-route {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 25px;
-    margin-top: 15px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
 .station-info {
@@ -232,17 +260,23 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 20px;
-    background: var(--bg-primary);
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #f8fafc;
     border-radius: 12px;
-    border: 2px solid var(--border-color);
+    border: 2px solid #e2e8f0;
     flex: 1;
     max-width: 200px;
+    transition: all 0.3s ease;
+}
+
+.station:hover {
+    border-color: #667eea;
+    background: white;
 }
 
 .station i {
-    color: var(--accent-color);
+    color: #667eea;
     font-size: 1.5rem;
 }
 
@@ -252,16 +286,16 @@
 
 .station-details strong {
     display: block;
-    color: var(--text-primary);
+    color: #2d3748;
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
 }
 
 .station-details small {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
+    color: #718096;
+    font-size: 0.875rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
 }

@@ -2,61 +2,111 @@
 
 {% block title %}File TDR - {{ booking.pnr }} - RailServe{% endblock %}
 
-{% block head %}
+{% block extra_css %}
 <style>
-/* TDR Filing Page Styles */
-.booking-container {
-    max-width: 900px;
-    margin: 2rem auto;
+/* Modern TDR Filing Page with Gradient Design */
+.tdr-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.content-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.tdr-header {
+    background: white;
+    border-radius: 20px;
     padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.tdr-header h1 {
+    color: #2d3748;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.tdr-header p {
+    color: #718096;
+    font-size: 1.1rem;
+    margin: 0;
 }
 
 .train-info-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 2rem;
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
     margin-bottom: 2rem;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
 .booking-form-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: var(--card-shadow);
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #2d3748;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="booking-container">
+<div class="tdr-container">
+    <div class="content-wrapper">
+        <div class="tdr-header">
+            <h1><i class="fas fa-receipt"></i> File TDR Request</h1>
+            <p>Submit a Ticket Deposit Receipt for refund processing</p>
+        </div>
+        
         <div class="train-info-card">
-            <h2><i class="fas fa-receipt"></i> File TDR (Ticket Deposit Receipt)</h2>
+            <h2><i class="fas fa-train"></i> Booking Details</h2>
             <div class="booking-summary">
                 <div class="detail-item">
                     <i class="fas fa-ticket-alt"></i>
