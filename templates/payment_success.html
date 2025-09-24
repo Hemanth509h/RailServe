@@ -525,7 +525,7 @@
                         <div class="comfort-rating">
                             <span class="rating-label">Comfort Rating:</span>
                             <div class="rating-stars">
-                                {% set rating = passenger.get_comfort_rating() %}
+                                {% set rating = passenger.comfort_rating %}
                                 {% for i in range(5) %}
                                     {% if i < rating %}
                                         <i class="fas fa-star"></i>
