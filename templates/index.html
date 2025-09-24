@@ -3,8 +3,213 @@
 {% block title %}RailServe - Find Your Train{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/search_form_fix.css') }}">
+<style>
+/* Fixed Search Form Styles - Better Looking Design */
+.search-form {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-form .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+#form-select {
+    display: flex;
+    align-items: end;
+    gap: 15px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#form-select2 {
+    display: flex;
+    align-items: end;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.search-form .form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+}
+
+.search-form label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.search-form select,
+.search-form input[type="date"] {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.search-form select:focus,
+.search-form input[type="date"]:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.swap-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.swap-btn button {
+    width: 48px;
+    height: 48px;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    background: white;
+    color: #6b7280;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.swap-btn button:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+    transform: rotate(180deg);
+}
+
+.search-form .btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-form .btn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .search-form {
+        padding: 20px;
+    }
+    
+    #form-select, #form-select2 {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+    }
+    
+    .search-form .form-group {
+        min-width: 250px;
+        width: 100%;
+    }
+    
+    .swap-btn button {
+        transform: rotate(90deg);
+    }
+    
+    .swap-btn button:hover {
+        transform: rotate(270deg);
+    }
+}
+
+/* Enhanced Universal Search Form */
+.search-filters {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.search-filters .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-filters label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.search-filters input,
+.search-filters select {
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.search-filters input:focus,
+.search-filters select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-btn {
+    padding: 10px 20px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .search-filters {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -205,6 +410,317 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/three-hero.js') }}"></script>
-<script src="{{ url_for('static', filename='js/train_search.js') }}"></script>
+<script>
+/**
+ * RailServe 3D Hero Animation
+ * Features a procedural train moving on rails with sky gradient background
+ */
+
+let scene, camera, renderer, train, rails;
+let animationId = null;
+let isAnimating = false;
+let canvas = null;
+
+// Animation settings
+const TRAIN_SPEED = 0.02;
+const RAIL_LENGTH = 20;
+const TRAIN_POSITION_RANGE = RAIL_LENGTH;
+
+function init3DHero() {
+    canvas = document.getElementById('hero3d');
+    if (!canvas) return false;
+
+    // Check WebGL support
+    if (!window.WebGLRenderingContext) {
+        console.log('WebGL not supported, falling back to regular hero');
+        return false;
+    }
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored3DPreference = localStorage.getItem('railserve-3d-enabled');
+    
+    if (prefersReducedMotion && stored3DPreference === null) {
+        // Default to disabled if user prefers reduced motion
+        localStorage.setItem('railserve-3d-enabled', 'false');
+        canvas.style.display = 'none';
+        return false;
+    }
+
+    if (stored3DPreference === 'false') {
+        canvas.style.display = 'none';
+        return false;
+    }
+
+    try {
+        // Initialize Three.js
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
+        renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+        
+        renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap for performance
+        
+        // Sky gradient background
+        scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+        
+        // Camera position
+        camera.position.set(0, 3, 8);
+        camera.lookAt(0, 0, 0);
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 5);
+        scene.add(directionalLight);
+        
+        // Create rails
+        createRails();
+        
+        // Create train
+        createTrain();
+        
+        // Start animation
+        animate();
+        isAnimating = true;
+        
+        return true;
+    } catch (error) {
+        console.error('3D initialization failed:', error);
+        canvas.style.display = 'none';
+        return false;
+    }
+}
+
+function createRails() {
+    const railGroup = new THREE.Group();
+    
+    // Rail geometry
+    const railGeometry = new THREE.BoxGeometry(0.1, 0.1, RAIL_LENGTH);
+    const railMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+    
+    // Left rail
+    const leftRail = new THREE.Mesh(railGeometry, railMaterial);
+    leftRail.position.set(-0.7, -0.5, 0);
+    railGroup.add(leftRail);
+    
+    // Right rail
+    const rightRail = new THREE.Mesh(railGeometry, railMaterial);
+    rightRail.position.set(0.7, -0.5, 0);
+    railGroup.add(rightRail);
+    
+    // Railway ties
+    const tieGeometry = new THREE.BoxGeometry(2, 0.1, 0.2);
+    const tieMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+    
+    for (let i = -RAIL_LENGTH/2; i < RAIL_LENGTH/2; i += 1) {
+        const tie = new THREE.Mesh(tieGeometry, tieMaterial);
+        tie.position.set(0, -0.55, i);
+        railGroup.add(tie);
+    }
+    
+    rails = railGroup;
+    scene.add(rails);
+}
+
+function createTrain() {
+    const trainGroup = new THREE.Group();
+    
+    // Train body
+    const bodyGeometry = new THREE.BoxGeometry(1.2, 0.8, 2.5);
+    const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x1E90FF });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.set(0, 0.4, 0);
+    trainGroup.add(body);
+    
+    // Train roof
+    const roofGeometry = new THREE.BoxGeometry(1.3, 0.1, 2.6);
+    const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x4169E1 });
+    const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+    roof.position.set(0, 0.85, 0);
+    trainGroup.add(roof);
+    
+    // Front of train (locomotive front)
+    const frontGeometry = new THREE.BoxGeometry(0.8, 0.6, 0.5);
+    const frontMaterial = new THREE.MeshLambertMaterial({ color: 0xFF4500 });
+    const front = new THREE.Mesh(frontGeometry, frontMaterial);
+    front.position.set(0, 0.3, 1.5);
+    trainGroup.add(front);
+    
+    // Wheels
+    const wheelGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1);
+    const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 });
+    
+    const wheelPositions = [
+        [-0.5, -0.1, -0.8], [0.5, -0.1, -0.8],
+        [-0.5, -0.1, 0.8], [0.5, -0.1, 0.8]
+    ];
+    
+    wheelPositions.forEach(pos => {
+        const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+        wheel.position.set(pos[0], pos[1], pos[2]);
+        wheel.rotation.z = Math.PI / 2;
+        trainGroup.add(wheel);
+    });
+    
+    // Initial position
+    trainGroup.position.z = -TRAIN_POSITION_RANGE / 2;
+    train = trainGroup;
+    scene.add(train);
+}
+
+function animate() {
+    if (!isAnimating) return;
+    
+    animationId = requestAnimationFrame(animate);
+    
+    // Move train along the rails
+    train.position.z += TRAIN_SPEED;
+    
+    // Reset position when train goes too far
+    if (train.position.z > TRAIN_POSITION_RANGE / 2) {
+        train.position.z = -TRAIN_POSITION_RANGE / 2;
+    }
+    
+    // Slight camera sway for dynamic effect
+    camera.position.x = Math.sin(Date.now() * 0.0005) * 0.3;
+    
+    renderer.render(scene, camera);
+}
+
+function stop3DHero() {
+    isAnimating = false;
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+}
+
+function start3DHero() {
+    if (canvas && scene && !isAnimating) {
+        isAnimating = true;
+        animate();
+    }
+}
+
+function toggle3DHero() {
+    const canvas = document.getElementById('hero3d');
+    const toggle = document.getElementById('toggle3d-status');
+    
+    if (!canvas || !toggle) return;
+    
+    const isCurrentlyEnabled = canvas.style.display !== 'none';
+    
+    if (isCurrentlyEnabled) {
+        // Disable 3D
+        canvas.style.display = 'none';
+        toggle.textContent = 'Off';
+        localStorage.setItem('railserve-3d-enabled', 'false');
+        stop3DHero();
+    } else {
+        // Enable 3D
+        canvas.style.display = 'block';
+        toggle.textContent = 'On';
+        localStorage.setItem('railserve-3d-enabled', 'true');
+        
+        // Initialize if not already done
+        if (!scene) {
+            init3DHero();
+        } else {
+            start3DHero();
+        }
+    }
+}
+
+// Handle window resize
+function onWindowResize() {
+    if (!camera || !renderer || !canvas) return;
+    
+    camera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+}
+
+// Handle page visibility changes to pause/resume animation
+function handleVisibilityChange() {
+    if (document.hidden) {
+        stop3DHero();
+    } else {
+        if (canvas && canvas.style.display !== 'none' && scene) {
+            start3DHero();
+        }
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up the toggle button
+    const toggle3DButton = document.getElementById('toggle3d');
+    if (toggle3DButton) {
+        toggle3DButton.addEventListener('click', toggle3DHero);
+    }
+    
+    // Initialize 3D scene
+    const initialized = init3DHero();
+    
+    // Update toggle status
+    const toggle3DStatus = document.getElementById('toggle3d-status');
+    if (toggle3DStatus) {
+        const stored3DPreference = localStorage.getItem('railserve-3d-enabled');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+        if (stored3DPreference === 'false' || (prefersReducedMotion && stored3DPreference === null)) {
+            toggle3DStatus.textContent = 'Off';
+        } else {
+            toggle3DStatus.textContent = initialized ? 'On' : 'Off';
+        }
+    }
+    
+    // Set up event listeners
+    window.addEventListener('resize', onWindowResize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Respect reduced motion preference changes
+    const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    motionMediaQuery.addEventListener('change', function() {
+        if (motionMediaQuery.matches) {
+            // User enabled reduced motion, turn off 3D
+            const canvas = document.getElementById('hero3d');
+            const toggle = document.getElementById('toggle3d-status');
+            if (canvas && toggle) {
+                canvas.style.display = 'none';
+                toggle.textContent = 'Off';
+                localStorage.setItem('railserve-3d-enabled', 'false');
+                stop3DHero();
+            }
+        }
+    });
+});
+
+// Train search and station management functions
+
+function swapStations() {
+    const fromSelect = document.getElementById('from_station');
+    const toSelect = document.getElementById('to_station');
+
+    if (fromSelect && toSelect) {
+        const fromValue = fromSelect.value;
+        const toValue = toSelect.value;
+
+        fromSelect.value = toValue;
+        toSelect.value = fromValue;
+    }
+}
+
+// Initialize date restrictions and form functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today for journey date
+    const journeyDate = document.getElementById('journey_date');
+    if (journeyDate) {
+        journeyDate.min = new Date().toISOString().split('T')[0];
+    }
+});
+</script>
 {% endblock %}
