@@ -71,41 +71,55 @@ def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking
     
     coach_multiplier = coach_multipliers.get(coach_class, 1.0)
     
-    # Calculate base fare based on booking type and coach class
-    if booking_type == 'tatkal' and train.tatkal_fare_per_km:
-        base_fare = distance * train.tatkal_fare_per_km * passengers * coach_multiplier
-        # Tatkal surcharge based on coach class
-        ac_classes = ['AC1', 'AC2', 'AC3', 'CC']
-        max_surcharge = 400 if coach_class in ac_classes else 200
-        tatkal_surcharge = min(base_fare * 0.3, max_surcharge)
-        base_fare += tatkal_surcharge
-    else:
-        base_fare = distance * train.fare_per_km * passengers * coach_multiplier
+    # LOGIC FIX: Calculate base fare correctly with proper Tatkal surcharge
+    # Base fare per passenger without any surcharges
+    base_fare_per_passenger = distance * train.fare_per_km
     
-    # Apply age-based concessions if passenger details provided
-    if passenger_details:
+    if booking_type == 'tatkal' and train.tatkal_fare_per_km:
+        # Use Tatkal fare rate if available
+        base_fare_per_passenger = distance * train.tatkal_fare_per_km
+    
+    # Apply coach class multiplier to base fare
+    base_fare_per_passenger *= coach_multiplier
+    
+    # Apply Tatkal surcharge correctly (before passenger count multiplication)
+    if booking_type == 'tatkal':
+        ac_classes = ['AC1', 'AC2', 'AC3', 'CC']
+        max_surcharge_per_passenger = 400 if coach_class in ac_classes else 200
+        tatkal_surcharge_per_passenger = min(base_fare_per_passenger * 0.3, max_surcharge_per_passenger)
+        base_fare_per_passenger += tatkal_surcharge_per_passenger
+    
+    # LOGIC FIX: Apply age-based concessions correctly per passenger
+    total_fare = 0
+    if passenger_details and len(passenger_details) == passengers:
         for passenger in passenger_details:
             age = passenger.get('age', 0)
             gender = passenger.get('gender', 'Male')
+            passenger_fare = base_fare_per_passenger
             
-            # Senior citizen concession
+            # Senior citizen concession (apply per passenger)
             if (gender == 'Male' and age >= 60) or (gender == 'Female' and age >= 58):
                 # 40% discount for male 60+, 50% discount for female 58+
                 discount = 0.5 if gender == 'Female' else 0.4
-                base_fare = base_fare * (1 - discount)
+                passenger_fare = passenger_fare * (1 - discount)
             
-            # Child fare rules
+            # Child fare rules (apply per passenger)
             elif age < 5:
                 # Free for children under 5
-                base_fare = 0
+                passenger_fare = 0
             elif age >= 5 and age <= 12:
                 # 50% discount for children 5-12 years
-                base_fare = base_fare * 0.5
+                passenger_fare = passenger_fare * 0.5
+            
+            total_fare += passenger_fare
+    else:
+        # No passenger details provided, use standard fare for all passengers
+        total_fare = base_fare_per_passenger * passengers
     
-    # Add GST and service charges (18%)
-    total_fare = base_fare * 1.18
+    # LOGIC FIX: Add GST and service charges (18%) on final fare after all discounts
+    final_fare_with_gst = total_fare * 1.18
     
-    return round(total_fare, 2)
+    return round(final_fare_with_gst, 2)
 
 def calculate_cancellation_charges(booking, cancellation_time=None):
     """Calculate cancellation charges based on time before departure"""

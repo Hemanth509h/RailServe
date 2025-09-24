@@ -65,8 +65,14 @@ def register():
             flash('Passwords do not match', 'error')
             return render_template('register.html')
         
-        if password and len(password) < 6:
-            flash('Password must be at least 6 characters', 'error')
+        if password and len(password) < 8:
+            flash('Password must be at least 8 characters with letters and numbers', 'error')
+            return render_template('register.html')
+        
+        # Enhanced password policy
+        import re
+        if password and not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$', password):
+            flash('Password must contain at least 8 characters including letters and numbers', 'error')
             return render_template('register.html')
         
         # Check if user already exists
@@ -164,16 +170,29 @@ def reset_password(token):
             flash('Passwords do not match', 'error')
             return render_template('reset_password.html', token=token)
         
-        if not password or len(password) < 6:
-            flash('Password must be at least 6 characters', 'error')
+        if not password or len(password) < 8:
+            flash('Password must be at least 8 characters with letters and numbers', 'error')
             return render_template('reset_password.html', token=token)
         
-        user = User.query.filter_by(email=email).first()
+        # Enhanced password policy
+        import re
+        if not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$', password):
+            flash('Password must contain at least 8 characters including letters and numbers', 'error')
+            return render_template('reset_password.html', token=token)
         
-        if user and user.active and password:
-            # In production, verify the token here
-            # For demo purposes, we'll allow password reset
+        user = User.query.filter_by(email=email, reset_token=token).first()
+        
+        # SECURITY FIX: Validate token expiry and authenticity
+        if user and user.active and user.reset_token == token and user.reset_token_expiry:
+            from datetime import datetime
+            if datetime.utcnow() > user.reset_token_expiry:
+                flash('Password reset link has expired. Please request a new one.', 'error')
+                return render_template('reset_password.html', token=token)
+            
+            # Reset password and clear token
             user.password_hash = generate_password_hash(password)
+            user.reset_token = None
+            user.reset_token_expiry = None
             db.session.commit()
             
             flash('Your password has been reset successfully. Please login with your new password.', 'success')

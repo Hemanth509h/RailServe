@@ -436,19 +436,31 @@ def export_bookings():
     # Write header
     writer.writerow(['PNR', 'User', 'Train', 'From', 'To', 'Date', 'Passengers', 'Amount', 'Status'])
     
-    # Write data
+    # Write data with CSV injection protection
+    def sanitize_csv_field(field):
+        """Sanitize field to prevent CSV injection attacks"""
+        if field is None:
+            return ''
+        field_str = str(field)
+        # Remove potentially dangerous characters that could be interpreted as formulas
+        dangerous_chars = ['=', '+', '-', '@', '\t', '\r']
+        for char in dangerous_chars:
+            if field_str.startswith(char):
+                field_str = "'" + field_str  # Prefix with quote to prevent formula execution
+        return field_str
+    
     bookings = Booking.query.all()
     for booking in bookings:
         writer.writerow([
-            booking.pnr,
-            booking.user.username,
-            f"{booking.train.number} - {booking.train.name}",
-            booking.from_station.name,
-            booking.to_station.name,
-            booking.journey_date.strftime('%Y-%m-%d'),
-            booking.passengers,
-            booking.total_amount,
-            booking.status
+            sanitize_csv_field(booking.pnr),
+            sanitize_csv_field(booking.user.username),
+            sanitize_csv_field(f"{booking.train.number} - {booking.train.name}"),
+            sanitize_csv_field(booking.from_station.name),
+            sanitize_csv_field(booking.to_station.name),
+            sanitize_csv_field(booking.journey_date.strftime('%Y-%m-%d')),
+            sanitize_csv_field(booking.passengers),
+            sanitize_csv_field(booking.total_amount),
+            sanitize_csv_field(booking.status)
         ])
     
     response = make_response(output.getvalue())
@@ -1633,7 +1645,7 @@ def chart_preparation():
         charts_tomorrow_query = charts_tomorrow_query.filter(ChartPreparation.status == status_filter)
         # For trains without chart preparation records, only show if status_filter is 'pending'
         if status_filter != 'pending':
-            trains_tomorrow_no_charts = trains_tomorrow_no_charts.filter(False)  # Empty result
+            trains_tomorrow_no_charts = trains_tomorrow_no_charts.filter(Train.id == 0)  # Empty result
     
     charts_today = charts_today_query.all()
     charts_tomorrow_existing = charts_tomorrow_query.all()
