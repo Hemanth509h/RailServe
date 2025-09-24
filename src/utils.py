@@ -269,8 +269,11 @@ def check_seat_availability_detailed(train_id, from_station_id, to_station_id, j
         Booking.coach_class == coach_class
     ).scalar() or 0
     
+    # LOGIC FIX: Calculate availability correctly
     available_seats = max(0, total_quota_seats - confirmed_passengers)
-    rac_seats = max(0, min(10, total_quota_seats - confirmed_passengers - rac_passengers))  # Max 10 RAC
+    # RAC seats should be calculated independently, not dependent on confirmed seats
+    max_rac_for_quota = min(10, total_quota_seats // 10)  # 10% of quota or max 10
+    rac_seats = max(0, max_rac_for_quota - rac_passengers)
     
     result = {
         'available': available_seats,

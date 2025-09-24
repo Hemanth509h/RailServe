@@ -74,8 +74,9 @@ class SeatAllocator:
                 
                 # Look for passengers who already have seat assignments
                 for other_booking in group_bookings:
-                    # FIX: Use passengers_details instead of passengers
-                    for other_passenger in other_booking.passengers_details:
+                    # LOGIC FIX: Use passengers relationship instead of passengers_details
+                    other_passengers = Passenger.query.filter_by(booking_id=other_booking.id).all()
+                    for other_passenger in other_passengers:
                         if other_passenger.seat_number:
                             # Extract coach from existing seat number
                             parts = other_passenger.seat_number.split('-')

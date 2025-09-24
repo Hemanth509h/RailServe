@@ -27,11 +27,11 @@ class WaitlistManager:
         return self._queues[queue_key]
     
     def _load_waitlist_from_db(self, train_id, journey_date, queue_key):
-        """Load existing waitlist from database"""
+        """LOGIC FIX: Load existing waitlist from database with proper FIFO ordering"""
         waitlist_entries = Waitlist.query.filter_by(
             train_id=train_id,
             journey_date=journey_date
-        ).order_by(Waitlist.position).all()
+        ).order_by(Waitlist.created_at).all()  # Use created_at for true FIFO
         
         for entry in waitlist_entries:
             self._queues[queue_key].append({
