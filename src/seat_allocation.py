@@ -30,100 +30,135 @@ class SeatAllocator:
     def allocate_seats(self, booking_id):
         """
         Allocate seat numbers for all passengers in a confirmed booking
-        Enhanced with group booking coordination
+        Enhanced with group booking coordination and robust error handling
         """
         from .app import db
         from .models import GroupBooking
         
-        booking = Booking.query.get(booking_id)
-        if not booking or booking.status != 'confirmed':
-            return False
-        
-        passengers = Passenger.query.filter_by(booking_id=booking_id).all()
-        if not passengers:
-            return False
-        
-        coach_class = booking.coach_class
-        coach_prefixes = self.coach_prefixes.get(coach_class, ['X'])
-        available_berths = self.berth_types.get(coach_class, ['Lower'])
-        
-        # Check if this booking is part of a group
-        is_group_booking = booking.group_booking_id is not None
-        group_coach = None
-        
-        if is_group_booking:
-            # Try to find existing coach assignments from other bookings in the same group
-            group_bookings = Booking.query.filter_by(
-                group_booking_id=booking.group_booking_id,
-                train_id=booking.train_id,
-                journey_date=booking.journey_date,
-                coach_class=booking.coach_class,
-                status='confirmed'
-            ).filter(Booking.id != booking_id).all()
+        try:
+            booking = Booking.query.get(booking_id)
+            if not booking:
+                print(f"Error: Booking {booking_id} not found")
+                return False
             
-            # Look for passengers who already have seat assignments
-            for other_booking in group_bookings:
-                for other_passenger in other_booking.passengers:
-                    if other_passenger.seat_number:
-                        # Extract coach from existing seat number
-                        parts = other_passenger.seat_number.split('-')
-                        if len(parts) == 2:
-                            group_coach = parts[0]
-                            break
-                if group_coach:
-                    break
-        
-        # If no group coach found, select one for coordination
-        if is_group_booking and not group_coach:
-            coach_prefix = random.choice(coach_prefixes)
-            coach_num = random.randint(1, 8)
-            group_coach = f"{coach_prefix}{coach_num}"
-        
-        # Generate seat assignments
-        assigned_seats = []
-        existing_seats = self._get_existing_seats(booking.train_id, booking.journey_date, coach_class)
-        
-        for i, passenger in enumerate(passengers):
-            # For group bookings, try to use the same coach
-            if is_group_booking and group_coach:
-                coach_part = group_coach
-            else:
-                # Non-group booking - use random coach
+            # Allow seat allocation for both confirmed and waitlisted bookings
+            if booking.status not in ['confirmed', 'waitlisted']:
+                print(f"Error: Booking {booking_id} has invalid status: {booking.status}")
+                return False
+            
+            passengers = Passenger.query.filter_by(booking_id=booking_id).all()
+            if not passengers:
+                print(f"Error: No passengers found for booking {booking_id}")
+                return False
+            
+            # Check if seats are already allocated
+            allocated_passengers = [p for p in passengers if p.seat_number is not None]
+            if len(allocated_passengers) == len(passengers):
+                print(f"Info: Seats already allocated for booking {booking_id}")
+                return True  # Already allocated
+            
+            coach_class = booking.coach_class
+            coach_prefixes = self.coach_prefixes.get(coach_class, ['X'])
+            available_berths = self.berth_types.get(coach_class, ['Lower'])
+            
+            # Check if this booking is part of a group
+            is_group_booking = booking.group_booking_id is not None
+            group_coach = None
+            
+            if is_group_booking:
+                # Try to find existing coach assignments from other bookings in the same group
+                group_bookings = Booking.query.filter_by(
+                    group_booking_id=booking.group_booking_id,
+                    train_id=booking.train_id,
+                    journey_date=booking.journey_date,
+                    coach_class=booking.coach_class,
+                    status='confirmed'
+                ).filter(Booking.id != booking_id).all()
+                
+                # Look for passengers who already have seat assignments
+                for other_booking in group_bookings:
+                    for other_passenger in other_booking.passengers:
+                        if other_passenger.seat_number:
+                            # Extract coach from existing seat number
+                            parts = other_passenger.seat_number.split('-')
+                            if len(parts) == 2:
+                                group_coach = parts[0]
+                                break
+                    if group_coach:
+                        break
+            
+            # If no group coach found, select one for coordination
+            if is_group_booking and not group_coach:
                 coach_prefix = random.choice(coach_prefixes)
                 coach_num = random.randint(1, 8)
-                coach_part = f"{coach_prefix}{coach_num}"
+                group_coach = f"{coach_prefix}{coach_num}"
             
-            # Find available seat in the selected coach
-            seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)
+            # Generate seat assignments
+            assigned_seats = []
+            existing_seats = self._get_existing_seats(booking.train_id, booking.journey_date, coach_class)
             
-            # If no seat available in preferred coach (group), try other coaches
-            if not seat_number:
-                for attempt in range(5):  # Try up to 5 different coaches
+            for i, passenger in enumerate(passengers):
+                # Skip if seat already allocated
+                if passenger.seat_number:
+                    assigned_seats.append(passenger.seat_number)
+                    continue
+                
+                # For group bookings, try to use the same coach
+                if is_group_booking and group_coach:
+                    coach_part = group_coach
+                else:
+                    # Non-group booking - use random coach
                     coach_prefix = random.choice(coach_prefixes)
                     coach_num = random.randint(1, 8)
                     coach_part = f"{coach_prefix}{coach_num}"
-                    seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)
-                    if seat_number:
-                        break
+                
+                # Find available seat in the selected coach
+                seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)
+                
+                # If no seat available in preferred coach (group), try other coaches
+                if not seat_number:
+                    for attempt in range(10):  # Try up to 10 different coaches
+                        coach_prefix = random.choice(coach_prefixes)
+                        coach_num = random.randint(1, 12)  # Increase coach range
+                        coach_part = f"{coach_prefix}{coach_num}"
+                        seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)
+                        if seat_number:
+                            break
+                
+                # Fallback to completely random if still no seat found
+                if not seat_number:
+                    seat_number = self._generate_fallback_seat(coach_prefixes, assigned_seats, existing_seats)
+                
+                # Final safety check
+                if not seat_number:
+                    print(f"Warning: Could not allocate seat for passenger {passenger.id} in booking {booking_id}")
+                    # Generate a guaranteed unique seat
+                    import uuid
+                    seat_number = f"TEMP-{str(uuid.uuid4())[:8]}"
+                
+                # Assign berth type based on preference or randomly
+                if passenger.seat_preference and passenger.seat_preference in available_berths:
+                    berth_type = passenger.seat_preference
+                else:
+                    berth_type = random.choice(available_berths)
+                
+                assigned_seats.append(seat_number)
+                
+                # Update passenger record
+                passenger.seat_number = seat_number
+                passenger.berth_type = berth_type
+                
+                print(f"Allocated seat {seat_number} to passenger {passenger.name}")
             
-            # Fallback to completely random if still no seat found
-            if not seat_number:
-                seat_number = self._generate_fallback_seat(coach_prefixes, assigned_seats, existing_seats)
+            # Let the caller handle commit/rollback for proper transaction atomicity
+            print(f"Successfully allocated seats for booking {booking_id}")
+            return True
             
-            # Assign berth type based on preference or randomly
-            if passenger.seat_preference and passenger.seat_preference in available_berths:
-                berth_type = passenger.seat_preference
-            else:
-                berth_type = random.choice(available_berths)
-            
-            assigned_seats.append(seat_number)
-            
-            # Update passenger record
-            passenger.seat_number = seat_number
-            passenger.berth_type = berth_type
-        
-        # Let the caller handle commit/rollback for proper transaction atomicity
-        return True
+        except Exception as e:
+            print(f"Error in seat allocation for booking {booking_id}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return False
     
     def _get_existing_seats(self, train_id, journey_date, coach_class):
         """Get all existing seat allocations for the train/date/class"""
