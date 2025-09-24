@@ -458,6 +458,60 @@
     }
 }
 
+/* Password Strength Indicator */
+.password-strength-indicator {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.strength-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.strength-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 4px;
+}
+
+.strength-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Edit Profile Form Styles */
+.edit-profile-form,
+.change-password-form {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
 /* Dark theme support */
 [data-theme="dark"] .loyalty-program-card {
     background: linear-gradient(135deg, var(--accent-color) 0%, var(--info-color) 100%);
@@ -488,6 +542,12 @@
             </button>
             <button class="tab-button" onclick="showTab('payments')">
                 <i class="fas fa-credit-card"></i> Payment History
+            </button>
+            <button class="tab-button" onclick="showTab('edit-profile')">
+                <i class="fas fa-user-edit"></i> Edit Profile
+            </button>
+            <button class="tab-button" onclick="showTab('change-password')">
+                <i class="fas fa-key"></i> Change Password
             </button>
         </div>
         
@@ -635,6 +695,132 @@
                 </div>
             {% endif %}
         </div>
+        
+        <!-- Edit Profile Tab -->
+        <div id="edit-profile" class="tab-content">
+            <h3>Edit Profile Information</h3>
+            
+            <form method="POST" action="{{ url_for('auth.edit_profile') }}" class="edit-profile-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="username">
+                            <i class="fas fa-user"></i>
+                            Username
+                        </label>
+                        <input type="text" id="username" name="username" 
+                               value="{{ current_user.username }}" 
+                               required maxlength="64"
+                               placeholder="Enter your username">
+                        <small class="form-help">Choose a unique username (3-64 characters)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="email" name="email" 
+                               value="{{ current_user.email }}" 
+                               required maxlength="120"
+                               placeholder="Enter your email address">
+                        <small class="form-help">We'll send booking confirmations to this email</small>
+                    </div>
+                    
+                    {% if current_user.phone is defined %}
+                    <div class="form-group">
+                        <label for="phone">
+                            <i class="fas fa-phone"></i>
+                            Phone Number
+                        </label>
+                        <input type="tel" id="phone" name="phone" 
+                               value="{{ current_user.phone or '' }}" 
+                               maxlength="15"
+                               placeholder="Enter your phone number">
+                        <small class="form-help">Optional: For booking notifications and updates</small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetProfileForm()">
+                        <i class="fas fa-undo"></i>
+                        Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Change Password Tab -->
+        <div id="change-password" class="tab-content">
+            <h3>Change Password</h3>
+            
+            <div class="security-notice">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <strong>Security Tip:</strong> Choose a strong password with at least 8 characters, including letters and numbers. 
+                    Don't reuse passwords from other accounts.
+                </div>
+            </div>
+            
+            <form method="POST" action="{{ url_for('auth.change_password') }}" class="change-password-form">
+                <div class="password-form-grid">
+                    <div class="form-group">
+                        <label for="current_password">
+                            <i class="fas fa-lock"></i>
+                            Current Password
+                        </label>
+                        <input type="password" id="current_password" name="current_password" 
+                               required minlength="8"
+                               placeholder="Enter your current password">
+                        <small class="form-help">Enter your existing password to verify your identity</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_password">
+                            <i class="fas fa-key"></i>
+                            New Password
+                        </label>
+                        <input type="password" id="new_password" name="new_password" 
+                               required minlength="8"
+                               placeholder="Enter your new password">
+                        <small class="form-help">Minimum 8 characters with letters and numbers</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">
+                            <i class="fas fa-check-circle"></i>
+                            Confirm New Password
+                        </label>
+                        <input type="password" id="confirm_password" name="confirm_password" 
+                               required minlength="8"
+                               placeholder="Confirm your new password">
+                        <small class="form-help">Re-enter your new password to confirm</small>
+                    </div>
+                </div>
+                
+                <div class="password-strength-indicator" id="password-strength" style="display: none;">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strength-fill"></div>
+                    </div>
+                    <span class="strength-text" id="strength-text">Password strength</span>
+                </div>
+                
+                <div class="profile-actions">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-key"></i>
+                        Change Password
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetPasswordForm()">
+                        <i class="fas fa-undo"></i>
+                        Reset
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -656,5 +842,155 @@
         // Add active class to clicked button
         event.target.classList.add('active');
     }
+    
+    function resetProfileForm() {
+        // Reset the edit profile form to original values
+        document.getElementById('username').value = "{{ current_user.username }}";
+        document.getElementById('email').value = "{{ current_user.email }}";
+        {% if current_user.phone is defined %}
+        document.getElementById('phone').value = "{{ current_user.phone or '' }}";
+        {% endif %}
+    }
+    
+    function resetPasswordForm() {
+        // Clear all password fields
+        document.getElementById('current_password').value = '';
+        document.getElementById('new_password').value = '';
+        document.getElementById('confirm_password').value = '';
+        document.getElementById('password-strength').style.display = 'none';
+    }
+    
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        let feedback = '';
+        
+        if (password.length >= 8) strength += 1;
+        if (/[A-Z]/.test(password)) strength += 1;
+        if (/[a-z]/.test(password)) strength += 1;
+        if (/[0-9]/.test(password)) strength += 1;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+        
+        const strengthIndicator = document.getElementById('password-strength');
+        const strengthFill = document.getElementById('strength-fill');
+        const strengthText = document.getElementById('strength-text');
+        
+        if (password.length === 0) {
+            strengthIndicator.style.display = 'none';
+            return;
+        }
+        
+        strengthIndicator.style.display = 'block';
+        
+        switch(strength) {
+            case 0:
+            case 1:
+                strengthFill.style.width = '20%';
+                strengthFill.style.backgroundColor = '#ef4444';
+                feedback = 'Very Weak';
+                break;
+            case 2:
+                strengthFill.style.width = '40%';
+                strengthFill.style.backgroundColor = '#f97316';
+                feedback = 'Weak';
+                break;
+            case 3:
+                strengthFill.style.width = '60%';
+                strengthFill.style.backgroundColor = '#eab308';
+                feedback = 'Fair';
+                break;
+            case 4:
+                strengthFill.style.width = '80%';
+                strengthFill.style.backgroundColor = '#22c55e';
+                feedback = 'Good';
+                break;
+            case 5:
+                strengthFill.style.width = '100%';
+                strengthFill.style.backgroundColor = '#16a34a';
+                feedback = 'Very Strong';
+                break;
+        }
+        
+        strengthText.textContent = feedback;
+    }
+    
+    // Password confirmation checker
+    function checkPasswordConfirmation() {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const confirmField = document.getElementById('confirm_password');
+        
+        if (confirmPassword === '') {
+            confirmField.style.borderColor = '';
+            return;
+        }
+        
+        if (newPassword === confirmPassword) {
+            confirmField.style.borderColor = '#22c55e';
+        } else {
+            confirmField.style.borderColor = '#ef4444';
+        }
+    }
+    
+    // Initialize event listeners when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password strength checking
+        const newPasswordField = document.getElementById('new_password');
+        if (newPasswordField) {
+            newPasswordField.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+            });
+        }
+        
+        // Password confirmation checking
+        const confirmPasswordField = document.getElementById('confirm_password');
+        if (confirmPasswordField) {
+            confirmPasswordField.addEventListener('input', checkPasswordConfirmation);
+        }
+        
+        // Form validation
+        const changePasswordForm = document.querySelector('.change-password-form');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function(e) {
+                const newPassword = document.getElementById('new_password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+                
+                if (newPassword !== confirmPassword) {
+                    e.preventDefault();
+                    alert('New passwords do not match. Please check and try again.');
+                    return false;
+                }
+                
+                if (newPassword.length < 8) {
+                    e.preventDefault();
+                    alert('Password must be at least 8 characters long.');
+                    return false;
+                }
+            });
+        }
+        
+        // Profile form validation
+        const editProfileForm = document.querySelector('.edit-profile-form');
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', function(e) {
+                const username = document.getElementById('username').value.trim();
+                const email = document.getElementById('email').value.trim();
+                
+                if (username.length < 3) {
+                    e.preventDefault();
+                    alert('Username must be at least 3 characters long.');
+                    return false;
+                }
+                
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    alert('Please enter a valid email address.');
+                    return false;
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

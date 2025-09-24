@@ -209,3 +209,96 @@ def profile():
     bookings = current_user.bookings
     payments = current_user.payments
     return render_template('profile.html', bookings=bookings, payments=payments)
+
+@auth_bp.route('/edit_profile', methods=['POST'])
+@login_required
+def edit_profile():
+    """Update user profile information"""
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+    phone = request.form.get('phone', '').strip()
+    
+    # Validate required fields
+    if not username or not email:
+        flash('Username and email are required', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Check for duplicate username (excluding current user)
+    existing_user = User.query.filter(User.username == username, User.id != current_user.id).first()
+    if existing_user:
+        flash('Username already exists. Please choose a different one.', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Check for duplicate email (excluding current user)
+    existing_email = User.query.filter(User.email == email, User.id != current_user.id).first()
+    if existing_email:
+        flash('Email already exists. Please use a different email address.', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Validate email format
+    import re
+    if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+        flash('Please enter a valid email address', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Update user information
+    current_user.username = username
+    current_user.email = email
+    
+    # Add phone number if User model has phone field (optional)
+    if hasattr(current_user, 'phone'):
+        current_user.phone = phone
+    
+    try:
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while updating your profile. Please try again.', 'error')
+    
+    return redirect(url_for('auth.profile'))
+
+@auth_bp.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    """Change user password"""
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    
+    if not all([current_password, new_password, confirm_password]):
+        flash('All password fields are required', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Verify current password
+    if not check_password_hash(current_user.password_hash, current_password):
+        flash('Current password is incorrect', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Check if new passwords match
+    if new_password != confirm_password:
+        flash('New passwords do not match', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Enhanced password policy
+    import re
+    if not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$', new_password):
+        flash('Password must contain at least 8 characters including letters and numbers', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Don't allow same password
+    if check_password_hash(current_user.password_hash, new_password):
+        flash('New password must be different from current password', 'error')
+        return redirect(url_for('auth.profile'))
+    
+    # Update password
+    current_user.password_hash = generate_password_hash(new_password)
+    
+    try:
+        db.session.commit()
+        flash('Password changed successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while changing your password. Please try again.', 'error')
+    
+    return redirect(url_for('auth.profile'))

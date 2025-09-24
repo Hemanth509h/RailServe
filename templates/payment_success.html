@@ -427,6 +427,7 @@
                 
                 <div class="train-header">
                     <h4 class="train-name">{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                    <span class="coach-class">{{ booking.coach_class }} Class</span>
                 </div>
                 
                 <div class="route-visual">
@@ -452,8 +453,94 @@
                         <i class="fas fa-users meta-icon"></i>
                         <span>Passengers: {{ booking.passengers }}</span>
                     </div>
+                    {% if booking.berth_preference and booking.berth_preference != 'No Preference' %}
+                    <div class="meta-item">
+                        <i class="fas fa-bed meta-icon"></i>
+                        <span>Berth Preference: {{ booking.berth_preference }}</span>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
+            
+            <!-- Passenger Seat Details Section -->
+            {% if booking.passengers_details %}
+            <div class="passenger-details-section">
+                <h3 class="section-title">
+                    <i class="fas fa-chair section-icon"></i>
+                    Seat Allocation Details
+                </h3>
+                
+                <div class="passengers-grid">
+                    {% for passenger in booking.passengers_details %}
+                    <div class="passenger-seat-card">
+                        <div class="passenger-header">
+                            <h4 class="passenger-name">
+                                <i class="fas fa-user"></i>
+                                {{ passenger.name }}
+                            </h4>
+                            <span class="passenger-age">{{ passenger.age }} yrs</span>
+                        </div>
+                        
+                        <div class="passenger-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Gender:</span>
+                                <span class="detail-value">{{ passenger.gender }}</span>
+                            </div>
+                            
+                            {% if passenger.seat_number and passenger.berth_type %}
+                            <div class="detail-row seat-info">
+                                <span class="detail-label">Seat Allocated:</span>
+                                <span class="detail-value seat-number">{{ passenger.seat_number }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Berth Type:</span>
+                                <span class="detail-value berth-type">{{ passenger.berth_type }}</span>
+                            </div>
+                            <div class="seat-explanation">
+                                <i class="fas fa-info-circle"></i>
+                                {{ passenger.get_seat_explanation() }}
+                            </div>
+                            {% else %}
+                            <div class="detail-row pending-allocation">
+                                <span class="detail-label">Seat Status:</span>
+                                <span class="detail-value">
+                                    {% if booking.status == 'waitlisted' %}
+                                        <i class="fas fa-clock"></i> Will be allocated upon confirmation
+                                    {% else %}
+                                        <i class="fas fa-hourglass-half"></i> Will be allocated after chart preparation
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if passenger.seat_preference and passenger.seat_preference != 'No Preference' %}
+                            <div class="detail-row">
+                                <span class="detail-label">Preference:</span>
+                                <span class="detail-value">{{ passenger.seat_preference }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if passenger.seat_number and passenger.berth_type %}
+                        <div class="comfort-rating">
+                            <span class="rating-label">Comfort Rating:</span>
+                            <div class="rating-stars">
+                                {% set rating = passenger.get_comfort_rating() %}
+                                {% for i in range(5) %}
+                                    {% if i < rating %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
             
             
             <div class="next-steps">
@@ -554,19 +641,188 @@
     gap: 15px;
 }
 
-.passenger-card {
+/* Enhanced Passenger Seat Details */
+.passenger-details-section {
+    margin: 2rem 0;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 2px solid #e2e8f0;
+}
+
+.passengers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.passenger-seat-card {
     background: white;
-    border: 1px solid #d4edda;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 2px 4px rgba(40,167,69,0.1);
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.passenger-seat-card:hover {
+    border-color: #10b981;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
 .passenger-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.passenger-name {
+    color: #1e293b;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.passenger-name i {
+    color: #10b981;
+}
+
+.passenger-age {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.passenger-details {
+    margin-bottom: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.detail-label {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.detail-value {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.seat-info .detail-value {
+    color: #10b981;
+}
+
+.seat-number {
+    background: #ecfdf5;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #10b981;
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+.berth-type {
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.seat-explanation {
+    background: #f0f9ff;
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #0c4a6e;
+}
+
+.seat-explanation i {
+    color: #0ea5e9;
+    margin-right: 0.5rem;
+}
+
+.pending-allocation .detail-value {
+    color: #f59e0b;
+    font-style: italic;
+}
+
+.pending-allocation i {
+    margin-right: 0.5rem;
+}
+
+.comfort-rating {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rating-label {
+    color: #92400e;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.rating-stars i {
+    color: #f59e0b;
+    font-size: 1rem;
+}
+
+.coach-class {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.train-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Legacy compatibility */
+.passenger-card {
+    background: white;
+    border: 1px solid #d4edda;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(40,167,69,0.1);
 }
 
 .passenger-name {
