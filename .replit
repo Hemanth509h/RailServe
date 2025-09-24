@@ -28,7 +28,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd /home/runner/workspace && python main.py"
+args = "python main.py"
 waitForPort = 5000
 
 [[ports]]
