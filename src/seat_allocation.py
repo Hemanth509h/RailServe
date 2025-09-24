@@ -162,7 +162,7 @@ class SeatAllocator:
     
     def _get_existing_seats(self, train_id, journey_date, coach_class):
         """Get all existing seat allocations for the train/date/class"""
-        from app import db
+        from .database import db
         
         passengers = db.session.query(Passenger).join(Booking).filter(
             Booking.train_id == train_id,
@@ -204,7 +204,7 @@ class SeatAllocator:
         """
         Get visual seat map for a specific coach class
         """
-        from app import db
+        from .database import db
         
         # Get all confirmed bookings for this train/date/class
         passengers = db.session.query(Passenger).join(Booking).filter(
