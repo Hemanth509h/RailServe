@@ -847,8 +847,8 @@
         // Reset the edit profile form to original values
         document.getElementById('username').value = "{{ current_user.username }}";
         document.getElementById('email').value = "{{ current_user.email }}";
-        {% if current_user.phone is defined %}
-        document.getElementById('phone').value = "{{ current_user.phone or '' }}";
+        {% if current_user.phone %}
+        document.getElementById('phone').value = "{{ current_user.phone }}";
         {% endif %}
     }
     

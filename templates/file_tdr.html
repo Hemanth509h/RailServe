@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const refundAmount = document.getElementById('refundAmount');
     const cancellationCharges = document.getElementById('cancellationCharges');
     
-    const totalAmount = {{ booking.total_amount|float }};
+    const totalAmount = {{ booking.total_amount|float if booking.total_amount else 0 }};
     
     reasonSelect.addEventListener('change', function() {
         const reason = this.value;
