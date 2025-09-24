@@ -39,3 +39,4 @@ qrcode
 reportlab
 sqlalchemy
 werkzeug
+requests
