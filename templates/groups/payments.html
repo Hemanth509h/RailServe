@@ -3,7 +3,6 @@
 {% block title %}Group Payment Coordination - RailServe{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/payment.css') }}">
 <style>
 .payment-coordinator {
     max-width: 1200px;
@@ -259,7 +258,7 @@
         <div class="payment-card">
             <h4><i class="fas fa-percentage"></i> Payment Progress</h4>
             <div class="progress-bar">
-                <div class="progress-fill" style="width: {{ (payment_summary.paid_amount / payment_summary.total_amount * 100) if payment_summary.total_amount > 0 else 0 }}%"></div>
+                <div class="progress-fill" style="width: {{ "%.1f"|format((payment_summary.paid_amount / payment_summary.total_amount * 100) if payment_summary.total_amount > 0 else 0) }}%"></div>
             </div>
             <p>{{ "%.1f"|format((payment_summary.paid_amount / payment_summary.total_amount * 100) if payment_summary.total_amount > 0 else 0) }}% Complete</p>
         </div>

@@ -3,7 +3,53 @@
 {% block title %}File TDR - {{ booking.pnr }} - RailServe{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/book_ticket.css') }}">
+<style>
+/* TDR Filing Page Styles */
+.booking-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.train-info-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.booking-form-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -271,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const refundAmount = document.getElementById('refundAmount');
     const cancellationCharges = document.getElementById('cancellationCharges');
     
-    const totalAmount = {{ booking.total_amount }};
+    const totalAmount = {{ booking.total_amount|float }};
     
     reasonSelect.addEventListener('change', function() {
         const reason = this.value;

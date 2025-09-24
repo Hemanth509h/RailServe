@@ -3,12 +3,43 @@
 {% block title %}Search Results - RailServe{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/search_results.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/search_form_fix.css') }}">
+<style>
+/* Search Results Page Styles */
+.search-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.search-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.search-form {
+    background: var(--bg-secondary);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 30px;
+}
+
+.train-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+</style>
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/book_ticket.css') }}">
 <style>
 .search-container {
     max-width: 1200px;

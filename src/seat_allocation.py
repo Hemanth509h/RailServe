@@ -32,9 +32,6 @@ class SeatAllocator:
         Allocate seat numbers for all passengers in a confirmed booking
         Enhanced with group booking coordination and robust error handling
         """
-        from .app import db
-        from .models import GroupBooking
-        
         try:
             booking = Booking.query.get(booking_id)
             if not booking:
@@ -77,7 +74,8 @@ class SeatAllocator:
                 
                 # Look for passengers who already have seat assignments
                 for other_booking in group_bookings:
-                    for other_passenger in other_booking.passengers:
+                    # FIX: Use passengers_details instead of passengers
+                    for other_passenger in other_booking.passengers_details:
                         if other_passenger.seat_number:
                             # Extract coach from existing seat number
                             parts = other_passenger.seat_number.split('-')
@@ -132,9 +130,10 @@ class SeatAllocator:
                 # Final safety check
                 if not seat_number:
                     print(f"Warning: Could not allocate seat for passenger {passenger.id} in booking {booking_id}")
-                    # Generate a guaranteed unique seat
-                    import uuid
-                    seat_number = f"TEMP-{str(uuid.uuid4())[:8]}"
+                    # Generate a more realistic fallback seat
+                    fallback_coach = f"{random.choice(coach_prefixes)}{random.randint(1, 15)}"
+                    fallback_seat = random.randint(1, 72)
+                    seat_number = f"{fallback_coach}-{fallback_seat}"
                 
                 # Assign berth type based on preference or randomly
                 if passenger.seat_preference and passenger.seat_preference in available_berths:
@@ -162,7 +161,7 @@ class SeatAllocator:
     
     def _get_existing_seats(self, train_id, journey_date, coach_class):
         """Get all existing seat allocations for the train/date/class"""
-        from .app import db
+        from app import db
         
         passengers = db.session.query(Passenger).join(Booking).filter(
             Booking.train_id == train_id,
@@ -204,7 +203,7 @@ class SeatAllocator:
         """
         Get visual seat map for a specific coach class
         """
-        from .app import db
+        from app import db
         
         # Get all confirmed bookings for this train/date/class
         passengers = db.session.query(Passenger).join(Booking).filter(
