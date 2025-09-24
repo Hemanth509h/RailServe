@@ -3,7 +3,519 @@
 {% block title %}PNR Enquiry - RailServe{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pnr.css') }}">
+<style>
+/* PNR Enquiry Page Styling */
+.pnr-enquiry-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.enquiry-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 40px 30px;
+    background: var(--bg-accent);
+    color: var(--text-inverse);
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+}
+
+.enquiry-header h1 {
+    margin: 0 0 15px 0;
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+.enquiry-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.2rem;
+}
+
+.enquiry-form-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 40px;
+    margin-bottom: 30px;
+    box-shadow: var(--card-shadow);
+}
+
+.pnr-form .form-group {
+    margin-bottom: 20px;
+}
+
+.pnr-form label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.pnr-form .input-group {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.pnr-form input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    text-align: center;
+    font-weight: 600;
+    transition: border-color 0.3s ease;
+}
+
+.pnr-form input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pnr-form small {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Booking Details Card */
+.booking-details-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 30px;
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.booking-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.booking-header h2 i {
+    color: var(--accent-color);
+}
+
+.booking-status {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Main Content Grid */
+.booking-main-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.booking-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.booking-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Info Sections */
+.info-section {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.info-section h3 {
+    margin: 0 0 20px 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-section h3 i {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.info-item .label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.info-item .value {
+    display: block;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.pnr-highlight {
+    background: var(--accent-color) !important;
+    color: var(--text-inverse) !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    letter-spacing: 2px !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+}
+
+/* Journey Route */
+.journey-route {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 15px;
+}
+
+.station-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.station {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    flex: 1;
+    max-width: 200px;
+}
+
+.station i {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+.station-details {
+    text-align: center;
+}
+
+.station-details strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.station-details small {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.route-arrow {
+    color: var(--accent-color);
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: var(--bg-primary);
+    border-radius: 50%;
+    border: 2px solid var(--accent-color);
+}
+
+/* Passenger Information */
+.passengers-section {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.passengers-section h3 {
+    margin: 0 0 20px 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.passenger-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.passenger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.passenger-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.seat-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.seat-badge, .berth-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.seat-badge {
+    background: #10b981;
+    color: white;
+}
+
+.berth-badge {
+    background: #3b82f6;
+    color: white;
+}
+
+.passenger-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    font-size: 0.95rem;
+}
+
+.passenger-detail {
+    background: var(--bg-primary);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.passenger-detail .label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.passenger-detail .value {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Payment Information */
+.payment-section {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.payment-item {
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.payment-item .label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.payment-item .value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Success Message */
+.booking-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+}
+
+.booking-success i {
+    font-size: 1.5rem;
+    margin-right: 10px;
+}
+
+/* Responsive Design for PNR */
+@media (max-width: 1024px) {
+    .booking-main-content {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+    
+    .info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .station-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .route-arrow {
+        transform: rotate(90deg);
+    }
+    
+    .station {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .pnr-enquiry-container {
+        padding: 15px;
+    }
+    
+    .enquiry-header {
+        padding: 30px 20px;
+    }
+    
+    .enquiry-header h1 {
+        font-size: 2rem;
+    }
+    
+    .enquiry-form-card {
+        padding: 25px;
+    }
+    
+    .pnr-form .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .booking-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .passenger-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .seat-info {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+}
+
+/* Light theme specific adjustments for PNR */
+[data-theme="light"] .booking-details-card,
+[data-theme="light"] .enquiry-form-card,
+[data-theme="light"] .info-section,
+[data-theme="light"] .passengers-section,
+[data-theme="light"] .payment-section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .passenger-card,
+[data-theme="light"] .info-item,
+[data-theme="light"] .payment-item,
+[data-theme="light"] .passenger-detail,
+[data-theme="light"] .station,
+[data-theme="light"] .journey-route {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+</style>
 {% endblock %}
 
 {% block content %}
