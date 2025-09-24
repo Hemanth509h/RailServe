@@ -5,20 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1e40af" id="meta-theme-color">
     <title>{% block title %}RailServe - Railway Reservation System{% endblock %}</title>
-    <script>
-        // Prevent FOUC by setting theme before CSS loads
-        (function() {
-            const storedTheme = localStorage.getItem('railserve-theme');
-            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            const theme = storedTheme || systemTheme;
-            document.documentElement.setAttribute('data-theme', theme);
-            // Update theme color immediately
-            const metaTheme = document.getElementById('meta-theme-color');
-            if (metaTheme) {
-                metaTheme.setAttribute('content', theme === 'dark' ? '#0f172a' : '#1e40af');
-            }
-        })();
-    </script>
+    <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive-fixes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
