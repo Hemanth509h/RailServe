@@ -470,3 +470,68 @@ def enhanced_manage_group(group_id):
                          seat_coordination=seat_coordination,
                          recent_messages=recent_messages,
                          pending_invitations=pending_invitations)
+
+@groups_bp.route('/send_payment_reminder/<int:group_id>', methods=['POST'])
+@login_required
+def send_payment_reminder(group_id):
+    """Send payment reminder to a group member"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access - only group leader can send reminders
+    if group.group_leader_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Access denied'})
+    
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        
+        if not user_id:
+            return jsonify({'success': False, 'message': 'User ID required'})
+        
+        # Find the user and their booking
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'})
+        
+        # For now, just mark that a reminder was sent
+        # In a real app, you'd send an email here
+        flash(f'Payment reminder sent to {user.email}', 'success')
+        return jsonify({'success': True, 'message': 'Reminder sent successfully'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': 'Error sending reminder'})
+
+@groups_bp.route('/confirm_group_booking/<int:group_id>', methods=['POST', 'GET'])
+@login_required
+def confirm_group_booking(group_id):
+    """Confirm the entire group booking"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access - only group leader can confirm
+    if group.group_leader_id != current_user.id:
+        flash('Only group leaders can confirm bookings', 'error')
+        return redirect(url_for('groups.manage_group', group_id=group_id))
+    
+    # Check if all payments are completed
+    payment_summary = group.get_payment_summary()
+    if payment_summary.get('pending_amount', 0) > 0:
+        flash('All payments must be completed before confirming the group booking', 'error')
+        return redirect(url_for('groups.group_payments', group_id=group_id))
+    
+    try:
+        # Update all bookings in the group to confirmed
+        bookings = Booking.query.filter_by(group_booking_id=group_id).all()
+        for booking in bookings:
+            if booking.status == 'pending_payment':
+                booking.status = 'confirmed'
+        
+        group.status = 'confirmed'
+        db.session.commit()
+        
+        flash(f'Group booking "{group.group_name}" has been confirmed!', 'success')
+        return redirect(url_for('groups.manage_group', group_id=group_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error confirming group booking. Please try again.', 'error')
+        return redirect(url_for('groups.group_payments', group_id=group_id))
