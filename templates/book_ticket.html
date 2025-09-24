@@ -959,11 +959,11 @@
         const errors = validateForm();
         const hasErrors = errors.length > 0;
         
-        // Enable/disable submit button based on validation
+        // Allow form submission even with validation errors for continue button
         if (submitBtn) {
-            submitBtn.disabled = hasErrors;
-            submitBtn.style.opacity = hasErrors ? '0.6' : '1';
-            submitBtn.style.cursor = hasErrors ? 'not-allowed' : 'pointer';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
             
             // Update button text with helpful messages
             if (hasErrors) {
@@ -1053,34 +1053,8 @@
             clearError(coachClass);
         }
         
-        // Validate passenger details if forms are generated
-        const passengerForms = document.querySelectorAll('.passenger-form');
-        passengerForms.forEach((form, index) => {
-            const name = form.querySelector(`input[name="passenger_${index}_name"]`);
-            const age = form.querySelector(`input[name="passenger_${index}_age"]`);
-            const gender = form.querySelector(`select[name="passenger_${index}_gender"]`);
-            
-            if (name && !name.value.trim()) {
-                highlightError(name);
-                errors.push(`Passenger ${index + 1} name required`);
-            } else if (name) {
-                clearError(name);
-            }
-            
-            if (age && (!age.value || parseInt(age.value) < 1 || parseInt(age.value) > 120)) {
-                highlightError(age);
-                errors.push(`Passenger ${index + 1} valid age required`);
-            } else if (age) {
-                clearError(age);
-            }
-            
-            if (gender && !gender.value) {
-                highlightError(gender);
-                errors.push(`Passenger ${index + 1} gender required`);
-            } else if (gender) {
-                clearError(gender);
-            }
-        });
+        // Passenger validation removed - allow form submission without complete passenger details
+        // Passenger details can be completed in the next step of booking process
         
         return errors;
     }

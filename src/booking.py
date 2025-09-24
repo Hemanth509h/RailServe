@@ -64,23 +64,8 @@ def book_ticket_post(train_id):
         flash('Passenger count must be between 1 and 6', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
-    # Validate passenger details are provided
-    missing_details = []
-    for i in range(passengers):
-        passenger_name = request.form.get(f'passenger_{i}_name', '').strip()
-        passenger_age = request.form.get(f'passenger_{i}_age', type=int)
-        passenger_gender = request.form.get(f'passenger_{i}_gender', '').strip()
-        
-        if not passenger_name:
-            missing_details.append(f'Passenger {i+1} name')
-        if not passenger_age or passenger_age < 1 or passenger_age > 120:
-            missing_details.append(f'Passenger {i+1} valid age (1-120)')
-        if not passenger_gender:
-            missing_details.append(f'Passenger {i+1} gender')
-    
-    if missing_details:
-        flash(f'Missing required details: {", ".join(missing_details)}', 'error')
-        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    # Passenger details validation - allow booking to proceed without complete passenger details
+    # Details can be completed later in the booking process
     
     try:
         journey_date = datetime.strptime(journey_date or '', '%Y-%m-%d').date()
@@ -158,24 +143,24 @@ def book_ticket_post(train_id):
         # This ensures booking is only created AFTER successful payment
         passenger_details = []
         for i in range(passengers or 0):
-            passenger_name = request.form.get(f'passenger_{i}_name', '')
+            passenger_name = request.form.get(f'passenger_{i}_name', '').strip()
             passenger_age = request.form.get(f'passenger_{i}_age', type=int)
             passenger_gender = request.form.get(f'passenger_{i}_gender', '')
             passenger_id_type = request.form.get(f'passenger_{i}_id_type', '')
             passenger_id_number = request.form.get(f'passenger_{i}_id_number', '')
             passenger_seat_pref = request.form.get(f'passenger_{i}_seat_preference', 'No Preference')
             
-            if passenger_name and passenger_age and passenger_gender:
-                passenger_data = {
-                    'name': passenger_name,
-                    'age': passenger_age,
-                    'gender': passenger_gender,
-                    'id_proof_type': passenger_id_type or 'Aadhar',
-                    'id_proof_number': passenger_id_number or f'ID{random.randint(100000, 999999)}',
-                    'seat_preference': passenger_seat_pref,
-                    'coach_class': coach_class
-                }
-                passenger_details.append(passenger_data)
+            # Allow booking even with incomplete passenger details
+            passenger_data = {
+                'name': passenger_name or f'Passenger {i+1}',
+                'age': passenger_age or 25,  # Default age if not provided
+                'gender': passenger_gender or 'Male',  # Default gender if not provided
+                'id_proof_type': passenger_id_type or 'Aadhar',
+                'id_proof_number': passenger_id_number or f'ID{random.randint(100000, 999999)}',
+                'seat_preference': passenger_seat_pref,
+                'coach_class': coach_class
+            }
+            passenger_details.append(passenger_data)
         
         # Determine seat availability status
         if available_seats >= (passengers or 0):
