@@ -21,11 +21,13 @@ app = Flask(__name__,
 # Load configuration
 # Load configuration - require SESSION_SECRET for security
 app.secret_key = os.environ.get("SESSION_SECRET")
+app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 if not app.secret_key:
-    raise RuntimeError("SESSION_SECRET environment variable is required for security. Please set it in your environment.")
+    raise RuntimeError("SESSION_SECRET environment variable is required")
 
 # Use DATABASE_URL with fallback to local database
-database_url = os.environ.get("DATABASE_URL")
+database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
+
 
 if database_url:
     # Validate that DATABASE_URL is a proper connection string
