@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Add Passenger to {{ group.group_name }} - RailServe{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern passenger add styling */
+.passenger-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.form-card {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-title {
+    color: #2d3748;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.page-subtitle {
+    color: #718096;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.group-info-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.form-section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input, .form-select {
+    padding: 1rem 1.25rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8fafc;
+    color: #718096;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #4a5568;
+    text-decoration: none;
+}
+
+.required-indicator {
+    color: #e53e3e;
+    margin-left: 0.25rem;
+}
+
+.form-help {
+    color: #718096;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+.info-alert {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+
+.alert-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 0.5rem;
+    }
+    
+    .form-card {
+        padding: 2rem 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .group-info-banner {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="passenger-container">
+    <div class="content-wrapper">
+        <div class="form-card">
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-plus"></i>
+                    Add Passenger
+                </h1>
+                <p class="page-subtitle">
+                    Add individual passenger details to "{{ group.group_name }}" group booking.
+                </p>
+            </div>
+
+            <!-- Group Information Banner -->
+            <div class="group-info-banner">
+                <div class="info-item">
+                    <div class="info-label">Group Name</div>
+                    <div class="info-value">{{ group.group_name }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Total Capacity</div>
+                    <div class="info-value">{{ group.total_passengers }} passengers</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Current Passengers</div>
+                    <div class="info-value">{{ group.get_all_passengers()|length }} added</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Remaining Slots</div>
+                    <div class="info-value">{{ group.total_passengers - group.get_all_passengers()|length }} available</div>
+                </div>
+            </div>
+
+            <!-- Information Alert -->
+            <div class="info-alert">
+                <h3 class="alert-title">
+                    <i class="fas fa-info-circle"></i>
+                    Passenger Information
+                </h3>
+                <p style="margin: 0; line-height: 1.6;">
+                    Add passenger details to your group. These details will be used for all future train bookings 
+                    within this group. You can modify these details later if needed.
+                </p>
+            </div>
+
+            <form method="POST" id="passengerForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <!-- Personal Details Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-user"></i>
+                        Personal Details
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="passenger_name" class="form-label">
+                                Full Name <span class="required-indicator">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="passenger_name" 
+                                   name="passenger_name" 
+                                   class="form-input" 
+                                   placeholder="Enter passenger's full name"
+                                   required>
+                            <div class="form-help">Full name as per government ID</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="passenger_age" class="form-label">
+                                Age <span class="required-indicator">*</span>
+                            </label>
+                            <input type="number" 
+                                   id="passenger_age" 
+                                   name="passenger_age" 
+                                   class="form-input" 
+                                   min="1" 
+                                   max="120"
+                                   placeholder="Age in years"
+                                   required>
+                            <div class="form-help">Age as of travel date</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="passenger_gender" class="form-label">
+                                Gender <span class="required-indicator">*</span>
+                            </label>
+                            <select id="passenger_gender" name="passenger_gender" class="form-select" required>
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="form-help">Select passenger's gender</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ID Proof Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-id-card"></i>
+                        Identification Details
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="id_proof_type" class="form-label">
+                                ID Proof Type <span class="required-indicator">*</span>
+                            </label>
+                            <select id="id_proof_type" name="id_proof_type" class="form-select" required>
+                                <option value="">Select ID proof</option>
+                                <option value="Aadhar">Aadhar Card</option>
+                                <option value="PAN">PAN Card</option>
+                                <option value="Passport">Passport</option>
+                                <option value="Driving License">Driving License</option>
+                                <option value="Voter ID">Voter ID</option>
+                                <option value="Ration Card">Ration Card</option>
+                            </select>
+                            <div class="form-help">Government issued ID proof</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_proof_number" class="form-label">
+                                ID Proof Number <span class="required-indicator">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="id_proof_number" 
+                                   name="id_proof_number" 
+                                   class="form-input" 
+                                   placeholder="Enter ID proof number"
+                                   required>
+                            <div class="form-help">Enter the ID number exactly as shown</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Section -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Travel Preferences
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="seat_preference" class="form-label">
+                                Seat Preference
+                            </label>
+                            <select id="seat_preference" name="seat_preference" class="form-select">
+                                <option value="No Preference">No Preference</option>
+                                <option value="Lower">Lower Berth</option>
+                                <option value="Middle">Middle Berth</option>
+                                <option value="Upper">Upper Berth</option>
+                                <option value="Side Lower">Side Lower</option>
+                                <option value="Side Upper">Side Upper</option>
+                                <option value="Window">Window Seat</option>
+                                <option value="Aisle">Aisle Seat</option>
+                            </select>
+                            <div class="form-help">Preferred seat/berth type (subject to availability)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{{ url_for('groups.manage_group_passengers', group_id=group.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Add Passenger
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation and enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('passengerForm');
+    const ageInput = document.getElementById('passenger_age');
+    const nameInput = document.getElementById('passenger_name');
+    
+    // Age validation
+    ageInput.addEventListener('input', function() {
+        const age = parseInt(this.value);
+        if (age < 1 || age > 120) {
+            this.setCustomValidity('Please enter a valid age between 1 and 120');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Name formatting
+    nameInput.addEventListener('blur', function() {
+        // Capitalize first letter of each word
+        this.value = this.value.replace(/\b\w/g, l => l.toUpperCase());
+    });
+    
+    // Form submission handling
+    form.addEventListener('submit', function(e) {
+        const remainingSlots = {{ group.total_passengers - group.get_all_passengers()|length }};
+        
+        if (remainingSlots <= 0) {
+            e.preventDefault();
+            alert('Group capacity has been reached. Cannot add more passengers.');
+        }
+    });
+});
+</script>
+{% endblock %}

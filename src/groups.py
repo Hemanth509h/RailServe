@@ -501,6 +501,154 @@ def send_payment_reminder(group_id):
     except Exception as e:
         return jsonify({'success': False, 'message': 'Error sending reminder'})
 
+@groups_bp.route('/add_passenger/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def add_passenger_to_group(group_id):
+    """Add individual passenger details to a group"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access - only group leader and members can add passengers
+    is_member = any(booking.user_id == current_user.id for booking in group.individual_bookings)
+    if group.group_leader_id != current_user.id and not is_member and not current_user.is_admin():
+        flash('Access denied', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    if request.method == 'POST':
+        passenger_name = request.form.get('passenger_name')
+        passenger_age = request.form.get('passenger_age')
+        passenger_gender = request.form.get('passenger_gender')
+        id_proof_type = request.form.get('id_proof_type')
+        id_proof_number = request.form.get('id_proof_number')
+        seat_preference = request.form.get('seat_preference', 'No Preference')
+        
+        # Validation
+        if not all([passenger_name, passenger_age, passenger_gender, id_proof_type, id_proof_number]):
+            flash('Please fill all required fields', 'error')
+            return render_template('groups/add_passenger.html', group=group)
+        
+        try:
+            passenger_age = int(passenger_age)
+            if passenger_age < 1 or passenger_age > 120:
+                flash('Please enter a valid age between 1 and 120', 'error')
+                return render_template('groups/add_passenger.html', group=group)
+        except (ValueError, TypeError):
+            flash('Please enter a valid age', 'error')
+            return render_template('groups/add_passenger.html', group=group)
+        
+        # Check if we've reached the group capacity by counting existing passengers
+        all_passengers = group.get_all_passengers()
+        if len(all_passengers) >= group.total_passengers:
+            flash(f'Group capacity reached. Maximum {group.total_passengers} passengers allowed.', 'error')
+            return render_template('groups/add_passenger.html', group=group)
+        
+        try:
+            # Create a temporary booking to associate the passenger with
+            # This will be linked to actual train bookings later
+            temp_booking = Booking(
+                pnr=f"TEMP-{group.id}-{len(all_passengers)+1}",
+                user_id=current_user.id,
+                train_id=1,  # Temporary train ID - will be updated when actual booking is made
+                from_station_id=1,  # Temporary station ID
+                to_station_id=2,  # Temporary station ID
+                journey_date=datetime.now().date() + timedelta(days=7),  # Default future date
+                passengers=1,
+                total_amount=0.0,
+                group_booking_id=group_id,
+                status='passenger_only'  # Special status for passenger-only records
+            )
+            
+            db.session.add(temp_booking)
+            db.session.flush()  # Get the booking ID
+            
+            # Create passenger record
+            passenger = Passenger(
+                booking_id=temp_booking.id,
+                name=passenger_name,
+                age=passenger_age,
+                gender=passenger_gender,
+                id_proof_type=id_proof_type,
+                id_proof_number=id_proof_number,
+                seat_preference=seat_preference
+            )
+            
+            db.session.add(passenger)
+            db.session.commit()
+            
+            flash(f'Passenger "{passenger_name}" added successfully to the group!', 'success')
+            return redirect(url_for('groups.manage_group_passengers', group_id=group_id))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('Error adding passenger. Please try again.', 'error')
+            return render_template('groups/add_passenger.html', group=group)
+    
+    return render_template('groups/add_passenger.html', group=group)
+
+@groups_bp.route('/manage_passengers/<int:group_id>')
+@login_required
+def manage_group_passengers(group_id):
+    """Manage all passengers in the group"""
+    group = GroupBooking.query.get_or_404(group_id)
+    
+    # Verify access
+    is_member = any(booking.user_id == current_user.id for booking in group.individual_bookings)
+    if group.group_leader_id != current_user.id and not is_member and not current_user.is_admin():
+        flash('Access denied', 'error')
+        return redirect(url_for('groups.my_groups'))
+    
+    # Get all passengers in the group
+    all_passengers = group.get_all_passengers()
+    
+    # Categorize passengers by booking status
+    confirmed_passengers = []
+    pending_passengers = []
+    
+    for passenger in all_passengers:
+        if passenger.booking.status == 'passenger_only':
+            pending_passengers.append(passenger)
+        else:
+            confirmed_passengers.append(passenger)
+    
+    return render_template('groups/manage_passengers.html', 
+                         group=group, 
+                         confirmed_passengers=confirmed_passengers,
+                         pending_passengers=pending_passengers,
+                         remaining_slots=group.total_passengers - len(all_passengers))
+
+@groups_bp.route('/remove_passenger/<int:passenger_id>', methods=['POST'])
+@login_required
+def remove_passenger_from_group(passenger_id):
+    """Remove a passenger from the group"""
+    passenger = Passenger.query.get_or_404(passenger_id)
+    group = passenger.booking.group_booking
+    
+    # Verify access - only group leader can remove passengers
+    if group.group_leader_id != current_user.id and not current_user.is_admin():
+        flash('Only group leaders can remove passengers', 'error')
+        return redirect(url_for('groups.manage_group_passengers', group_id=group.id))
+    
+    # Don't allow removal if passenger is part of a confirmed booking
+    if passenger.booking.status != 'passenger_only':
+        flash('Cannot remove passenger from confirmed booking. Cancel the booking first.', 'error')
+        return redirect(url_for('groups.manage_group_passengers', group_id=group.id))
+    
+    try:
+        passenger_name = passenger.name
+        booking_to_remove = passenger.booking
+        
+        # Remove passenger and associated temporary booking
+        db.session.delete(passenger)
+        db.session.delete(booking_to_remove)
+        db.session.commit()
+        
+        flash(f'Passenger "{passenger_name}" removed from the group.', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error removing passenger. Please try again.', 'error')
+    
+    return redirect(url_for('groups.manage_group_passengers', group_id=group.id))
+
 @groups_bp.route('/confirm_group_booking/<int:group_id>', methods=['POST', 'GET'])
 @login_required
 def confirm_group_booking(group_id):
