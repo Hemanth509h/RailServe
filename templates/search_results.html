@@ -2,72 +2,60 @@
 
 {% block title %}Search Results - RailServe{% endblock %}
 
-{% block head %}
-<style>
-/* Search Results Page Styles */
-.search-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.search-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.search-form {
-    background: var(--bg-secondary);
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: var(--card-shadow);
-    margin-bottom: 30px;
-}
-
-.train-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--card-shadow);
-}
-</style>
-{% endblock %}
 
 {% block extra_css %}
 <style>
+/* Modern Search Results Page - Matching Group Interface */
 .search-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.content-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0 1rem;
 }
 
 .search-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 15px;
-    margin-bottom: 30px;
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
     text-align: center;
+}
+
+.search-header h1 {
+    color: #2d3748;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.search-header p {
+    color: #718096;
+    font-size: 1.1rem;
+    margin: 0;
 }
 
 .search-form {
     background: white;
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
 }
 
 .search-filters {
     display: grid;
-    grid-template-columns: 2fr 1fr auto;
-    gap: 15px;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 2rem;
     align-items: end;
 }
 
@@ -77,117 +65,210 @@
 }
 
 .form-group label {
-    margin-bottom: 5px;
+    margin-bottom: 0.75rem;
     font-weight: 600;
-    color: #333;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
 }
 
 .form-control {
-    padding: 12px;
-    border: 2px solid #e1e8ed;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #2d3748;
+    font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
 .form-control:focus {
     outline: none;
     border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
 }
 
 .search-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-size: 16px;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.3s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
 .search-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+}
+
+.search-results {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+.search-results h2 {
+    color: #2d3748;
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.search-results p {
+    color: #718096;
+    margin-bottom: 2rem;
 }
 
 .train-card {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
     overflow: hidden;
-    transition: transform 0.3s;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
 }
 
 .train-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: #667eea;
 }
 
 .train-header {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 20px;
+    padding: 1.5rem 2rem;
+}
+
+.train-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .train-body {
-    padding: 20px;
+    padding: 2rem;
 }
 
 .train-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .info-item {
     text-align: center;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    border-color: #667eea;
 }
 
 .info-label {
-    font-size: 12px;
-    color: #666;
+    font-size: 0.875rem;
+    color: #718096;
     text-transform: uppercase;
-    margin-bottom: 5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
 }
 
 .info-value {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2d3748;
 }
 
 .book-btn {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
     color: white;
     text-decoration: none;
-    padding: 10px 25px;
-    border-radius: 25px;
+    padding: 1rem 2rem;
+    border-radius: 12px;
     font-weight: 600;
-    display: inline-block;
-    margin-top: 15px;
-    transition: transform 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
 }
 
 .book-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(72, 187, 120, 0.6);
     text-decoration: none;
     color: white;
 }
 
 .no-results {
     text-align: center;
-    padding: 60px 20px;
-    color: #666;
+    padding: 4rem 2rem;
+    color: #718096;
+    background: #f8fafc;
+    border-radius: 16px;
+}
+
+.no-results i {
+    color: #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+.no-results h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.no-results p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
 }
 
 @media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 0.5rem;
+    }
+    
+    .search-header h1 {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
     .search-filters {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .train-info {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }
 </style>
@@ -195,10 +276,11 @@
 
 {% block content %}
 <div class="search-container">
-    <div class="search-header">
-        <h1><i class="fas fa-search"></i> Train Search</h1>
-        <p>Find trains by name, number, route, or station</p>
-    </div>
+    <div class="content-wrapper">
+        <div class="search-header">
+            <h1><i class="fas fa-search"></i> Train Search</h1>
+            <p>Find trains by name, number, route, station, and date</p>
+        </div>
     
     <form method="POST" class="search-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -218,6 +300,12 @@
                     <option value="name" {{ 'selected' if search_type == 'name' else '' }}>Train Name</option>
                     <option value="route" {{ 'selected' if search_type == 'route' else '' }}>Route/Station</option>
                 </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="journey_date"><i class="fas fa-calendar"></i> Journey Date</label>
+                <input type="date" id="journey_date" name="journey_date" 
+                       class="form-control" value="{{ journey_date or '' }}">
             </div>
             
             <button type="submit" class="search-btn">
@@ -274,5 +362,24 @@
             {% endif %}
         </div>
     {% endif %}
+    </div>
 </div>
+
+<script>
+// Set minimum date to today and add date functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const journeyDateInput = document.getElementById('journey_date');
+    if (journeyDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        journeyDateInput.min = today;
+        
+        // If no date is selected, default to tomorrow for advance booking
+        if (!journeyDateInput.value) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            journeyDateInput.value = tomorrow.toISOString().split('T')[0];
+        }
+    }
+});
+</script>
 {% endblock %}

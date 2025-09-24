@@ -4,35 +4,72 @@
 
 {% block head %}
 <style>
-/* Book Ticket Page Styles */
+/* Modern Booking Page Styles - Matching Group Interface */
 .booking-container {
-    max-width: 900px;
-    margin: 2rem auto;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+
+.content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.page-header {
+    background: white;
+    border-radius: 20px;
     padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.page-title {
+    color: #2d3748;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .train-info-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
     padding: 2rem;
+    color: white;
     margin-bottom: 2rem;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
 }
 
 .booking-form-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    background: white;
+    border-radius: 20px;
     padding: 2rem;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    margin: -2rem -2rem 2rem -2rem;
+    border-radius: 20px 20px 0 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 .form-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
 }
 
 .form-group {
@@ -41,41 +78,343 @@
 }
 
 .form-group label {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
 }
 
 .form-group select,
 .form-group input {
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #2d3748;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+.form-help {
+    font-size: 0.875rem;
+    color: #718096;
+    margin-top: 0.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.info-item i {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.passenger-section {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.section-content {
+    padding: 2rem;
+}
+
+.passenger-form {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.passenger-form:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.passenger-header h5 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.fare-calculator {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.calculator-header {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.fare-details {
+    padding: 2rem;
+}
+
+.fare-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 1.1rem;
+}
+
+.fare-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.fare-item.total {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    margin-top: 1rem;
+    font-size: 1.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #f8fafc;
+    color: #718096;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #4a5568;
+    text-decoration: none;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+    color: white;
+    box-shadow: 0 8px 25px rgba(237, 137, 54, 0.4);
+}
+
+.btn-warning:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(237, 137, 54, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.allotment-details, .passenger-requirements {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.allotment-item, .req-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.allotment-item:last-child, .req-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-header h5 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.section-help {
+    color: #718096;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.tatkal-notice {
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    border: 1px solid #fc8181;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    color: #c53030;
+}
+
+.tatkal-notice i {
+    color: #e53e3e;
+    margin-top: 0.25rem;
+}
+
+.tatkal-notice ul {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.25rem;
+}
+
+.tatkal-notice li {
+    margin-bottom: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0 0.5rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="booking-container">
+<div class="booking-container">
+    <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <h1 class="page-title">
+                    <i class="fas fa-ticket-alt"></i>
+                    Book Your Ticket
+                </h1>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Search
+                </a>
+            </div>
+        </div>
+
+        <!-- Train Information -->
         <div class="train-info-card">
-            <h2><i class="fas fa-train"></i> {{ train.number }} - {{ train.name }}</h2>
-            <div class="train-details">
-                <div class="detail-item">
+            <h2 style="margin: 0 0 1.5rem 0; font-size: 1.75rem; font-weight: 600;">
+                <i class="fas fa-train"></i> {{ train.number }} - {{ train.name }}
+            </h2>
+            <div class="info-grid">
+                <div class="info-item">
                     <i class="fas fa-chair"></i>
                     <span>Available Seats: {{ train.available_seats }}</span>
                 </div>
-                <div class="detail-item">
+                <div class="info-item">
                     <i class="fas fa-rupee-sign"></i>
                     <span>Base Fare: ₹{{ "%.2f"|format(train.fare_per_km) }}/km</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Booking Status: Active</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Modern Coaches Available</span>
                 </div>
             </div>
         </div>
         
         <div class="booking-form-card">
-            <h3><i class="fas fa-ticket-alt"></i> Book Your Ticket</h3>
+            <div class="section-header">
+                <i class="fas fa-edit"></i>
+                Booking Details
+            </div>
             
             <form method="POST" class="booking-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -197,14 +536,20 @@
                     </div>
                 </div>
                 
-                <!-- Passenger Details Section -->
-                <div class="passenger-section" id="passengerSection">
-                    <h4><i class="fas fa-user-friends"></i> Passenger Details</h4>
-                    <p class="section-help">
-                        <i class="fas fa-info-circle text-info"></i>
-                        Please provide details for all passengers as per government ID proof. 
-                        Ensure names match your ID documents exactly.
-                    </p>
+        </div>
+        
+        <!-- Passenger Details Section -->
+        <div class="passenger-section" id="passengerSection">
+            <div class="section-header">
+                <i class="fas fa-user-friends"></i>
+                Passenger Details
+            </div>
+            <div class="section-content">
+                <p class="section-help">
+                    <i class="fas fa-info-circle"></i>
+                    Please provide details for all passengers as per government ID proof. 
+                    Ensure names match your ID documents exactly.
+                </p>
                     
                     <!-- Seat Allotment Information -->
                     <div class="seat-allotment-info">
@@ -254,46 +599,49 @@
                     </div>
                 </div>
                 
-                <div class="fare-calculator" id="fareCalculator" style="display: none;">
-                    <div class="calculator-header">
-                        <h4><i class="fas fa-calculator"></i> Fare Calculation</h4>
-                    </div>
-                    <div class="fare-details">
-                        <div class="fare-item">
-                            <span>Distance:</span>
-                            <span id="distance">-- km</span>
-                        </div>
-                        <div class="fare-item">
-                            <span>Base Fare:</span>
-                            <span id="baseFare">₹--</span>
-                        </div>
-                        <div class="fare-item">
-                            <span>GST & Service Charges (18%):</span>
-                            <span id="serviceCharges">₹--</span>
-                        </div>
-                        <div class="fare-item total">
-                            <span><strong>Total Amount:</strong></span>
-                            <span id="totalFare"><strong>₹--</strong></span>
-                        </div>
-                    </div>
+                <div id="passengerContainer">
+                    <!-- Passenger details will be dynamically added here -->
                 </div>
-                
-                <!-- Duplicate fare calculator removed -->
-                    </div>
+            </div>
+        </div>
+        
+        <!-- Fare Calculator -->
+        <div class="fare-calculator" id="fareCalculator" style="display: none;">
+            <div class="calculator-header">
+                <i class="fas fa-calculator"></i>
+                Fare Calculation
+            </div>
+            <div class="fare-details">
+                <div class="fare-item">
+                    <span>Distance:</span>
+                    <span id="distance">-- km</span>
                 </div>
-                
-                <div class="form-actions">
-                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Search
-                    </a>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <i class="fas fa-arrow-right"></i> <span id="submitText">Proceed to Payment</span>
-                    </button>
-                    <button type="button" class="btn btn-warning" id="tatkalBtn" style="display: none;" onclick="proceedToTatkal()">
-                        <i class="fas fa-bolt"></i> Continue to Tatkal Booking
-                    </button>
+                <div class="fare-item">
+                    <span>Base Fare:</span>
+                    <span id="baseFare">₹--</span>
                 </div>
-            </form>
+                <div class="fare-item">
+                    <span>GST & Service Charges (18%):</span>
+                    <span id="serviceCharges">₹--</span>
+                </div>
+                <div class="fare-item total">
+                    <span><strong>Total Amount:</strong></span>
+                    <span id="totalFare"><strong>₹--</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Search
+            </a>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-arrow-right"></i> <span id="submitText">Proceed to Payment</span>
+            </button>
+            <button type="button" class="btn btn-warning" id="tatkalBtn" style="display: none;" onclick="proceedToTatkal()">
+                <i class="fas fa-bolt"></i> Continue to Tatkal Booking
+            </button>
         </div>
     </div>
 </div>
