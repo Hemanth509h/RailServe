@@ -24,7 +24,7 @@ if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
 # Use DATABASE_URL with fallback to local database
-database_url = os.environ.get("DATABASE_URL")
+database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
 
 
 
