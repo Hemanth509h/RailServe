@@ -560,8 +560,14 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="{{ url_for('groups.add_group_train_booking', group_id=group.id) }}" 
+            <a href="{{ url_for('groups.manage_group_passengers', group_id=group.id) }}" 
                class="btn btn-success">
+                <i class="fas fa-users"></i>
+                Manage Passengers
+            </a>
+            
+            <a href="{{ url_for('groups.add_group_train_booking', group_id=group.id) }}" 
+               class="btn btn-primary">
                 <i class="fas fa-plus"></i>
                 Add New Booking
             </a>

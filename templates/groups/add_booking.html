@@ -284,6 +284,213 @@
     line-height: 1.4;
 }
 
+/* Enhanced Train Selection Styles */
+.search-controls {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.search-status {
+    color: #667eea;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.train-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.875rem;
+}
+
+.trains-container {
+    max-height: 500px;
+    overflow-y: auto;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    background: #f8fafc;
+}
+
+.train-option {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.train-option:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.train-option.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.train-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.train-name {
+    color: #2d3748;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.train-number {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.train-type {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.train-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.train-timing {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.timing-station {
+    text-align: center;
+}
+
+.station-code {
+    font-weight: 700;
+    color: #2d3748;
+    font-size: 1.125rem;
+}
+
+.station-time {
+    color: #667eea;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.timing-arrow {
+    color: #718096;
+    font-size: 1.5rem;
+}
+
+.duration-info {
+    text-align: center;
+    color: #48bb78;
+    font-weight: 600;
+}
+
+.train-amenities {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.amenity-tag {
+    background: #e2e8f0;
+    color: #4a5568;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.selected-train-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+}
+
+.selected-train-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.selected-train-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.change-train-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.change-train-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.no-trains-message {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #718096;
+}
+
+.no-trains-icon {
+    font-size: 3rem;
+    color: #e2e8f0;
+    margin-bottom: 1rem;
+}
+
 @media (max-width: 768px) {
     .content-wrapper {
         padding: 0 0.5rem;
@@ -424,25 +631,77 @@
                     </div>
                 </div>
 
-                <!-- Booking Details Section -->
-                <div class="form-section">
+                <!-- Train Search and Selection Section -->
+                <div class="form-section" id="train-search-section" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-search"></i>
+                        Search Trains
+                    </h2>
+                    <div class="search-controls">
+                        <button type="button" id="search-trains-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Search Available Trains
+                        </button>
+                        <div class="search-status" id="search-status" style="display: none; margin-top: 1rem;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Searching for trains...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Train Results Section -->
+                <div id="train-results-section" class="form-section" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-train"></i>
+                        Available Trains
+                    </h2>
+                    <div class="train-filters">
+                        <div class="filter-group">
+                            <label for="departure-time-filter">Departure Time:</label>
+                            <select id="departure-time-filter" class="form-select">
+                                <option value="">All Times</option>
+                                <option value="early-morning">Early Morning (00:00 - 06:00)</option>
+                                <option value="morning">Morning (06:00 - 12:00)</option>
+                                <option value="afternoon">Afternoon (12:00 - 18:00)</option>
+                                <option value="evening">Evening (18:00 - 00:00)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="duration-filter">Journey Duration:</label>
+                            <select id="duration-filter" class="form-select">
+                                <option value="">All Durations</option>
+                                <option value="short">Less than 6 hours</option>
+                                <option value="medium">6-12 hours</option>
+                                <option value="long">More than 12 hours</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="train-type-filter">Train Type:</label>
+                            <select id="train-type-filter" class="form-select">
+                                <option value="">All Types</option>
+                                <option value="express">Express</option>
+                                <option value="superfast">Superfast</option>
+                                <option value="mail">Mail</option>
+                                <option value="passenger">Passenger</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="trains-list" class="trains-container">
+                        <!-- Dynamic train results will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Selected Train and Booking Details Section -->
+                <div class="form-section" id="booking-details-section" style="display: none;">
                     <h2 class="section-title">
                         <i class="fas fa-ticket-alt"></i>
                         Booking Details
                     </h2>
+                    <div class="selected-train-info" id="selected-train-info">
+                        <!-- Selected train information will be displayed here -->
+                    </div>
+                    <input type="hidden" id="train_id" name="train_id" required>
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label for="train_id" class="form-label">
-                                Select Train <span class="required-indicator">*</span>
-                            </label>
-                            <select id="train_id" name="train_id" class="form-select" required>
-                                <option value="">Choose a train</option>
-                                {% for train in trains %}
-                                <option value="{{ train.id }}">{{ train.number }} - {{ train.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <div class="form-help">Select from available trains</div>
-                        </div>
                         
                         <div class="form-group">
                             <label for="passengers" class="form-label">
@@ -520,16 +779,300 @@
 </div>
 
 <script>
-// Enhanced form functionality
+// Enhanced train selection functionality
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('bookingForm');
     const passengersInput = document.getElementById('passengers');
     const summarySection = document.getElementById('booking-summary');
+    const fromStationSelect = document.getElementById('from_station');
+    const toStationSelect = document.getElementById('to_station');
+    const journeyDateInput = document.getElementById('journey_date');
+    const trainSearchSection = document.getElementById('train-search-section');
+    const searchTrainsBtn = document.getElementById('search-trains-btn');
+    const searchStatus = document.getElementById('search-status');
+    const trainResultsSection = document.getElementById('train-results-section');
+    const trainsListContainer = document.getElementById('trains-list');
+    const bookingDetailsSection = document.getElementById('booking-details-section');
+    const selectedTrainInfo = document.getElementById('selected-train-info');
+    const trainIdInput = document.getElementById('train_id');
+    
+    let selectedTrain = null;
+    let availableTrains = [];
+    
+    // Show train search section when route is selected
+    function checkRouteSelection() {
+        if (fromStationSelect.value && toStationSelect.value && journeyDateInput.value) {
+            trainSearchSection.style.display = 'block';
+        } else {
+            trainSearchSection.style.display = 'none';
+            trainResultsSection.style.display = 'none';
+            bookingDetailsSection.style.display = 'none';
+        }
+    }
+    
+    // Event listeners for route selection
+    fromStationSelect.addEventListener('change', checkRouteSelection);
+    toStationSelect.addEventListener('change', checkRouteSelection);
+    journeyDateInput.addEventListener('change', checkRouteSelection);
+    
+    // Mock train data - In real implementation, this would come from the server
+    const mockTrains = [
+        {
+            id: 1,
+            number: '12801',
+            name: 'Purushottam Express',
+            type: 'Express',
+            departure_time: '14:30',
+            arrival_time: '06:45',
+            duration: '16h 15m',
+            distance: '1325 km',
+            classes: ['SL', '3A', '2A', '1A'],
+            amenities: ['Pantry Car', 'Wi-Fi', 'Charging Points'],
+            fare: 850
+        },
+        {
+            id: 2,
+            number: '12002',
+            name: 'Bhopal Shatabdi',
+            type: 'Superfast',
+            departure_time: '06:00',
+            arrival_time: '14:35',
+            duration: '8h 35m',
+            distance: '710 km',
+            classes: ['CC', '2S'],
+            amenities: ['AC', 'Meal Service', 'Wi-Fi'],
+            fare: 1250
+        },
+        {
+            id: 3,
+            number: '19037',
+            name: 'Avadh Express',
+            type: 'Mail',
+            departure_time: '22:15',
+            arrival_time: '12:30',
+            duration: '14h 15m',
+            distance: '1125 km',
+            classes: ['SL', '3A', '2A'],
+            amenities: ['Pantry Car', 'Charging Points'],
+            fare: 720
+        }
+    ];
+    
+    // Search trains functionality
+    searchTrainsBtn.addEventListener('click', function() {
+        if (!fromStationSelect.value || !toStationSelect.value || !journeyDateInput.value) {
+            alert('Please select route and journey date first.');
+            return;
+        }
+        
+        searchStatus.style.display = 'block';
+        searchTrainsBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            availableTrains = mockTrains; // In real app, filter based on route
+            displayTrains(availableTrains);
+            searchStatus.style.display = 'none';
+            searchTrainsBtn.disabled = false;
+            trainResultsSection.style.display = 'block';
+        }, 1500);
+    });
+    
+    // Display trains
+    function displayTrains(trains) {
+        if (trains.length === 0) {
+            trainsListContainer.innerHTML = `
+                <div class="no-trains-message">
+                    <div class="no-trains-icon">
+                        <i class="fas fa-train"></i>
+                    </div>
+                    <h4>No Trains Found</h4>
+                    <p>No trains available for the selected route and date. Please try different dates or route.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const fromStationText = fromStationSelect.options[fromStationSelect.selectedIndex].text;
+        const toStationText = toStationSelect.options[toStationSelect.selectedIndex].text;
+        const fromCode = fromStationText.match(/\(([^)]+)\)/)?.[1] || 'DEP';
+        const toCode = toStationText.match(/\(([^)]+)\)/)?.[1] || 'ARR';
+        
+        trainsListContainer.innerHTML = trains.map(train => `
+            <div class="train-option" data-train-id="${train.id}">
+                <div class="train-header">
+                    <div>
+                        <h3 class="train-name">${train.name}</h3>
+                        <span class="train-number">${train.number}</span>
+                    </div>
+                    <span class="train-type">${train.type}</span>
+                </div>
+                
+                <div class="train-timing">
+                    <div class="timing-station">
+                        <div class="station-code">${fromCode}</div>
+                        <div class="station-time">${train.departure_time}</div>
+                    </div>
+                    <div class="timing-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="duration-info">
+                        <div>${train.duration}</div>
+                        <div style="font-size: 0.75rem; color: #718096;">${train.distance}</div>
+                    </div>
+                    <div class="timing-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="timing-station">
+                        <div class="station-code">${toCode}</div>
+                        <div class="station-time">${train.arrival_time}</div>
+                    </div>
+                </div>
+                
+                <div class="train-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Classes Available</span>
+                        <span class="detail-value">${train.classes.join(', ')}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Base Fare</span>
+                        <span class="detail-value">₹${train.fare}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Seats Available</span>
+                        <span class="detail-value">Available</span>
+                    </div>
+                </div>
+                
+                <div class="train-amenities">
+                    ${train.amenities.map(amenity => `<span class="amenity-tag">${amenity}</span>`).join('')}
+                </div>
+            </div>
+        `).join('');
+        
+        // Add click handlers for train selection
+        document.querySelectorAll('.train-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const trainId = parseInt(this.dataset.trainId);
+                selectTrain(trains.find(t => t.id === trainId));
+            });
+        });
+    }
+    
+    // Select train
+    function selectTrain(train) {
+        selectedTrain = train;
+        trainIdInput.value = train.id;
+        
+        // Update visual selection
+        document.querySelectorAll('.train-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        document.querySelector(`[data-train-id="${train.id}"]`).classList.add('selected');
+        
+        // Show selected train info
+        const fromStationText = fromStationSelect.options[fromStationSelect.selectedIndex].text;
+        const toStationText = toStationSelect.options[toStationSelect.selectedIndex].text;
+        const fromCode = fromStationText.match(/\(([^)]+)\)/)?.[1] || 'DEP';
+        const toCode = toStationText.match(/\(([^)]+)\)/)?.[1] || 'ARR';
+        
+        selectedTrainInfo.innerHTML = `
+            <div class="selected-train-header">
+                <div>
+                    <h3 class="selected-train-name">${train.name} (${train.number})</h3>
+                    <p style="margin: 0; opacity: 0.9;">${fromCode} → ${toCode} • ${train.duration} • ${train.type}</p>
+                </div>
+                <button type="button" class="change-train-btn" onclick="changeTrainSelection()">
+                    <i class="fas fa-edit"></i> Change
+                </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.875rem; opacity: 0.9;">Departure</div>
+                    <div style="font-size: 1.125rem; font-weight: 600;">${train.departure_time}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.875rem; opacity: 0.9;">Duration</div>
+                    <div style="font-size: 1.125rem; font-weight: 600;">${train.duration}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.875rem; opacity: 0.9;">Arrival</div>
+                    <div style="font-size: 1.125rem; font-weight: 600;">${train.arrival_time}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.875rem; opacity: 0.9;">Base Fare</div>
+                    <div style="font-size: 1.125rem; font-weight: 600;">₹${train.fare}</div>
+                </div>
+            </div>
+        `;
+        
+        bookingDetailsSection.style.display = 'block';
+        
+        // Scroll to booking details
+        bookingDetailsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Change train selection
+    window.changeTrainSelection = function() {
+        trainResultsSection.scrollIntoView({ behavior: 'smooth' });
+    };
+    
+    // Filter functionality
+    const departureFilter = document.getElementById('departure-time-filter');
+    const durationFilter = document.getElementById('duration-filter');
+    const trainTypeFilter = document.getElementById('train-type-filter');
+    
+    [departureFilter, durationFilter, trainTypeFilter].forEach(filter => {
+        filter.addEventListener('change', applyFilters);
+    });
+    
+    function applyFilters() {
+        let filteredTrains = [...availableTrains];
+        
+        // Departure time filter
+        const deptFilter = departureFilter.value;
+        if (deptFilter) {
+            filteredTrains = filteredTrains.filter(train => {
+                const hour = parseInt(train.departure_time.split(':')[0]);
+                switch(deptFilter) {
+                    case 'early-morning': return hour >= 0 && hour < 6;
+                    case 'morning': return hour >= 6 && hour < 12;
+                    case 'afternoon': return hour >= 12 && hour < 18;
+                    case 'evening': return hour >= 18 && hour < 24;
+                    default: return true;
+                }
+            });
+        }
+        
+        // Duration filter
+        const durFilter = durationFilter.value;
+        if (durFilter) {
+            filteredTrains = filteredTrains.filter(train => {
+                const hours = parseInt(train.duration.split('h')[0]);
+                switch(durFilter) {
+                    case 'short': return hours < 6;
+                    case 'medium': return hours >= 6 && hours <= 12;
+                    case 'long': return hours > 12;
+                    default: return true;
+                }
+            });
+        }
+        
+        // Train type filter
+        const typeFilter = trainTypeFilter.value;
+        if (typeFilter) {
+            filteredTrains = filteredTrains.filter(train => 
+                train.type.toLowerCase().includes(typeFilter.toLowerCase())
+            );
+        }
+        
+        displayTrains(filteredTrains);
+    }
     
     // Calculate and display booking summary
     function updateBookingSummary() {
         const passengers = parseInt(passengersInput.value) || 0;
-        const baseFarePerPassenger = 500; // Simplified calculation
+        const baseFarePerPassenger = selectedTrain ? selectedTrain.fare : 500;
         
         if (passengers > 0) {
             const baseFare = passengers * baseFarePerPassenger;
@@ -549,14 +1092,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Update summary on passenger count change
-    passengersInput.addEventListener('input', updateBookingSummary);
+    if (passengersInput) {
+        passengersInput.addEventListener('input', updateBookingSummary);
+    }
     
     // Form validation
     form.addEventListener('submit', function(e) {
-        const fromStation = document.getElementById('from_station').value;
-        const toStation = document.getElementById('to_station').value;
+        const fromStation = fromStationSelect.value;
+        const toStation = toStationSelect.value;
         const passengers = parseInt(passengersInput.value);
         const maxCapacity = {{ remaining_capacity }};
+        
+        if (!trainIdInput.value) {
+            e.preventDefault();
+            alert('Please select a train before proceeding.');
+            return;
+        }
         
         if (fromStation === toStation) {
             e.preventDefault();
