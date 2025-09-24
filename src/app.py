@@ -18,13 +18,13 @@ app = Flask(__name__,
             template_folder='../templates',
             static_folder='../static')
 
-# Load configuration - require SESSION_SECRET for securityapp.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
+# Load configuration - require SESSION_SECRET for security
+app.secret_key =  os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 if not app.secret_key:
     raise RuntimeError("SESSION_SECRET environment variable is required")
 
 # Use DATABASE_URL with fallback to local database
 database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
-
 
 
 
