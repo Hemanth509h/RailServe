@@ -172,6 +172,7 @@
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     margin-bottom: 2rem;
+    width: 40%;
 }
 
 .calculator-header {
@@ -999,123 +1000,8 @@
         calculateFare();
     }
 
-    // Comprehensive form validation
-    function validateForm() {
-        const errors = [];
-        
-        // Check basic required fields
-        if (!fromStation.value) {
-            highlightError(fromStation);
-            errors.push('Select departure station');
-        } else {
-            clearError(fromStation);
-        }
-        
-        if (!toStation.value) {
-            highlightError(toStation);
-            errors.push('Select destination station');
-        } else {
-            clearError(toStation);
-        }
-        
-        // Check if same station selected
-        if (fromStation.value && toStation.value && fromStation.value === toStation.value) {
-            highlightError(fromStation);
-            highlightError(toStation);
-            errors.push('Departure and destination cannot be same');
-        }
-        
-        if (!journeyDate.value) {
-            highlightError(journeyDate);
-            errors.push('Select journey date');
-        } else {
-            // Validate date is not in past
-            const selectedDate = new Date(journeyDate.value);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            if (selectedDate < today) {
-                highlightError(journeyDate);
-                errors.push('Journey date cannot be in past');
-            } else {
-                clearError(journeyDate);
-            }
-        }
-        
-        if (!passengers.value || parseInt(passengers.value) < 1) {
-            highlightError(passengers);
-            errors.push('Select number of passengers');
-        } else {
-            clearError(passengers);
-        }
-        
-        if (!coachClass.value) {
-            highlightError(coachClass);
-            errors.push('Select coach class');
-        } else {
-            clearError(coachClass);
-        }
-        
-        // Validate passenger details - mandatory for all passengers
-        const passengerCount = parseInt(passengers.value) || 0;
-        if (passengerCount > 0) {
-            for (let i = 0; i < passengerCount; i++) {
-                const nameField = document.getElementById(`passenger_${i}_name`);
-                const ageField = document.getElementById(`passenger_${i}_age`);
-                const genderField = document.getElementById(`passenger_${i}_gender`);
-                const idTypeField = document.getElementById(`passenger_${i}_id_type`);
-                const idNumberField = document.getElementById(`passenger_${i}_id_number`);
-                
-                if (!nameField || !nameField.value.trim()) {
-                    highlightError(nameField);
-                    errors.push(`Enter name for Passenger ${i + 1}`);
-                } else {
-                    clearError(nameField);
-                }
-                
-                if (!ageField || !ageField.value || ageField.value < 1 || ageField.value > 120) {
-                    highlightError(ageField);
-                    errors.push(`Enter valid age for Passenger ${i + 1}`);
-                } else {
-                    clearError(ageField);
-                }
-                
-                if (!genderField || !genderField.value) {
-                    highlightError(genderField);
-                    errors.push(`Select gender for Passenger ${i + 1}`);
-                } else {
-                    clearError(genderField);
-                }
-                
-                if (!idTypeField || !idTypeField.value) {
-                    highlightError(idTypeField);
-                    errors.push(`Select ID proof type for Passenger ${i + 1}`);
-                } else {
-                    clearError(idTypeField);
-                }
-                
-                if (!idNumberField || !idNumberField.value.trim()) {
-                    highlightError(idNumberField);
-                    errors.push(`Enter ID proof number for Passenger ${i + 1}`);
-                } else {
-                    clearError(idNumberField);
-                }
-            }
-        }
-        
-        return errors;
-    }
-
-    // Helper functions for error handling
-    function highlightError(element) {
-        element.style.borderColor = '#dc3545';
-        element.classList.add('error');
-    }
+   
     
-    function clearError(element) {
-        element.style.borderColor = '';
-        element.classList.remove('error');
-    }
 
     // Error toast system
     function showErrorToast(errors) {
