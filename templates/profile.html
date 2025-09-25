@@ -538,6 +538,98 @@
     margin-bottom: 2rem;
 }
 
+/* Profile Navigation Cards */
+.profile-navigation {
+    margin: 2rem 0;
+}
+
+.nav-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.nav-card {
+    background: white;
+    border: none;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.nav-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    text-decoration: none;
+    color: inherit;
+}
+
+.nav-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.nav-card:hover .nav-icon {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.nav-content {
+    flex: 1;
+}
+
+.nav-content h4 {
+    color: #1e293b;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.nav-content p {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.nav-arrow {
+    color: #667eea;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.nav-card:hover .nav-arrow {
+    transform: translateX(5px);
+    color: #764ba2;
+}
+
 @media (max-width: 768px) {
     .profile-container {
         padding: 1rem;
@@ -596,13 +688,7 @@
     
     <div class="profile-tabs">
         <div class="tabs">
-            <button class="tab-button active" onclick="showTab('bookings')">
-                <i class="fas fa-ticket-alt"></i> My Bookings
-            </button>
-            <button class="tab-button" onclick="showTab('payments')">
-                <i class="fas fa-credit-card"></i> Payment History
-            </button>
-            <button class="tab-button" onclick="showTab('edit-profile')">
+            <button class="tab-button active" onclick="showTab('edit-profile')">
                 <i class="fas fa-user-edit"></i> Edit Profile
             </button>
             <button class="tab-button" onclick="showTab('change-password')">
@@ -610,149 +696,35 @@
             </button>
         </div>
         
-        <div id="bookings" class="tab-content active">
-            <h3>Booking History</h3>
-            
-            {% if bookings %}
-                <div class="bookings-list">
-                    {% for booking in bookings %}
-                        <div class="booking-card">
-                            <div class="booking-header">
-                                <div class="pnr-info">
-                                    <strong>PNR: {{ booking.pnr }}</strong>
-                                    <span class="booking-status status-{{ booking.status }}">
-                                        {{ booking.status.replace('_', ' ').title() }}
-                                    </span>
-                                </div>
-                                <div class="booking-date">
-                                    {{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}
-                                </div>
-                            </div>
-                            
-                            <div class="booking-details">
-                                <div class="journey-info">
-                                    <div class="train-details">
-                                        <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
-                                    </div>
-                                    <div class="route-info">
-                                        <span class="station">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            {{ booking.from_station.name }}
-                                        </span>
-                                        <i class="fas fa-arrow-right"></i>
-                                        <span class="station">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            {{ booking.to_station.name }}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <div class="booking-info">
-                                    <div class="info-item">
-                                        <i class="fas fa-calendar"></i>
-                                        <span>Journey Date: {{ booking.journey_date.strftime('%d %b %Y') }}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-users"></i>
-                                        <span>Passengers: {{ booking.passengers }}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <i class="fas fa-rupee-sign"></i>
-                                        <span>Amount: ₹{{ "%.2f"|format(booking.total_amount) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="booking-actions">
-                                {% if booking.status in ['confirmed', 'waitlisted'] %}
-                                    <a href="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" 
-                                       class="btn btn-danger btn-sm"
-                                       onclick="return confirm('Are you sure you want to cancel this booking?')">
-                                        <i class="fas fa-times"></i> Cancel
-                                    </a>
-                                {% endif %}
-                                
-                                {% if booking.status == 'pending_payment' %}
-                                    <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" 
-                                       class="btn btn-primary btn-sm">
-                                        <i class="fas fa-credit-card"></i> Pay Now
-                                    </a>
-                                {% endif %}
-                                
-                                {% if booking.status in ['confirmed', 'cancelled', 'waitlisted'] %}
-                                    {% set existing_tdr = booking.refund_requests|first %}
-                                    {% if existing_tdr %}
-                                        <span class="btn btn-secondary btn-sm disabled">
-                                            <i class="fas fa-receipt"></i> TDR Filed: {{ existing_tdr.tdr_number }}
-                                        </span>
-                                    {% else %}
-                                        <a href="{{ url_for('booking.file_tdr', booking_id=booking.id) }}" 
-                                           class="btn btn-warning btn-sm">
-                                            <i class="fas fa-receipt"></i> File TDR
-                                        </a>
-                                    {% endif %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-ticket-alt"></i>
-                    <h3>No bookings yet</h3>
-                    <p>Start your journey by booking your first ticket!</p>
-                    <a href="{{ url_for('index') }}" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Search Trains
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-        
-        <div id="payments" class="tab-content">
-            <h3>Payment History</h3>
-            
-            {% if payments %}
-                <div class="payments-list">
-                    {% for payment in payments %}
-                        <div class="payment-card">
-                            <div class="payment-header">
-                                <div class="transaction-info">
-                                    <strong>Transaction ID: {{ payment.transaction_id or 'N/A' }}</strong>
-                                    <span class="payment-status status-{{ payment.status }}">
-                                        {{ payment.status.title() }}
-                                    </span>
-                                </div>
-                                <div class="payment-amount">
-                                    ₹{{ "%.2f"|format(payment.amount) }}
-                                </div>
-                            </div>
-                            
-                            <div class="payment-details">
-                                <div class="detail-item">
-                                    <i class="fas fa-credit-card"></i>
-                                    <span>Payment Method: {{ payment.payment_method.title() }}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-calendar"></i>
-                                    <span>Date: {{ payment.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
-                                </div>
-                                {% if payment.booking %}
-                                    <div class="detail-item">
-                                        <i class="fas fa-ticket-alt"></i>
-                                        <span>PNR: {{ payment.booking.pnr }}</span>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-credit-card"></i>
-                    <h3>No payment history</h3>
-                    <p>Your payment transactions will appear here.</p>
-                </div>
-            {% endif %}
+        <!-- Quick Navigation Links -->
+        <div class="profile-navigation">
+            <div class="nav-cards">
+                <a href="{{ url_for('booking.booking_history') }}" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Booking History</h4>
+                        <p>View all your bookings, payment history, and file TDR requests</p>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('index') }}" class="nav-card">
+                    <div class="nav-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Search Trains</h4>
+                        <p>Find and book train tickets for your next journey</p>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
         </div>
         
         <!-- Edit Profile Tab -->
@@ -760,6 +732,7 @@
             <h3>Edit Profile Information</h3>
             
             <form method="POST" action="{{ url_for('auth.edit_profile') }}" class="edit-profile-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="username">
@@ -826,6 +799,7 @@
             </div>
             
             <form method="POST" action="{{ url_for('auth.change_password') }}" class="change-password-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="password-form-grid">
                     <div class="form-group">
                         <label for="current_password">

@@ -283,7 +283,11 @@ def booking_history():
             Booking.booking_date.desc()
         ).all()
     
-    return render_template('booking_history.html', bookings=bookings, search=search)
+    # Get user's payment history
+    from .models import Payment
+    payments = Payment.query.filter_by(user_id=current_user.id).order_by(Payment.created_at.desc()).all()
+    
+    return render_template('booking_history.html', bookings=bookings, payments=payments, search=search)
 
 @booking_bp.route('/tatkal/<int:train_id>', methods=['GET', 'POST'])
 @login_required

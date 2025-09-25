@@ -733,6 +733,20 @@
                                         </a>
                                     {% endif %}
                                     
+                                    {% if booking.status in ['confirmed', 'cancelled', 'waitlisted'] %}
+                                        {% set existing_tdr = booking.refund_requests|first %}
+                                        {% if existing_tdr %}
+                                            <span class="btn btn-secondary btn-sm disabled">
+                                                <i class="fas fa-receipt"></i> TDR Filed: {{ existing_tdr.tdr_number }}
+                                            </span>
+                                        {% else %}
+                                            <a href="{{ url_for('booking.file_tdr', booking_id=booking.id) }}" 
+                                               class="btn btn-warning btn-sm">
+                                                <i class="fas fa-receipt"></i> File TDR
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                    
                                     <a href="{{ url_for('pnr_enquiry') }}?pnr={{ booking.pnr }}" 
                                        class="btn btn-secondary btn-sm">
                                         <i class="fas fa-info"></i> View Details
@@ -755,6 +769,77 @@
                 </a>
             </div>
         {% endif %}
+        
+        <!-- Payment History Section -->
+        <div class="payment-history-section">
+            <div class="section-header">
+                <h2><i class="fas fa-credit-card"></i> Payment History</h2>
+                <button class="btn btn-secondary btn-sm" onclick="togglePaymentHistory()">
+                    <i class="fas fa-eye" id="paymentToggleIcon"></i> Toggle View
+                </button>
+            </div>
+            
+            <div id="paymentHistoryContent" class="payment-history-content">
+                {% if payments %}
+                    <div class="payments-timeline">
+                        {% for payment in payments %}
+                            <div class="payment-item">
+                                <div class="payment-timeline-marker status-{{ payment.status }}">
+                                    {% if payment.status == 'completed' %}
+                                        <i class="fas fa-check"></i>
+                                    {% elif payment.status == 'failed' %}
+                                        <i class="fas fa-times"></i>
+                                    {% else %}
+                                        <i class="fas fa-clock"></i>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="payment-card">
+                                    <div class="payment-header">
+                                        <div class="transaction-info">
+                                            <strong class="transaction-id">{{ payment.transaction_id or 'N/A' }}</strong>
+                                            <span class="payment-date">
+                                                {{ payment.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                            </span>
+                                        </div>
+                                        <span class="payment-status status-{{ payment.status }}">
+                                            {{ payment.status.title() }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="payment-details-grid">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Amount</span>
+                                            <span class="detail-value">₹{{ "%.2f"|format(payment.amount) }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Payment Method</span>
+                                            <span class="detail-value">{{ payment.payment_method.title() }}</span>
+                                        </div>
+                                        {% if payment.booking %}
+                                            <div class="detail-item">
+                                                <span class="detail-label">PNR</span>
+                                                <span class="detail-value">{{ payment.booking.pnr }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label">Train</span>
+                                                <span class="detail-value">{{ payment.booking.train.number }} - {{ payment.booking.train.name }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-payment-state">
+                        <i class="fas fa-credit-card"></i>
+                        <h3>No payment history</h3>
+                        <p>Your payment transactions will appear here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -852,10 +937,223 @@
     font-size: 0.8rem;
 }
 
+/* Payment History Section Styling */
+.payment-history-section {
+    margin-top: 3rem;
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-history-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.section-header h2 {
+    color: #1e293b;
+    margin: 0;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-header h2 i {
+    color: #10b981;
+}
+
+.payment-history-content {
+    transition: all 0.3s ease;
+}
+
+.payments-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.payments-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.payment-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.payment-timeline-marker {
+    position: absolute;
+    left: -2rem;
+    top: 1rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 3px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.payment-timeline-marker.status-completed {
+    background: #10b981;
+    color: white;
+}
+
+.payment-timeline-marker.status-failed {
+    background: #ef4444;
+    color: white;
+}
+
+.payment-timeline-marker.status-pending {
+    background: #f59e0b;
+    color: white;
+}
+
+.payment-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.payment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: #10b981;
+}
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.transaction-id {
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.payment-date {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.payment-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.payment-status.status-completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.payment-status.status-failed {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.payment-status.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.payment-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.empty-payment-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #64748b;
+}
+
+.empty-payment-state i {
+    font-size: 3rem;
+    color: #e2e8f0;
+    margin-bottom: 1rem;
+}
+
+.empty-payment-state h3 {
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
 /* Dark theme support */
 [data-theme="dark"] .passenger-details {
     background: #2d3748;
     border-color: #4a5568;
+}
+
+[data-theme="dark"] .payment-history-section {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .payment-card {
+    background: #374151;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .payments-timeline::before {
+    background: #4a5568;
 }
 
 [data-theme="dark"] .passenger-card {
@@ -888,6 +1186,20 @@
                 booking.style.display = 'none';
             }
         });
+    }
+    
+    // Toggle payment history visibility
+    function togglePaymentHistory() {
+        const content = document.getElementById('paymentHistoryContent');
+        const icon = document.getElementById('paymentToggleIcon');
+        
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.className = 'fas fa-eye';
+        } else {
+            content.style.display = 'none';
+            icon.className = 'fas fa-eye-slash';
+        }
     }
     
     // Auto-format PNR numbers
