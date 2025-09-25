@@ -135,16 +135,9 @@ def handle_exception(error):
     error_message = str(error) if app.debug else None
     return render_template('errors/500.html', error_message=error_message), 500
 
-with app.app_context():
-    # Import models to ensure tables are created
-    from . import models
-    
-    # Create tables safely - handle existing tables/sequences
-    try:
-        db.create_all()
-    except Exception as e:
-        # Log the error but don't crash the app if tables already exist
-        logging.warning(f"Database tables may already exist: {e}")
-    
-    # Note: Admin users should be created securely through proper CLI commands or setup scripts
-    # Never create default admin users with hard-coded passwords in production
+# Database tables are created by setup_database.py script
+# Import models to ensure they are registered
+from . import models
+
+# Note: Admin users should be created securely through proper CLI commands or setup scripts
+# Never create default admin users with hard-coded passwords in production

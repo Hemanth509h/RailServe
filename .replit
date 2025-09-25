@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Flask Server"
+args = "Flask Development Server"
 
 [[workflows.workflow]]
-name = "Flask Server"
+name = "Flask Development Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -36,7 +36,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 44911
+localPort = 44125
 externalPort = 3000
 
 [deployment]
