@@ -213,38 +213,68 @@
         
         <form method="POST" class="auth-form" id="registerForm">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <div class="form-group">
-                <label for="username">
-                    <i class="fas fa-user"></i> Username
-                </label>
-                <input type="text" id="username" name="username" required minlength="3">
-                <div class="error-message" id="username-error"></div>
-                <small>Minimum 3 characters, alphanumeric only</small>
+            
+            <!-- Personal Information Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" name="username" required minlength="3" placeholder="Enter username">
+                    <div class="error-message" id="username-error"></div>
+                    <small>Minimum 3 characters, alphanumeric only</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email Address
+                    </label>
+                    <input type="email" id="email" name="email" required placeholder="Enter email address">
+                    <div class="error-message" id="email-error"></div>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="email">
-                    <i class="fas fa-envelope"></i> Email Address
-                </label>
-                <input type="email" id="email" name="email" required>
-                <div class="error-message" id="email-error"></div>
+            <!-- Password Section -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" name="password" required minlength="6" placeholder="Create password">
+                    <div class="error-message" id="password-error"></div>
+                    <div class="password-strength">
+                        <div class="password-strength-bar">
+                            <div class="password-strength-fill" id="strength-fill"></div>
+                        </div>
+                        <small id="strength-text">Password strength will be shown here</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">
+                        <i class="fas fa-lock"></i> Confirm Password
+                    </label>
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm password">
+                    <div class="error-message" id="confirm-password-error"></div>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="password">
-                    <i class="fas fa-lock"></i> Password
-                </label>
-                <input type="password" id="password" name="password" required minlength="6">
-                <div class="error-message" id="password-error"></div>
-                <small>Minimum 6 characters, include letters and numbers</small>
+
+            <!-- Password Requirements -->
+            <div class="form-group full-width">
+                <ul class="password-requirements" id="password-requirements">
+                    <li class="invalid"><i class="fas fa-times"></i> At least 6 characters</li>
+                    <li class="invalid"><i class="fas fa-times"></i> Contains letters and numbers</li>
+                    <li class="invalid"><i class="fas fa-times"></i> Passwords match</li>
+                </ul>
             </div>
-            
-            <div class="form-group">
-                <label for="confirm_password">
-                    <i class="fas fa-lock"></i> Confirm Password
+
+            <!-- Terms and Conditions -->
+            <div class="terms-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="terms" required>
+                    <span class="checkmark"></span>
+                    I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
                 </label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
-                <div class="error-message" id="confirm-password-error"></div>
             </div>
             
             <button type="submit" class="btn btn-primary btn-full">

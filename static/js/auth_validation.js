@@ -142,6 +142,12 @@ function initRegisterValidation() {
         const hasLetter = /[a-zA-Z]/.test(value);
         const hasNumber = /[0-9]/.test(value);
         
+        // Update password strength indicator
+        updatePasswordStrength(value);
+        
+        // Update password requirements
+        updatePasswordRequirements(value);
+        
         if (value.length === 0) {
             showError(errorElement, 'Password is required');
             return false;
@@ -161,10 +167,88 @@ function initRegisterValidation() {
         }
     }
     
+    function updatePasswordStrength(password) {
+        const strengthFill = document.getElementById('strength-fill');
+        const strengthText = document.getElementById('strength-text');
+        
+        if (!strengthFill || !strengthText) return;
+        
+        let score = 0;
+        let feedback = '';
+        
+        // Length check
+        if (password.length >= 6) score++;
+        if (password.length >= 8) score++;
+        
+        // Character variety
+        if (/[a-z]/.test(password)) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^a-zA-Z0-9]/.test(password)) score++;
+        
+        // Update visual indicator
+        strengthFill.className = 'password-strength-fill';
+        
+        if (score < 3) {
+            strengthFill.classList.add('weak');
+            feedback = 'Weak password';
+        } else if (score < 5) {
+            strengthFill.classList.add('medium');
+            feedback = 'Medium strength';
+        } else {
+            strengthFill.classList.add('strong');
+            feedback = 'Strong password';
+        }
+        
+        strengthText.textContent = feedback;
+    }
+    
+    function updatePasswordRequirements(password) {
+        const requirements = document.getElementById('password-requirements');
+        if (!requirements) return;
+        
+        const items = requirements.children;
+        
+        // At least 6 characters
+        if (items[0]) {
+            const isValid = password.length >= 6;
+            updateRequirementItem(items[0], isValid);
+        }
+        
+        // Contains letters and numbers
+        if (items[1]) {
+            const hasLetter = /[a-zA-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const isValid = hasLetter && hasNumber;
+            updateRequirementItem(items[1], isValid);
+        }
+        
+        // Passwords match (if confirm password has value)
+        if (items[2] && confirmPassword && confirmPassword.value) {
+            const isValid = password === confirmPassword.value;
+            updateRequirementItem(items[2], isValid);
+        }
+    }
+    
+    function updateRequirementItem(item, isValid) {
+        const icon = item.querySelector('i');
+        
+        if (isValid) {
+            item.className = 'valid';
+            icon.className = 'fas fa-check';
+        } else {
+            item.className = 'invalid';
+            icon.className = 'fas fa-times';
+        }
+    }
+    
     function validateConfirmPassword() {
         const passwordValue = password.value;
         const confirmValue = confirmPassword.value;
         const errorElement = document.getElementById('confirm-password-error');
+        
+        // Update the requirements list when confirm password changes
+        updatePasswordRequirements(passwordValue);
         
         if (confirmValue.length === 0) {
             showError(errorElement, 'Please confirm your password');
