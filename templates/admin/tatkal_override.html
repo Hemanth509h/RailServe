@@ -35,7 +35,7 @@
                 {% endif %}
                 
                 <form method="post" action="{{ url_for('admin.disable_tatkal_override') }}" class="inline-form">
-                    {{ csrf_token() }}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="danger-button small-button" onclick="return confirm('Are you sure you want to disable Tatkal override?')">
                         <i class="fas fa-ban"></i> Disable Override
                     </button>
@@ -59,7 +59,7 @@
                 </div>
                 <div class="admin-card-body">
                     <form method="post" action="{{ url_for('admin.enable_tatkal_override') }}">
-                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="form-group">
                             <label for="override_message" class="input-label">Override Message</label>
                             <input type="text" class="text-input" id="override_message" name="override_message" 
