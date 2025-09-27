@@ -45,6 +45,168 @@ form {
 div#change-password {
     margin-top: 35px;
 }
+
+/* Modern Train Selector Styles */
+.train-selector-container {
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.train-search-header {
+    margin-bottom: 15px;
+}
+
+.train-selection-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.small-button {
+    padding: 8px 15px;
+    font-size: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.secondary-button {
+    background: #6c757d;
+    color: white;
+}
+
+.secondary-button:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.selected-counter {
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+    margin-left: auto;
+}
+
+.train-option {
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.train-option:hover {
+    background: #e9ecef;
+    border-radius: 6px;
+}
+
+.train-option.hidden {
+    display: none;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 6px;
+    position: relative;
+    margin: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    margin-right: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: var(--accent-color, #007bff);
+    border-color: var(--accent-color, #007bff);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: "\2713";
+    position: absolute;
+    left: 3px;
+    top: -2px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.train-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.train-number {
+    font-weight: 700;
+    color: #495057;
+    font-size: 14px;
+}
+
+.train-name {
+    color: #6c757d;
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.train-details {
+    color: #adb5bd;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.train-option.selected .checkbox-label {
+    background: #e3f2fd;
+    border-left: 3px solid var(--accent-color, #007bff);
+}
+
+.train-list-container {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.train-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.train-list-container::-webkit-scrollbar-track {
+    background: #f1f3f4;
+    border-radius: 4px;
+}
+
+.train-list-container::-webkit-scrollbar-thumb {
+    background: #c1c8cd;
+    border-radius: 4px;
+}
+
+.train-list-container::-webkit-scrollbar-thumb:hover {
+    background: #a8b2ba;
+}
 </style>
 {% endblock %}
 
@@ -123,12 +285,32 @@ div#change-password {
 
                         <div class="form-group" id="g5">
                             <label for="train_selection" class="input-label">Train Selection (Optional)</label>
-                            <select multiple class="text-input" id="train_selection" name="train_ids" size="8" style="height: auto;">
-                                {% for train in all_trains %}
-                                <option value="{{ train.id }}">{{ train.number }} - {{ train.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <div class="input-help">Hold Ctrl/Cmd to select multiple trains. Leave none selected for all trains</div>
+                            <div class="train-selector-container">
+                                <div class="train-search-header">
+                                    <input type="text" id="train-search" class="text-input" placeholder="Search trains by number or name..." style="margin-bottom: 10px;">
+                                    <div class="train-selection-actions">
+                                        <button type="button" id="select-all-trains" class="small-button secondary-button">Select All</button>
+                                        <button type="button" id="clear-all-trains" class="small-button secondary-button">Clear All</button>
+                                        <span id="selected-count" class="selected-counter">0 trains selected</span>
+                                    </div>
+                                </div>
+                                <div class="train-list-container" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #f8f9fa;">
+                                    {% for train in all_trains %}
+                                    <div class="train-option" data-train-id="{{ train.id }}" data-search-text="{{ train.number }} {{ train.name }}">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" name="train_ids" value="{{ train.id }}" class="train-checkbox">
+                                            <span class="checkmark"></span>
+                                            <div class="train-info">
+                                                <span class="train-number">{{ train.number }}</span>
+                                                <span class="train-name">{{ train.name }}</span>
+                                                <span class="train-details">{{ train.available_seats }} seats available</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="input-help">Search and select specific trains for the override. Leave none selected to apply to all trains</div>
                         </div>
 
                         <div class="form-group" id="g3">
@@ -220,4 +402,121 @@ div#change-password {
     </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('train-search');
+    const selectAllBtn = document.getElementById('select-all-trains');
+    const clearAllBtn = document.getElementById('clear-all-trains');
+    const selectedCountEl = document.getElementById('selected-count');
+    const trainOptions = document.querySelectorAll('.train-option');
+    const trainCheckboxes = document.querySelectorAll('.train-checkbox');
+
+    function updateSelectedCount() {
+        const checkedBoxes = document.querySelectorAll('.train-checkbox:checked');
+        const count = checkedBoxes.length;
+        selectedCountEl.textContent = `${count} train${count !== 1 ? 's' : ''} selected`;
+        
+        // Update visual state of train options
+        trainOptions.forEach(option => {
+            const checkbox = option.querySelector('.train-checkbox');
+            if (checkbox.checked) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+    }
+
+    function filterTrains() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+        
+        trainOptions.forEach(option => {
+            const searchText = option.getAttribute('data-search-text').toLowerCase();
+            if (searchText.includes(searchTerm)) {
+                option.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+        
+        // Update button states based on visible trains
+        const visibleCheckboxes = document.querySelectorAll('.train-option:not(.hidden) .train-checkbox');
+        const checkedVisibleBoxes = document.querySelectorAll('.train-option:not(.hidden) .train-checkbox:checked');
+        
+        selectAllBtn.disabled = visibleCheckboxes.length === 0;
+        clearAllBtn.disabled = checkedVisibleBoxes.length === 0;
+    }
+
+    // Search functionality
+    searchInput.addEventListener('input', filterTrains);
+
+    // Select All functionality
+    selectAllBtn.addEventListener('click', function() {
+        const visibleCheckboxes = document.querySelectorAll('.train-option:not(.hidden) .train-checkbox');
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+        filterTrains(); // Update button states
+    });
+
+    // Clear All functionality
+    clearAllBtn.addEventListener('click', function() {
+        const visibleCheckboxes = document.querySelectorAll('.train-option:not(.hidden) .train-checkbox');
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+        filterTrains(); // Update button states
+    });
+
+    // Checkbox change events
+    trainCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectedCount();
+            filterTrains(); // Update button states
+        });
+    });
+
+    // Initialize
+    updateSelectedCount();
+    filterTrains();
+
+    // Enhanced form submission with validation
+    const form = document.querySelector('form[action*="enable_tatkal_override"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const checkedBoxes = document.querySelectorAll('.train-checkbox:checked');
+            const messageInput = document.getElementById('override_message');
+            
+            // Validate message
+            if (!messageInput.value.trim()) {
+                alert('Please enter an override message.');
+                e.preventDefault();
+                messageInput.focus();
+                return;
+            }
+            
+            // Show confirmation with details
+            let confirmText = `Enable Tatkal override with the following settings?\n\n`;
+            confirmText += `Message: "${messageInput.value}"\n`;
+            
+            const coachClasses = document.getElementById('coach_classes').value;
+            confirmText += `Coach Classes: ${coachClasses || 'All classes'}\n`;
+            
+            const validHours = document.getElementById('valid_hours').value;
+            confirmText += `Valid for: ${validHours ? validHours + ' hours' : 'No expiry'}\n`;
+            
+            confirmText += `Trains: ${checkedBoxes.length > 0 ? checkedBoxes.length + ' specific trains' : 'All trains'}\n`;
+            
+            if (!confirm(confirmText)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

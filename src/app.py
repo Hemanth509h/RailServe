@@ -90,7 +90,7 @@ from .auth import auth_bp
 from .admin import admin_bp
 from .booking import booking_bp
 from .payment import payment_bp
-from .groups import groups_bp
+from .groups import modern_groups_bp as groups_bp
 from .pdf_routes import pdf_bp
 
 app.register_blueprint(auth_bp)
