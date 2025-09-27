@@ -19,8 +19,24 @@ author = "agent"
 task = "workflow.run"
 args = "Flask Railway App"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Railway Web Application"
+
 [[workflows.workflow]]
 name = "Flask Railway App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Railway Web Application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -36,10 +52,6 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 33905
-externalPort = 3002
-
-[[ports]]
 localPort = 41725
 externalPort = 3003
 
@@ -50,6 +62,10 @@ externalPort = 3000
 [[ports]]
 localPort = 44611
 externalPort = 3001
+
+[[ports]]
+localPort = 44711
+externalPort = 3002
 
 [deployment]
 deploymentTarget = "autoscale"
