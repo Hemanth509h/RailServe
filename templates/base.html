@@ -3450,6 +3450,170 @@ document.addEventListener('DOMContentLoaded', () => {
     window.themeManager = new ThemeManager();
 });
     </script>
+
+    <!-- 3D Background Animation -->
+    <canvas id="3d-background" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
+    <script>
+        // 3D Background Animation
+        function init3DHero() {
+            const canvas = document.getElementById('3d-background');
+            if (!canvas) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            let renderer;
+            try {
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+            } catch (error) {
+                console.warn('3D initialization failed:', error);
+                canvas.style.display = 'none';
+                return;
+            }
+
+            // Create floating geometric shapes
+            const geometries = [
+                new THREE.BoxGeometry(0.5, 0.5, 0.5),
+                new THREE.SphereGeometry(0.3, 32, 32),
+                new THREE.ConeGeometry(0.3, 0.8, 8),
+                new THREE.OctahedronGeometry(0.4),
+                new THREE.TetrahedronGeometry(0.4)
+            ];
+
+            const materials = [
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x3b82f6, 
+                    transparent: true, 
+                    opacity: 0.15,
+                    wireframe: true
+                }),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x06b6d4, 
+                    transparent: true, 
+                    opacity: 0.1,
+                    wireframe: true
+                }),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x8b5cf6, 
+                    transparent: true, 
+                    opacity: 0.12,
+                    wireframe: true
+                }),
+                new THREE.MeshBasicMaterial({ 
+                    color: 0x10b981, 
+                    transparent: true, 
+                    opacity: 0.08,
+                    wireframe: true
+                })
+            ];
+
+            const shapes = [];
+            const numShapes = 15;
+
+            for (let i = 0; i < numShapes; i++) {
+                const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+                const material = materials[Math.floor(Math.random() * materials.length)];
+                const mesh = new THREE.Mesh(geometry, material);
+
+                // Random positioning
+                mesh.position.x = (Math.random() - 0.5) * 20;
+                mesh.position.y = (Math.random() - 0.5) * 20;
+                mesh.position.z = (Math.random() - 0.5) * 20;
+
+                // Random rotation
+                mesh.rotation.x = Math.random() * Math.PI;
+                mesh.rotation.y = Math.random() * Math.PI;
+                mesh.rotation.z = Math.random() * Math.PI;
+
+                // Random scale
+                const scale = 0.5 + Math.random() * 1.5;
+                mesh.scale.set(scale, scale, scale);
+
+                // Store animation properties
+                mesh.userData = {
+                    rotationSpeed: {
+                        x: (Math.random() - 0.5) * 0.02,
+                        y: (Math.random() - 0.5) * 0.02,
+                        z: (Math.random() - 0.5) * 0.02
+                    },
+                    floatSpeed: Math.random() * 0.01 + 0.005,
+                    floatOffset: Math.random() * Math.PI * 2
+                };
+
+                scene.add(mesh);
+                shapes.push(mesh);
+            }
+
+            camera.position.z = 10;
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Animate each shape
+                shapes.forEach((shape, index) => {
+                    // Rotation
+                    shape.rotation.x += shape.userData.rotationSpeed.x;
+                    shape.rotation.y += shape.userData.rotationSpeed.y;
+                    shape.rotation.z += shape.userData.rotationSpeed.z;
+
+                    // Floating motion
+                    const time = Date.now() * shape.userData.floatSpeed;
+                    shape.position.y += Math.sin(time + shape.userData.floatOffset) * 0.01;
+                    shape.position.x += Math.cos(time + shape.userData.floatOffset) * 0.005;
+                });
+
+                // Gentle camera movement
+                const time = Date.now() * 0.0005;
+                camera.position.x = Math.sin(time) * 2;
+                camera.position.y = Math.cos(time * 0.7) * 1;
+                camera.lookAt(0, 0, 0);
+
+                renderer.render(scene, camera);
+            }
+
+            // Handle window resize
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            window.addEventListener('resize', onWindowResize);
+            
+            // Start animation
+            animate();
+
+            // Adjust opacity based on theme
+            function updateTheme() {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                shapes.forEach(shape => {
+                    shape.material.opacity = isDark ? 0.2 : 0.1;
+                });
+            }
+
+            // Listen for theme changes
+            const observer = new MutationObserver(updateTheme);
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+
+            updateTheme();
+        }
+
+        // Initialize 3D background when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                init3DHero();
+            } catch (error) {
+                console.warn('3D background initialization failed:', error);
+            }
+        });
+    </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
