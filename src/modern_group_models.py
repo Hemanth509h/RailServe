@@ -75,7 +75,7 @@ class ModernGroupBooking(db.Model):
     memberships = relationship('GroupMembership', back_populates='group', cascade='all, delete-orphan')
     bookings = relationship('GroupBookingDetail', back_populates='group', cascade='all, delete-orphan')
     invitations = relationship('ModernGroupInvitation', back_populates='group', cascade='all, delete-orphan')
-    messages = relationship('GroupMessage', back_populates='group', cascade='all, delete-orphan')
+    messages = relationship('ModernGroupMessage', back_populates='group', cascade='all, delete-orphan')
     activities = relationship('GroupActivityLog', back_populates='group', cascade='all, delete-orphan')
     payments = relationship('GroupPaymentSplit', back_populates='group', cascade='all, delete-orphan')
     
@@ -93,8 +93,8 @@ class ModernGroupBooking(db.Model):
             'estimated_passengers': self.estimated_passengers,
             'actual_passengers': self.actual_passengers,
             'status': self.status,
-            'travel_preferences': json.loads(self.travel_preferences) if self.travel_preferences else {},
-            'budget_constraints': json.loads(self.budget_constraints) if self.budget_constraints else {},
+            'travel_preferences': json.loads(str(self.travel_preferences)) if self.travel_preferences else {},
+            'budget_constraints': json.loads(str(self.budget_constraints)) if self.budget_constraints else {},
             'total_estimated_cost': self.total_estimated_cost,
             'discount_applied': self.discount_applied,
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -102,10 +102,11 @@ class ModernGroupBooking(db.Model):
             'travel_end_date': self.travel_end_date.isoformat() if self.travel_end_date else None
         }
     
-    @property
-    def member_count(self) -> int:
+    def get_member_count(self) -> int:
         """Get current number of active members"""
-        return len([m for m in self.memberships if m.status == 'active'])
+        if hasattr(self, 'memberships') and self.memberships:
+            return len([m for m in self.memberships if m.status == 'active'])
+        return 0
     
     @property
     def completion_percentage(self) -> float:
@@ -114,7 +115,7 @@ class ModernGroupBooking(db.Model):
         completed_steps = 0
         
         if self.status != 'draft': completed_steps += 1
-        if self.member_count > 0: completed_steps += 1
+        if self.get_member_count() > 0: completed_steps += 1
         if len(self.bookings) > 0: completed_steps += 2
         if self.status in ['confirmed', 'completed']: completed_steps += 2
         
@@ -188,10 +189,11 @@ class ModernGroupInvitation(db.Model):
     inviter = relationship('User', foreign_keys=[inviter_id])
     joined_user = relationship('User', foreign_keys=[joined_user_id])
     
-    @property
-    def is_expired(self) -> bool:
+    def check_if_expired(self) -> bool:
         """Check if invitation has expired"""
-        return datetime.utcnow() > self.expires_at
+        if self.expires_at:
+            return datetime.utcnow() > self.expires_at
+        return False
     
     def __repr__(self):
         return f'<ModernGroupInvitation {self.invited_email} to {self.group.group_name}>'
@@ -279,15 +281,14 @@ class GroupPaymentSplit(db.Model):
     group = relationship('ModernGroupBooking', back_populates='payments')
     user = relationship('User')
     
-    @property
-    def outstanding_amount(self) -> float:
+    def get_outstanding_amount(self) -> float:
         """Calculate outstanding payment amount"""
-        return max(0.0, self.assigned_amount - self.paid_amount)
+        return max(0.0, float(self.assigned_amount or 0.0) - float(self.paid_amount or 0.0))
     
     def __repr__(self):
         return f'<GroupPaymentSplit {self.user.username}: ${self.assigned_amount}>'
 
-class GroupMessage(db.Model):
+class ModernGroupMessage(db.Model):
     """
     Real-time group communication system
     """
@@ -318,22 +319,22 @@ class GroupMessage(db.Model):
     # Relationships
     group = relationship('ModernGroupBooking', back_populates='messages')
     sender = relationship('User')
-    replies = relationship('GroupMessage', backref=backref('parent_message', remote_side=[id]))
+    replies = relationship('ModernGroupMessage', backref=backref('parent_message', remote_side=[id]))
     
     def mark_as_read(self, user_id: int):
         """Mark message as read by a user"""
-        read_list = json.loads(self.read_by) if self.read_by else []
+        read_list = json.loads(str(self.read_by)) if self.read_by else []
         if user_id not in read_list:
             read_list.append(user_id)
             self.read_by = json.dumps(read_list)
     
     def is_read_by(self, user_id: int) -> bool:
         """Check if message has been read by a user"""
-        read_list = json.loads(self.read_by) if self.read_by else []
+        read_list = json.loads(str(self.read_by)) if self.read_by else []
         return user_id in read_list
     
     def __repr__(self):
-        return f'<GroupMessage from {self.sender.username} in {self.group.group_name}>'
+        return f'<ModernGroupMessage from {self.sender.username} in {self.group.group_name}>'
 
 class GroupActivityLog(db.Model):
     """
@@ -353,7 +354,7 @@ class GroupActivityLog(db.Model):
                                name='activity_types'), nullable=False)
     
     description = Column(Text, nullable=False)
-    metadata = Column(JSON)  # Additional context data
+    context_data = Column(JSON)  # Additional context data
     
     # Severity and Visibility
     severity = Column(Enum('info', 'warning', 'error', 'success', name='activity_severities'), 

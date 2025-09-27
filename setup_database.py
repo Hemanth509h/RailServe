@@ -59,13 +59,19 @@ def setup_database():
                 Station, Train, TrainRoute,
                 
                 # Core Booking System  
-                Booking, Passenger, Payment, RefundRequest
+                Booking, Passenger, Payment, RefundRequest,
+                
+                # Essential Admin Features
+                TatkalTimeSlot, TatkalOverride, ComplaintManagement,
+                
+                # Waitlist and Group Features
+                Waitlist, GroupBooking
             )
             
             # Import Modern Group Booking Models
             from src.modern_group_models import (
                 ModernGroupBooking, GroupMembership, ModernGroupInvitation,
-                GroupBookingDetail, GroupPaymentSplit, GroupMessage,
+                GroupBookingDetail, GroupPaymentSplit, ModernGroupMessage,
                 GroupActivityLog, GroupAnalytics
             )
             
