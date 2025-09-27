@@ -270,6 +270,11 @@ def change_password():
         flash('All password fields are required', 'error')
         return redirect(url_for('auth.profile'))
     
+    # Type safety - ensure values are not None
+    assert current_password is not None
+    assert new_password is not None
+    assert confirm_password is not None
+    
     # Verify current password
     if not check_password_hash(current_user.password_hash, current_password):
         flash('Current password is incorrect', 'error')
