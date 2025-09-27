@@ -1,0 +1,40 @@
+ python setup_database.py
+2025-09-27 21:46:34,070 - INFO - 🚂 Starting Modern Railway Database Setup (2025)
+2025-09-27 21:46:34,070 - INFO - Creating: Core tables + Modern Group Booking System
+2025-09-27 21:46:34,071 - INFO - ================================================================================
+2025-09-27 21:46:34,660 - INFO - Database connection successful
+2025-09-27 21:46:34,943 - ERROR - ❌ Database setup failed: Attribute name 'metadata' is reserved when using the Declarative API.
+Traceback (most recent call last):
+  File "C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\setup_database.py", line 66, in setup_database
+    from src.modern_group_models import (
+    ...<3 lines>...
+    )
+  File "C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\src\modern_group_models.py", line 338, in <module>
+    class GroupActivityLog(db.Model):
+    ...<32 lines>...
+            return f'<GroupActivityLog {self.activity_type} in {self.group.group_name}>'
+  File "E:\anaconda\Lib\site-packages\flask_sqlalchemy\model.py", line 124, in __init_subclass__  
+    super().__init_subclass__(**kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "E:\anaconda\Lib\site-packages\flask_sqlalchemy\model.py", line 214, in __init_subclass__  
+    super().__init_subclass__(**kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\decl_api.py", line 842, in __init_subclass__ 
+    _as_declarative(cls._sa_registry, cls, cls.__dict__)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 244, in _as_declarative  
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 325, in setup_mapping    
+    return _ClassScanMapperConfig(
+        registry, cls_, dict_, table, mapper_kw
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 572, in __init__
+    self._extract_mappable_attributes()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 1531, in _extract_mappable_attributes
+    raise exc.InvalidRequestError(
+    ...<2 lines>...
+    )
+sqlalchemy.exc.InvalidRequestError: Attribute name 'metadata' is reserved when using the Declarative API.
+(base) PS C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe> setup_database.py
