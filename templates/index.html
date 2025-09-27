@@ -230,10 +230,17 @@
 
 {% block content %}
 <div class="hero-section">
-    <canvas id="hero3d" class="hero-3d-canvas"></canvas>
+    <canvas id="hero-3d-canvas" class="hero-3d-canvas"></canvas>
     <div class="hero-content">
-        <h1><i class="fas fa-train"></i> Welcome to RailServe</h1>
-        <p>Book your railway tickets with ease and comfort</p>
+        <div class="hero-text-overlay">
+            <h1><i class="fas fa-train"></i> Welcome to RailServe 2025</h1>
+            <p class="lead">Book your railway tickets with modern technology - fast, secure, and reliable</p>
+            <div class="animation-controls">
+                <button id="toggle-3d" class="animation-toggle" onclick="toggle3DHero()">
+                    <i class="fas fa-cube"></i> 3D: <span id="3d-status">On</span>
+                </button>
+            </div>
+        </div>
 
         <div class="search-form">
             <form method="POST" action="{{ url_for('search_trains_route') }}">
@@ -736,6 +743,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const journeyDate = document.getElementById('journey_date');
     if (journeyDate) {
         journeyDate.min = new Date().toISOString().split('T')[0];
+    }
+});
+
+// Modern 3D Animation Integration
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup toggle function for 3D animations
+    window.toggle3DHero = function() {
+        if (window.modern3D) {
+            const canvas = document.getElementById('hero-3d-canvas');
+            const status = document.getElementById('3d-status');
+            
+            if (window.modern3D.isAnimating) {
+                window.modern3D.stopAnimation();
+                if (canvas) canvas.style.opacity = '0.3';
+                if (status) status.textContent = 'Off';
+                localStorage.setItem('railserve-3d-enabled', 'false');
+            } else {
+                window.modern3D.startAnimation();
+                if (canvas) canvas.style.opacity = '1';
+                if (status) status.textContent = 'On';
+                localStorage.setItem('railserve-3d-enabled', 'true');
+            }
+        }
+    };
+    
+    // Initialize 3D status based on stored preference
+    const status = document.getElementById('3d-status');
+    const stored = localStorage.getItem('railserve-3d-enabled');
+    if (status) {
+        status.textContent = (stored !== 'false') ? 'On' : 'Off';
     }
 });
 </script>

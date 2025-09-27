@@ -3602,14 +3602,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateTheme();
         }
 
-        // Initialize 3D background when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            try {
-                init3DHero();
-            } catch (error) {
-                console.warn('3D background initialization failed:', error);
-            }
-        });
+        // Modern 3D animations are handled by modern-3d-animations.js
     </script>
 
     {% block scripts %}{% endblock %}
