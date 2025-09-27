@@ -643,6 +643,29 @@
     background: #f8fafc;
     border: 1px solid #e2e8f0;
 }
+.help-grid {
+    display: flex;
+    justify-content: space-evenly;
+}
+.help-card {
+    hight: 300px;
+    height: 174px;
+    width: 225px;
+    background: white;
+    /* border: 1px solid #ffffff; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    border-radius: 30px;
+    box-shadow: 5px 5px #776e6e;
+}
+.h31 {
+    font-size: 29px;
+    text-align: center;
+    margin: 19px 5px;
+}
 </style>
 {% endblock %}
 
@@ -887,7 +910,7 @@
         {% endif %}
         
         <div class="help-section">
-            <h3><i class="fas fa-question-circle"></i> Need Help?</h3>
+            <h3 class="h31"><i class="fas fa-question-circle"></i> Need Help?</h3>
             <div class="help-grid">
                 <div class="help-card">
                     <i class="fas fa-phone"></i>
@@ -903,7 +926,7 @@
                 </div>
                 <div class="help-card">
                     <i class="fas fa-comments"></i>
-                    <h4>Live Chat</h4>
+                    <h4>Live Chat</h4>  
                     <p>Chat with us</p>
                     <small>Available 9 AM - 9 PM</small>
                 </div>

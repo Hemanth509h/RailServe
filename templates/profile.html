@@ -4,669 +4,704 @@
 
 {% block head %}
 <style>
-/* Modern Profile Page Styles */
-.profile-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.profile-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 4rem;
-    border-radius: 24px;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-}
-
-.profile-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b, #ef4444);
-}
-
-.profile-header::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
-    animation: profileFloat 8s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes profileFloat {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(1deg); }
-    66% { transform: translate(-20px, 20px) rotate(-1deg); }
-}
-
-.profile-header h1 {
-    margin-bottom: 0.5rem;
-    font-size: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-}
-
-.profile-header p {
-    opacity: 0.9;
-    font-size: 1.1rem;
-}
-
-.profile-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-}
-
-.profile-info-card {
-    background: white;
-    border: none;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.profile-info-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.profile-info-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.18);
-}
-
-.profile-info-card h3 {
-    color: #1e293b;
-    margin-bottom: 1.5rem;
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.75rem;
-}
-
-.profile-info-card h3 i {
-    color: #667eea;
-}
-
-.profile-info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.profile-info-item:last-child {
-    border-bottom: none;
-}
-
-.info-label {
-    color: #64748b;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.info-label i {
-    color: #667eea;
-    width: 16px;
-}
-
-.info-value {
-    color: #1e293b;
-    font-weight: 600;
-}
-
-.account-status {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.account-status.active {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.account-status.inactive {
-    background: #fecaca;
-    color: #991b1b;
-}
-
-.role-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.role-badge.user {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.role-badge.admin {
-    background: #fbbf24;
-    color: white;
-}
-
-.role-badge.super_admin {
-    background: #dc2626;
-    color: white;
-}
-
-.edit-profile-form {
-    background: white;
-    border: none;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.edit-profile-form::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.edit-profile-form h3 {
-    color: #1e293b;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.75rem;
-}
-
-.edit-profile-form h3 i {
-    color: #667eea;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.form-group label i {
-    color: #667eea;
-    width: 16px;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 1rem 1.25rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
-    background: #f8fafc;
-    color: #1e293b;
-    font-size: 1rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    border-color: #667eea;
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 8px 25px rgba(102, 126, 234, 0.1);
-    background: white;
-    transform: translateY(-2px);
-}
-
-.password-change-section {
-    grid-column: 1 / -1;
-    background: white;
-    border: none;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    margin-top: 2rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.password-change-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
-
-.password-change-section h3 {
-    color: #1e293b;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.75rem;
-}
-
-.password-change-section h3 i {
-    color: #f59e0b;
-}
-
-.password-form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.security-notice {
-    background: #dbeafe;
-    border: 1px solid #93c5fd;
-    color: #1e40af;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-}
-
-.security-notice i {
-    color: #3b82f6;
-    font-size: 1.2rem;
-    margin-top: 0.1rem;
-}
-
-.loyalty-program-card {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 20px;
-    padding: 3rem;
-    box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
-    margin-top: 2rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.loyalty-program-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
-    animation: loyaltyFloat 6s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes loyaltyFloat {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(-20px, -20px) rotate(2deg); }
-}
-
-.loyalty-program-card h3 {
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 0.75rem;
-}
-
-.loyalty-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.5rem;
-}
-
-.loyalty-stat {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 1rem;
-}
-
-.loyalty-stat .stat-number {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin-bottom: 0.25rem;
-}
-
-.loyalty-stat .stat-label {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-
-.tier-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-}
-
-.profile-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.profile-actions .btn {
-    min-width: 140px;
-}
-
-.recent-activity-card {
-    grid-column: 1 / -1;
-    background: white;
-    border: none;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    margin-top: 2rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.recent-activity-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-}
-
-.recent-activity-card h3 {
-    color: #1e293b;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.75rem;
-}
-
-.activity-list {
-    list-style: none;
-    padding: 0;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
-    border-bottom: 1px solid #e2e8f0;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    margin-bottom: 0.5rem;
-}
-
-.activity-item:hover {
-    background: #f8fafc;
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-}
-
-.activity-icon:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.activity-content {
-    flex: 1;
-}
-
-.activity-title {
-    color: #1e293b;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.activity-date {
-    color: #64748b;
-    font-size: 0.85rem;
-}
-
-.password-strength-indicator {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-}
-
-.strength-bar {
-    width: 100%;
-    height: 8px;
-    background: #e2e8f0;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 0.5rem;
-}
-
-.strength-fill {
-    height: 100%;
-    transition: width 0.3s ease, background-color 0.3s ease;
-    border-radius: 4px;
-}
-
-.strength-text {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #4a5568;
-}
-
-.form-help {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin-top: 0.25rem;
-    display: block;
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-/* Profile Navigation Cards */
-.profile-navigation {
-    margin: 2rem 0;
-}
-
-.nav-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.nav-card {
-    background: white;
-    border: none;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.nav-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-    text-decoration: none;
-    color: inherit;
-}
-
-.nav-icon {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    transition: all 0.3s ease;
-}
-
-.nav-card:hover .nav-icon {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.nav-content {
-    flex: 1;
-}
-
-.nav-content h4 {
-    color: #1e293b;
-    margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.nav-content p {
-    color: #64748b;
-    margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.nav-arrow {
-    color: #667eea;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-}
-
-.nav-card:hover .nav-arrow {
-    transform: translateX(5px);
-    color: #764ba2;
-}
-
-@media (max-width: 768px) {
+    /* Modern Profile Page Styles */
     .profile-container {
-        padding: 1rem;
-    }
-    
-    .profile-grid {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .password-form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .loyalty-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .profile-actions {
-        justify-content: stretch;
-    }
-    
-    .profile-actions .btn {
-        flex: 1;
-        min-width: auto;
-    }
-    
-    .profile-header {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 2rem;
     }
-    
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem;
+        border-radius: 24px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b, #ef4444);
+    }
+
+    .profile-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: profileFloat 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes profileFloat {
+
+        0%,
+        100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+            transform: translate(30px, -30px) rotate(1deg);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) rotate(-1deg);
+        }
+    }
+
     .profile-header h1 {
-        font-size: 2rem;
-        flex-direction: column;
+        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .profile-header p {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    .profile-info-card {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .profile-info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .profile-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+    }
+
+    .profile-info-card h3 {
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.75rem;
+    }
+
+    .profile-info-card h3 i {
+        color: #667eea;
+    }
+
+    .profile-info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .profile-info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: #64748b;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
     }
-}
+
+    .info-label i {
+        color: #667eea;
+        width: 16px;
+    }
+
+    .info-value {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .account-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .account-status.active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .account-status.inactive {
+        background: #fecaca;
+        color: #991b1b;
+    }
+
+    .role-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .role-badge.user {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .role-badge.admin {
+        background: #fbbf24;
+        color: white;
+    }
+
+    .role-badge.super_admin {
+        background: #dc2626;
+        color: white;
+    }
+
+    .edit-profile-form {
+        background: white;
+        border: none;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edit-profile-form::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .edit-profile-form h3 {
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.75rem;
+    }
+
+    .edit-profile-form h3 i {
+        color: #667eea;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-group label i {
+        color: #667eea;
+        width: 16px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        color: #1e293b;
+        font-size: 1rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 8px 25px rgba(102, 126, 234, 0.1);
+        background: white;
+        transform: translateY(-2px);
+    }
+
+    .password-change-section {
+        grid-column: 1 / -1;
+        background: white;
+        border: none;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        margin-top: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .password-change-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .password-change-section h3 {
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.75rem;
+    }
+
+    .password-change-section h3 i {
+        color: #f59e0b;
+    }
+
+    .password-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .security-notice {
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+        color: #1e40af;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .security-notice i {
+        color: #3b82f6;
+        font-size: 1.2rem;
+        margin-top: 0.1rem;
+    }
+
+    .loyalty-program-card {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
+        margin-top: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .loyalty-program-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        animation: loyaltyFloat 6s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes loyaltyFloat {
+
+        0%,
+        100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        50% {
+            transform: translate(-20px, -20px) rotate(2deg);
+        }
+    }
+
+    .loyalty-program-card h3 {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 0.75rem;
+    }
+
+    .loyalty-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .loyalty-stat {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .loyalty-stat .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    .loyalty-stat .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .tier-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .profile-actions .btn {
+        min-width: 140px;
+    }
+
+    .recent-activity-card {
+        grid-column: 1 / -1;
+        background: white;
+        border: none;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        margin-top: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .recent-activity-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .recent-activity-card h3 {
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.75rem;
+    }
+
+    .activity-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+
+    .activity-item:hover {
+        background: #f8fafc;
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .activity-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-title {
+        color: #1e293b;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-date {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .password-strength-indicator {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .strength-bar {
+        width: 100%;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+
+    .strength-fill {
+        height: 100%;
+        transition: width 0.3s ease, background-color 0.3s ease;
+        border-radius: 4px;
+    }
+
+    .strength-text {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .form-help {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Profile Navigation Cards */
+    .profile-navigation {
+        margin: 2rem 0;
+    }
+
+    .nav-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .nav-card {
+        background: white;
+        border: none;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .nav-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .nav-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .nav-card:hover .nav-icon {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .nav-content {
+        flex: 1;
+    }
+
+    .nav-content h4 {
+        color: #1e293b;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .nav-content p {
+        color: #64748b;
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .nav-arrow {
+        color: #667eea;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .nav-card:hover .nav-arrow {
+        transform: translateX(5px);
+        color: #764ba2;
+    }
+
+    button {
+        border: transparent;
+        width: auto ;
+        padding: 15px;
+        font-size: 14px;
+        border-radius: 15px;
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        font-weight: bold;
+    }
+    button:hover{
+         background: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--card-hover-shadow);
+    text-decoration: none;
+    color: var(--text-inverse);
+    }
+
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 1rem;
+        }
+
+        .profile-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .password-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .loyalty-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .profile-actions {
+            justify-content: stretch;
+        }
+
+        .profile-actions .btn {
+            flex: 1;
+            min-width: auto;
+        }
+
+        .profile-header {
+            padding: 2rem;
+        }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -685,7 +720,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="profile-tabs">
         <div class="tabs">
             <button class="tab-button active" onclick="showTab('edit-profile')">
@@ -695,7 +730,7 @@
                 <i class="fas fa-key"></i> Change Password
             </button>
         </div>
-        
+
         <!-- Quick Navigation Links -->
         <div class="profile-navigation">
             <div class="nav-cards">
@@ -711,7 +746,7 @@
                         <i class="fas fa-arrow-right"></i>
                     </div>
                 </a>
-                
+
                 <a href="{{ url_for('index') }}" class="nav-card">
                     <div class="nav-icon">
                         <i class="fas fa-search"></i>
@@ -726,53 +761,47 @@
                 </a>
             </div>
         </div>
-        
+
         <!-- Edit Profile Tab -->
         <div id="edit-profile" class="tab-content">
             <h3>Edit Profile Information</h3>
-            
+
             <form method="POST" action="{{ url_for('auth.edit_profile') }}" class="edit-profile-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="username">
                             <i class="fas fa-user"></i>
                             Username
                         </label>
-                        <input type="text" id="username" name="username" 
-                               value="{{ current_user.username }}" 
-                               required maxlength="64"
-                               placeholder="Enter your username">
+                        <input type="text" id="username" name="username" value="{{ current_user.username }}" required
+                            maxlength="64" placeholder="Enter your username">
                         <small class="form-help">Choose a unique username (3-64 characters)</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="email">
                             <i class="fas fa-envelope"></i>
                             Email Address
                         </label>
-                        <input type="email" id="email" name="email" 
-                               value="{{ current_user.email }}" 
-                               required maxlength="120"
-                               placeholder="Enter your email address">
+                        <input type="email" id="email" name="email" value="{{ current_user.email }}" required
+                            maxlength="120" placeholder="Enter your email address">
                         <small class="form-help">We'll send booking confirmations to this email</small>
                     </div>
-                    
+
                     {% if current_user.phone is defined %}
                     <div class="form-group">
                         <label for="phone">
                             <i class="fas fa-phone"></i>
                             Phone Number
                         </label>
-                        <input type="tel" id="phone" name="phone" 
-                               value="{{ current_user.phone or '' }}" 
-                               maxlength="15"
-                               placeholder="Enter your phone number">
+                        <input type="tel" id="phone" name="phone" value="{{ current_user.phone or '' }}" maxlength="15"
+                            placeholder="Enter your phone number">
                         <small class="form-help">Optional: For booking notifications and updates</small>
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="profile-actions">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i>
@@ -785,63 +814,61 @@
                 </div>
             </form>
         </div>
-        
+
         <!-- Change Password Tab -->
         <div id="change-password" class="tab-content">
             <h3>Change Password</h3>
-            
+
             <div class="security-notice">
                 <i class="fas fa-shield-alt"></i>
                 <div>
-                    <strong>Security Tip:</strong> Choose a strong password with at least 8 characters, including letters and numbers. 
+                    <strong>Security Tip:</strong> Choose a strong password with at least 8 characters, including
+                    letters and numbers.
                     Don't reuse passwords from other accounts.
                 </div>
             </div>
-            
+
             <form method="POST" action="{{ url_for('auth.change_password') }}" class="change-password-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <div class="password-form-grid">
                     <div class="form-group">
                         <label for="current_password">
                             <i class="fas fa-lock"></i>
                             Current Password
                         </label>
-                        <input type="password" id="current_password" name="current_password" 
-                               required minlength="8"
-                               placeholder="Enter your current password">
+                        <input type="password" id="current_password" name="current_password" required minlength="8"
+                            placeholder="Enter your current password">
                         <small class="form-help">Enter your existing password to verify your identity</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="new_password">
                             <i class="fas fa-key"></i>
                             New Password
                         </label>
-                        <input type="password" id="new_password" name="new_password" 
-                               required minlength="8"
-                               placeholder="Enter your new password">
+                        <input type="password" id="new_password" name="new_password" required minlength="8"
+                            placeholder="Enter your new password">
                         <small class="form-help">Minimum 8 characters with letters and numbers</small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="confirm_password">
                             <i class="fas fa-check-circle"></i>
                             Confirm New Password
                         </label>
-                        <input type="password" id="confirm_password" name="confirm_password" 
-                               required minlength="8"
-                               placeholder="Confirm your new password">
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="8"
+                            placeholder="Confirm your new password">
                         <small class="form-help">Re-enter your new password to confirm</small>
                     </div>
                 </div>
-                
+
                 <div class="password-strength-indicator" id="password-strength" style="display: none;">
                     <div class="strength-bar">
                         <div class="strength-fill" id="strength-fill"></div>
                     </div>
                     <span class="strength-text" id="strength-text">Password strength</span>
                 </div>
-                
+
                 <div class="profile-actions">
                     <button type="submit" class="btn btn-warning">
                         <i class="fas fa-key"></i>
@@ -864,18 +891,18 @@
         // Hide all tabs
         const tabs = document.querySelectorAll('.tab-content');
         tabs.forEach(tab => tab.classList.remove('active'));
-        
+
         // Remove active class from all buttons
         const buttons = document.querySelectorAll('.tab-button');
         buttons.forEach(button => button.classList.remove('active'));
-        
+
         // Show selected tab
         document.getElementById(tabName).classList.add('active');
-        
+
         // Add active class to clicked button
         event.target.classList.add('active');
     }
-    
+
     function resetProfileForm() {
         // Reset the edit profile form to original values
         document.getElementById('username').value = "{{ current_user.username }}";
@@ -884,7 +911,7 @@
         document.getElementById('phone').value = "{{ current_user.phone or '' }}";
         {% endif %}
     }
-    
+
     function resetPasswordForm() {
         // Clear all password fields
         document.getElementById('current_password').value = '';
@@ -892,30 +919,30 @@
         document.getElementById('confirm_password').value = '';
         document.getElementById('password-strength').style.display = 'none';
     }
-    
+
     // Password strength checker
     function checkPasswordStrength(password) {
         let strength = 0;
         let feedback = '';
-        
+
         if (password.length >= 8) strength += 1;
         if (/[A-Z]/.test(password)) strength += 1;
         if (/[a-z]/.test(password)) strength += 1;
         if (/[0-9]/.test(password)) strength += 1;
         if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-        
+
         const strengthIndicator = document.getElementById('password-strength');
         const strengthFill = document.getElementById('strength-fill');
         const strengthText = document.getElementById('strength-text');
-        
+
         if (password.length === 0) {
             strengthIndicator.style.display = 'none';
             return;
         }
-        
+
         strengthIndicator.style.display = 'block';
-        
-        switch(strength) {
+
+        switch (strength) {
             case 0:
             case 1:
                 strengthFill.style.width = '20%';
@@ -943,57 +970,57 @@
                 feedback = 'Very Strong';
                 break;
         }
-        
+
         strengthText.textContent = feedback;
     }
-    
+
     // Password confirmation checker
     function checkPasswordConfirmation() {
         const newPassword = document.getElementById('new_password').value;
         const confirmPassword = document.getElementById('confirm_password').value;
         const confirmField = document.getElementById('confirm_password');
-        
+
         if (confirmPassword === '') {
             confirmField.style.borderColor = '';
             return;
         }
-        
+
         if (newPassword === confirmPassword) {
             confirmField.style.borderColor = '#22c55e';
         } else {
             confirmField.style.borderColor = '#ef4444';
         }
     }
-    
+
     // Initialize event listeners when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Password strength checking
         const newPasswordField = document.getElementById('new_password');
         if (newPasswordField) {
-            newPasswordField.addEventListener('input', function() {
+            newPasswordField.addEventListener('input', function () {
                 checkPasswordStrength(this.value);
             });
         }
-        
+
         // Password confirmation checking
         const confirmPasswordField = document.getElementById('confirm_password');
         if (confirmPasswordField) {
             confirmPasswordField.addEventListener('input', checkPasswordConfirmation);
         }
-        
+
         // Form validation
         const changePasswordForm = document.querySelector('.change-password-form');
         if (changePasswordForm) {
-            changePasswordForm.addEventListener('submit', function(e) {
+            changePasswordForm.addEventListener('submit', function (e) {
                 const newPassword = document.getElementById('new_password').value;
                 const confirmPassword = document.getElementById('confirm_password').value;
-                
+
                 if (newPassword !== confirmPassword) {
                     e.preventDefault();
                     alert('New passwords do not match. Please check and try again.');
                     return false;
                 }
-                
+
                 if (newPassword.length < 8) {
                     e.preventDefault();
                     alert('Password must be at least 8 characters long.');
@@ -1001,20 +1028,20 @@
                 }
             });
         }
-        
+
         // Profile form validation
         const editProfileForm = document.querySelector('.edit-profile-form');
         if (editProfileForm) {
-            editProfileForm.addEventListener('submit', function(e) {
+            editProfileForm.addEventListener('submit', function (e) {
                 const username = document.getElementById('username').value.trim();
                 const email = document.getElementById('email').value.trim();
-                
+
                 if (username.length < 3) {
                     e.preventDefault();
                     alert('Username must be at least 3 characters long.');
                     return false;
                 }
-                
+
                 // Basic email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {

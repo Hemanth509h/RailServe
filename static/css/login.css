@@ -2,19 +2,16 @@
 
 /* Auth Container */
 .auth-container {
-    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, #f1f5f9 100%);
     position: relative;
     z-index: 1;
 }
 
 .auth-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.719);
     border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 3rem;
@@ -292,4 +289,12 @@
         padding: 2rem;
         margin: 1rem;
     }
+}
+button.success-button {
+    border: transparent;
+    width: 141px;
+    height: 48px;
+    font-size: 14px;
+    border-radius: 15px;
+    background: #2755BA;
 }

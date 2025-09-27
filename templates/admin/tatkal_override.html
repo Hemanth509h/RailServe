@@ -4,6 +4,46 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<style>
+  button {
+        border: transparent;
+        width: auto ;
+        padding: 15px;
+        font-size: 14px;
+        border-radius: 15px;
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        font-weight: bold;
+    }
+     button:hover{
+         background: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--card-hover-shadow);
+    text-decoration: none;
+    color: var(--text-inverse);
+    }
+form {
+    display: grid;
+    gap: 20px;
+    grid-template-areas: "g1 g2"
+        "g3 g4";
+}
+#g1 { grid-area: g1; }
+#g2 { grid-area: g2; }
+#g3 { grid-area: g3; }
+#g4 { grid-area: g4;align-self: center;justify-self: center; }
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 200px;
+}
+div#change-password {
+    margin-top: 35px;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -60,28 +100,28 @@
                 <div class="admin-card-body">
                     <form method="post" action="{{ url_for('admin.enable_tatkal_override') }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <div class="form-group">
+                        <div class="form-group" id="g1">
                             <label for="override_message" class="input-label">Override Message</label>
                             <input type="text" class="text-input" id="override_message" name="override_message" 
                                    value="Tatkal booking enabled by admin" maxlength="200">
                             <div class="input-help">Message to display when override is active</div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="g2">
                             <label for="coach_classes" class="input-label">Coach Classes (Optional)</label>
                             <input type="text" class="text-input" id="coach_classes" name="coach_classes" 
                                    placeholder="AC1,AC2,AC3,SL,2S,CC">
                             <div class="input-help">Comma-separated list of classes. Leave empty for all classes</div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="g3">
                             <label for="valid_hours" class="input-label">Valid for (Hours)</label>
                             <input type="number" class="text-input" id="valid_hours" name="valid_hours" 
                                    min="1" max="72" placeholder="24">
                             <div class="input-help">Number of hours override should remain active. Leave empty for no expiry</div>
                         </div>
 
-                        <button type="submit" class="success-button" onclick="return confirm('Are you sure you want to enable Tatkal override? This will allow Tatkal booking at any time.')">
+                        <button type="submit" id="g4" class="success-button" onclick="return confirm('Are you sure you want to enable Tatkal override? This will allow Tatkal booking at any time.')">
                             <i class="fas fa-bolt"></i> Enable Override
                         </button>
                     </form>

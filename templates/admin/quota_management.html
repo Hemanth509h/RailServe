@@ -57,19 +57,19 @@
             
             <form method="POST" action="{{ url_for('admin.update_quota', train_id=train.id) }}" class="quota-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <div class="form-row">
+                <div class="form-row" id="q1">
                     <label>Total Seats:</label>
                     <input type="number" name="total_seats" value="{{ train.total_seats }}" max="2000" required>
                 </div>
-                <div class="form-row">
+                <div class="form-row" id="q2">
                     <label>Tatkal Seats:</label>
                     <input type="number" name="tatkal_seats" value="{{ train.tatkal_seats or 0 }}" max="{{ train.total_seats }}">
                 </div>
-                <div class="form-row">
+                <div class="form-row" id="q3">
                     <label>Tatkal Fare/km:</label>
                     <input type="number" name="tatkal_fare_per_km" value="{{ train.tatkal_fare_per_km or 0 }}" step="0.01" min="0">
                 </div>
-                <button type="submit" class="btn-update">
+                <button type="submit" class="btn-update" id="q4">
                     <i class="fas fa-save"></i> Update Quota
                 </button>
             </form>
@@ -145,8 +145,8 @@ function filterTrains() {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     overflow: hidden;
+    width: 387px;
 }
-
 .quota-header {
     background: linear-gradient(135deg, #1e40af, #3b82f6);
     color: white;
@@ -210,6 +210,11 @@ function filterTrains() {
     padding: 1rem;
     background: #f9fafb;
     border-top: 1px solid #e5e7eb;
+    display: grid;
+    grid-template-areas: "q1 q2 q3"
+    ". q4 .";
+      grid-template-columns: 1fr auto 1fr;
+    gap:5px
 }
 
 .form-row {
@@ -225,7 +230,7 @@ function filterTrains() {
 }
 
 .form-row input {
-    width: 120px;
+    width: 113px;
     padding: 0.5rem;
     border: 1px solid #d1d5db;
     border-radius: 4px;
@@ -238,15 +243,48 @@ function filterTrains() {
     color: white;
     border: none;
     padding: 0.75rem;
-    border-radius: 4px;
+    border-radius: 15px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s;
+    width: 124px;
 }
 
 .btn-update:hover {
     background: linear-gradient(135deg, #047857, #059669);
     transform: translateY(-1px);
 }
+.admin-container {
+    display: flex;
+    flex-direction: column;
+}
+.admin-header {
+    align-self: center;
+}
+.quota-controls {
+    margin-bottom: 2rem;
+    width: 70%;
+    align-self: center;
+    margin-top: 17px;
+}
+.quota-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+    width: 90%;
+    align-self: center;
+}.quota-grid {
+    display: flex;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 39px;
+    width: 90%;
+    align-self: center;
+    flex-wrap: wrap;
+}
+#q1 {grid-area: q1;}
+#q2 {grid-area: q2;}
+#q3 {grid-area: q3;}
+#q4 {grid-area: q4;  justify-self: center;}
+
 </style>
 {% endblock %}

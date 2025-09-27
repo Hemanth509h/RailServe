@@ -221,7 +221,7 @@
                 <!-- Journey Details -->
                 <div class="form-section">
                     <h4><i class="fas fa-route"></i> Journey Details</h4>
-                    <div class="form-row">
+                    <div class="form-row1">
                         <div class="form-group">
                             <label for="from_station">
                                 <i class="fas fa-map-marker-alt"></i> From Station *
@@ -251,7 +251,7 @@
                         </div>
                     </div>
                     
-                    <div class="form-row">
+                    <div class="form-row1">
                         <div class="form-group">
                             <label for="journey_date">
                                 <i class="fas fa-calendar"></i> Journey Date *
@@ -653,6 +653,15 @@
     gap: 8px;
     color: #0c4a6e;
 }
+.form-row1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
+}
+h4 {
+    margin-bottom: 10px;
+}
 </style>
 
 <script>
@@ -769,7 +778,7 @@ function createTatkalPassengerForm(number, index) {
     div.className = 'passenger-form tatkal-passenger-form';
     div.innerHTML = `
         <h5><i class="fas fa-user"></i> Passenger ${number}</h5>
-        <div class="form-row">
+        <div class="form-row1">
             <div class="form-group">
                 <label>Full Name (as per ID) *</label>
                 <input type="text" name="passenger_${index}_name" required>
@@ -779,7 +788,7 @@ function createTatkalPassengerForm(number, index) {
                 <input type="number" name="passenger_${index}_age" min="1" max="120" required>
             </div>
         </div>
-        <div class="form-row">
+        <div class="form-row1">
             <div class="form-group">
                 <label>Gender *</label>
                 <select name="passenger_${index}_gender" required>
@@ -799,7 +808,7 @@ function createTatkalPassengerForm(number, index) {
                 </select>
             </div>
         </div>
-        <div class="form-row">
+        <div class="form-row1">
             <div class="form-group">
                 <label>ID Proof Number *</label>
                 <input type="text" name="passenger_${index}_id_number" required>

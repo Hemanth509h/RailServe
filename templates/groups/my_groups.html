@@ -130,6 +130,32 @@
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
 }
+ button ,#manage,#add_booking{
+        border: transparent;
+        width: auto ;
+        padding: 15px;
+        font-size: 14px;
+        border-radius: 15px;
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        font-weight: bold;
+    }
+     button:hover,#manage:hover,#add_booking:hover
+     {
+         background: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--card-hover-shadow);
+    text-decoration: none;
+    color: var(--text-inverse);
+    }
+    .group-actions {
+    gap: 10px;
+    display: flex;
+    margin-top: 10px;
+}
+h6.group-name {
+    font-size: 20px;
+}
 </style>
 {% endblock %}
 
@@ -183,11 +209,11 @@
                     </div>
                     
                     <div class="group-actions">
-                        <a href="{{ url_for('groups.manage_group', group_id=group.id) }}" 
+                        <a href="{{ url_for('groups.manage_group', group_id=group.id) }}"  id="manage"
                            class="primary-button small-button">
                             <i class="fas fa-cog icon-left"></i>Manage
                         </a>
-                        <a href="{{ url_for('groups.add_group_train_booking', group_id=group.id) }}" 
+                        <a href="{{ url_for('groups.add_group_train_booking', group_id=group.id) }}" id="add_booking"
                            class="success-button small-button">
                             <i class="fas fa-plus icon-left"></i>Add Booking
                         </a>

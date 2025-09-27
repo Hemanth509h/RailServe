@@ -39,8 +39,10 @@
             <div class="stat-icon">
                 <i class="fas fa-zap"></i>
             </div>
+            <hr>
             <div class="stat-info">
                 <h3>{{ trains_with_tatkal|length }}</h3>
+
                 <p>Trains with Tatkal Bookings</p>
             </div>
         </div>
@@ -49,8 +51,11 @@
             <div class="stat-icon">
                 <i class="fas fa-rupee-sign"></i>
             </div>
+            <hr>
+
             <div class="stat-info">
                 <h3>₹{{ "%.0f"|format(trains_with_tatkal|sum(attribute='tatkal_revenue') or 0) }}</h3>
+
                 <p>Total Tatkal Revenue</p>
             </div>
         </div>
@@ -59,8 +64,11 @@
             <div class="stat-icon">
                 <i class="fas fa-ticket-alt"></i>
             </div>
+            <hr>
+
             <div class="stat-info">
                 <h3>{{ trains_with_tatkal|sum(attribute='tatkal_bookings') or 0 }}</h3>
+
                 <p>Total Tatkal Bookings</p>
             </div>
         </div>
@@ -243,12 +251,17 @@
     }
 }
 .tatkal-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    display: flex;
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
-
+.stat-card{
+    display: flex;
+flex-direction: column;
+    padding: 10px 15px;
+    border-radius: 15px;
+    text-align: center
+}
 .stat-card.tatkal-primary {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
 }
@@ -260,7 +273,12 @@
 .stat-card.tatkal-warning {
     background: linear-gradient(135deg, #f59e0b, #d97706);
 }
-
+hr {
+    width: 121px;
+    align-self: center;
+    color: black;
+    border: 1px solid;
+}
 .tatkal-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -464,6 +482,15 @@
     .tatkal-stats {
         grid-template-columns: 1fr;
     }
+}
+.admin-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+.admin-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 </style>
 {% endblock %}

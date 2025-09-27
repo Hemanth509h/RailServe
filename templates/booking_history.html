@@ -4,533 +4,606 @@
 
 {% block head %}
 <style>
-/* Booking History Page Specific Styles */
+    /* Booking History Page Specific Styles */
 
-/* Ultra-Modern Booking History Container */
-.booking-history-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 24px;
-    position: relative;
-    overflow: hidden;
-}
-
-.booking-history-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b, #ef4444);
-    z-index: 1;
-}
-
-.booking-history-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    background: white;
-    padding: 3rem;
-    border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-    position: relative;
-    z-index: 2;
-}
-
-.booking-history-header h1 {
-    color: #2d3748;
-    margin-bottom: 1rem;
-    font-size: 3rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.booking-history-header h1 i {
-    color: var(--accent-color);
-}
-
-.booking-history-header p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-}
-
-/* Booking Statistics */
-.booking-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-}
-
-.stat-card {
-    background: white;
-    border: none;
-    border-radius: 16px;
-    padding: 2rem;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.stat-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-}
-
-.stat-card:hover::before {
-    height: 6px;
-}
-
-.stat-card .stat-number {
-    font-size: 2.5rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.5rem;
-    line-height: 1;
-}
-
-.stat-card .stat-label {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-/* Booking Timeline */
-.bookings-timeline {
-    position: relative;
-    padding-left: 2rem;
-}
-
-.bookings-timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--border-color);
-}
-
-.booking-item {
-    position: relative;
-    margin-bottom: 2rem;
-    background: white;
-    border: none;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-}
-
-.booking-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.booking-item:hover {
-    transform: translateY(-8px) translateX(5px);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.18);
-    border-left: 5px solid #667eea;
-}
-
-/* Timeline Marker */
-.booking-timeline-marker {
-    position: absolute;
-    left: -2rem;
-    top: 1.5rem;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 3px solid var(--bg-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: bold;
-    z-index: 2;
-}
-
-.booking-timeline-marker.status-confirmed {
-    background: var(--success-color);
-    color: white;
-}
-
-.booking-timeline-marker.status-waitlisted {
-    background: var(--warning-color);
-    color: white;
-}
-
-.booking-timeline-marker.status-cancelled {
-    background: var(--danger-color);
-    color: white;
-}
-
-.booking-timeline-marker.status-pending_payment {
-    background: var(--info-color);
-    color: white;
-}
-
-/* Booking Content */
-.booking-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 1.5rem;
-    align-items: start;
-}
-
-.booking-main-info h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.booking-main-info h3 i {
-    color: var(--accent-color);
-}
-
-.booking-details-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.detail-label {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.detail-value {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-/* Journey Route */
-.journey-route {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin: 1rem 0;
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 16px;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
-}
-
-.journey-route:hover {
-    background: white;
-    border-color: #667eea;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
-}
-
-.station-point {
-    text-align: center;
-    flex: 1;
-}
-
-.station-name {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.station-code {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.route-arrow {
-    color: #667eea;
-    font-size: 2rem;
-    background: white;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-    transition: all 0.3s ease;
-}
-
-.route-arrow:hover {
-    transform: scale(1.1);
-    background: #667eea;
-    color: white;
-}
-
-/* Booking Status */
-.booking-status {
-    padding: 0.75rem 1.25rem;
-    border-radius: 25px;
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-align: center;
-    min-width: 140px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.booking-status::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.booking-status:hover::before {
-    left: 100%;
-}
-
-.booking-status.confirmed {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-}
-
-.booking-status.confirmed:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-}
-
-.booking-status.waitlisted {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
-}
-
-.booking-status.waitlisted:hover {
-    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
-}
-
-.booking-status.cancelled {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-}
-
-.booking-status.cancelled:hover {
-    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
-}
-
-.booking-status.pending_payment {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    color: white;
-}
-
-.booking-status.pending_payment:hover {
-    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-}
-
-/* Booking Actions */
-.booking-actions {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    flex-wrap: nowrap;
-}
-
-.booking-actions .btn {
-    width: 100%;
-    min-width: 140px;
-    flex-wrap: nowrap;
-}
-
-.booking-count {
-    background: var(--accent-color);
-    color: white;
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 10px;
-    margin-left: 0.5rem;
-}
-
-/* No Bookings State */
-.no-bookings {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--text-secondary);
-}
-
-.no-bookings i {
-    font-size: 4rem;
-    color: var(--border-color);
-    margin-bottom: 1rem;
-}
-
-.no-bookings h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-}
-
-.no-bookings p {
-    margin-bottom: 2rem;
-}
-
-/* Filters */
-.booking-filters {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.filter-group label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.filter-group select,
-.filter-group input {
-    padding: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .booking-content {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .booking-actions {
-        flex-direction: row;
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 768px) {
+    /* Ultra-Modern Booking History Container */
     .booking-history-container {
-        padding: 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
     }
-    
-    .bookings-timeline {
-        padding-left: 1rem;
-    }
-    
-    .booking-timeline-marker {
-        left: -1.5rem;
-        width: 24px;
-        height: 24px;
-        font-size: 0.7rem;
-    }
-    
-    .booking-details-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .journey-route {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .route-arrow {
-        transform: rotate(90deg);
-    }
-    
-    .booking-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .filter-group {
-        width: 100%;
-    }
-}
 
-@media (max-width: 480px) {
+    .booking-history-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #10b981, #3b82f6, #f59e0b, #ef4444);
+        z-index: 1;
+    }
+
+    .booking-history-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 2;
+    }
+
     .booking-history-header h1 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+        font-size: 3rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .booking-history-header h1 i {
+        color: var(--accent-color);
+    }
+
+    .booking-history-header p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Booking Statistics */
+    .booking-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        border: none;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card:hover::before {
+        height: 6px;
+    }
+
+    .stat-card .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+
+    .stat-card .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Booking Timeline */
+    .bookings-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .bookings-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--border-color);
+    }
+
+    .booking-item {
+        position: relative;
+        margin-bottom: 2rem;
+        background: white;
+        border: none;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .booking-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .booking-item:hover {
+        transform: translateY(-8px) translateX(5px);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
+        border-left: 5px solid #667eea;
+    }
+
+    /* Timeline Marker */
+    .booking-timeline-marker {
+        position: absolute;
+        left: -2rem;
+        top: 1.5rem;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 3px solid var(--bg-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        z-index: 2;
+    }
+
+    .booking-timeline-marker.status-confirmed {
+        background: var(--success-color);
+        color: white;
+    }
+
+    .booking-timeline-marker.status-waitlisted {
+        background: var(--warning-color);
+        color: white;
+    }
+
+    .booking-timeline-marker.status-cancelled {
+        background: var(--danger-color);
+        color: white;
+    }
+
+    .booking-timeline-marker.status-pending_payment {
+        background: var(--info-color);
+        color: white;
+    }
+
+    /* Booking Content */
+    .booking-content {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .booking-main-info h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .booking-main-info h3 i {
+        color: var(--accent-color);
+    }
+
+    .booking-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .detail-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* Journey Route */
+    .journey-route {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1rem 0;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-radius: 16px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .journey-route:hover {
+        background: white;
+        border-color: #667eea;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+    }
+
+    .station-point {
+        text-align: center;
+        flex: 1;
+    }
+
+    .station-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .station-code {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .route-arrow {
+        color: #667eea;
         font-size: 2rem;
+        background: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .route-arrow:hover {
+        transform: scale(1.1);
+        background: #667eea;
+        color: white;
+    }
+
+    /* Booking Status */
+    .booking-status {
+        padding: 0.75rem 1.25rem;
+        border-radius: 25px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-align: center;
+        min-width: 140px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .booking-status::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .booking-status:hover::before {
+        left: 100%;
+    }
+
+    .booking-status.confirmed {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .booking-status.confirmed:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .booking-status.waitlisted {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .booking-status.waitlisted:hover {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+    }
+
+    .booking-status.cancelled {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .booking-status.cancelled:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .booking-status.pending_payment {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+    }
+
+    .booking-status.pending_payment:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Booking Actions */
+    .booking-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+
+    .booking-actions .btn {
+        width: 100%;
+        min-width: 140px;
+        flex-wrap: nowrap;
+    }
+
+    .booking-count {
+        background: var(--accent-color);
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        margin-left: 0.5rem;
+    }
+
+    /* No Bookings State */
+    .no-bookings {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+    .no-bookings i {
+        font-size: 4rem;
+        color: var(--border-color);
+        margin-bottom: 1rem;
+    }
+
+    .no-bookings h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .no-bookings p {
+        margin-bottom: 2rem;
+    }
+
+    /* Filters */
+    .booking-filters {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .filter-group {
+        display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
-    
-    .booking-item {
-        padding: 1rem;
+
+    .filter-group label {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 500;
     }
-    
-    .booking-actions {
-        flex-direction: column;
+
+    .filter-group select,
+    .filter-group input {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
     }
-    
-    .booking-actions .btn {
-        min-width: auto;
+
+    .form-row {
+        flex-direction: row;
     }
+
+    button {
+        border: transparent;
+        width: auto;
+        padding: 15px;
+        font-size: 14px;
+        border-radius: 15px;
+        background: var(--accent-color);
+        color: var(--text-inverse);
+        font-weight: bold;
+    }
+
+    button:hover {
+        background: var(--btn-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--card-hover-shadow);
+        text-decoration: none;
+        color: var(--text-inverse);
+    }
+.filter-tabs {
+    margin-bottom: 15px;
+}
+.search-section {
+    margin: 30px;
+}
+.route-stations {
+    display: flex;
+    gap: 87px;
+    justify-content: center;
+    align-items: center;
+}
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .booking-content {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .booking-actions {
+            flex-direction: row;
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .booking-history-container {
+            padding: 1rem;
+        }
+
+        .bookings-timeline {
+            padding-left: 1rem;
+        }
+
+        .booking-timeline-marker {
+            left: -1.5rem;
+            width: 24px;
+            height: 24px;
+            font-size: 0.7rem;
+        }
+
+        .booking-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .journey-route {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .route-arrow {
+            transform: rotate(90deg);
+        }
+
+        .booking-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-group {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .booking-history-header h1 {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .booking-item {
+            padding: 1rem;
+        }
+
+        .booking-actions {
+            flex-direction: column;
+        }
+
+        .booking-actions .btn {
+            min-width: auto;
+        }
+    }
+
+    /* Dark theme support */
+    [data-theme="dark"] .bookings-timeline::before {
+        background: var(--border-color);
+    }
+
+    [data-theme="dark"] .booking-timeline-marker {
+        border-color: var(--bg-secondary);
+    }
+    .booking-summary{
+        display: grid;
+    gap: 10px;
+
+          grid-template-areas: "b1 b2"
+        "b3 b4"
+        "b5 b5";
+    }
+    #b1{grid-area:b1;}
+    #b2{grid-area:b2;}
+    #b3{grid-area:b3;}
+    #b4{grid-area:b4;}
+    #b5{grid-area:b5;}
+
+ .summary-item,#station-name_from,#station-name_to ,.train-info{
+    padding: 10px 15px;
+    text-align: center;
+    border: transparent;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark theme support */
-[data-theme="dark"] .bookings-timeline::before {
-    background: var(--border-color);
+.journey-date{
+     padding: 10px 15px;
+    border: transparent;
+    border-radius: 15px;
+    width: 150px;
+    margin-bottom: 10px;
+     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
-
-[data-theme="dark"] .booking-timeline-marker {
-    border-color: var(--bg-secondary);
+.booking-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}   
+.train-info{
+    margin-bottom: 15px;
 }
 </style>
 {% endblock %}
@@ -541,8 +614,8 @@
         <div class="history-header">
             <h1><i class="fas fa-history"></i> Booking History</h1>
             <div class="header-actions">
-                <a href="{{ url_for('pdf.download_booking_summary') }}" 
-                   class="btn btn-info btn-sm" target="_blank" title="Download booking summary as PDF">
+                <a href="{{ url_for('pdf.download_booking_summary') }}" class="btn btn-info btn-sm" target="_blank"
+                    title="Download booking summary as PDF">
                     <i class="fas fa-file-pdf"></i> Download Summary PDF
                 </a>
                 <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary">
@@ -550,29 +623,29 @@
                 </a>
             </div>
         </div>
-        
+
         <!-- Search Form -->
         <div class="search-section">
             <form method="GET" class="search-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <input type="text" name="search" placeholder="Search by PNR, train number, or train name..." 
-                               value="{{ request.args.get('search', '') }}" class="form-control">
+                        <input type="text" name="search" placeholder="Search by PNR, train number, or train name..."
+                            value="{{ request.args.get('search', '') }}" class="form-control">
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-search"></i> Search
                         </button>
                         {% if request.args.get('search') %}
-                            <a href="{{ url_for('booking.booking_history') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Clear
-                            </a>
+                        <a href="{{ url_for('booking.booking_history') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
                         {% endif %}
                     </div>
                 </div>
             </form>
         </div>
-        
+
         <div class="filter-section">
             <div class="filter-tabs">
                 <button class="filter-btn active" onclick="filterBookings('all')">
@@ -592,184 +665,184 @@
                 </button>
             </div>
         </div>
-        
+
         {% if bookings %}
-            <div class="bookings-timeline">
-                {% for booking in bookings %}
-                    <div class="booking-item" data-status="{{ booking.status }}">
-                        <div class="booking-timeline-marker status-{{ booking.status }}">
-                            {% if booking.status == 'confirmed' %}
-                                <i class="fas fa-check"></i>
-                            {% elif booking.status == 'waitlisted' %}
-                                <i class="fas fa-clock"></i>
-                            {% elif booking.status == 'cancelled' %}
-                                <i class="fas fa-times"></i>
-                            {% else %}
-                                <i class="fas fa-credit-card"></i>
-                            {% endif %}
+        <div class="bookings-timeline">
+            {% for booking in bookings %}
+            <div class="booking-item" data-status="{{ booking.status }}">
+                <div class="booking-timeline-marker status-{{ booking.status }}">
+                    {% if booking.status == 'confirmed' %}
+                    <i class="fas fa-check"></i>
+                    {% elif booking.status == 'waitlisted' %}
+                    <i class="fas fa-clock"></i>
+                    {% elif booking.status == 'cancelled' %}
+                    <i class="fas fa-times"></i>
+                    {% else %}
+                    <i class="fas fa-credit-card"></i>
+                    {% endif %}
+                </div>
+
+                <div class="booking-content">
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <div class="pnr-info">
+                                <strong class="pnr">{{ booking.pnr }}</strong>
+                                <span class="booking-date">
+                                    {{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}
+                                </span>
+                            </div>
+                            <span class="booking-status status-{{ booking.status }}">
+                                {{ booking.status.replace('_', ' ').title() }}
+                            </span>
                         </div>
-                        
-                        <div class="booking-content">
-                            <div class="booking-card">
-                                <div class="booking-header">
-                                    <div class="pnr-info">
-                                        <strong class="pnr">{{ booking.pnr }}</strong>
-                                        <span class="booking-date">
-                                            {{ booking.booking_date.strftime('%d %b %Y, %I:%M %p') }}
-                                        </span>
-                                    </div>
-                                    <span class="booking-status status-{{ booking.status }}">
-                                        {{ booking.status.replace('_', ' ').title() }}
-                                    </span>
+
+                        <div class="journey-summary">
+                            <div class="train-info">
+                                <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
+                            </div>
+
+                            <div class="route-summary">
+                                <div class="route-stations">
+                                    <span class="station-name" id="station-name_from">{{ booking.from_station.name }}</span>
+                                    <i class="fas fa-arrow-right route-arrow"></i>
+                                    <span class="station-name" id="station-name_to">{{ booking.to_station.name }}</span>
                                 </div>
-                                
-                                <div class="journey-summary">
-                                    <div class="train-info">
-                                        <h4>{{ booking.train.number }} - {{ booking.train.name }}</h4>
-                                    </div>
-                                    
-                                    <div class="route-summary">
-                                        <div class="route-stations">
-                                            <span class="station-name">{{ booking.from_station.name }}</span>
-                                            <i class="fas fa-arrow-right route-arrow"></i>
-                                            <span class="station-name">{{ booking.to_station.name }}</span>
-                                        </div>
-                                        <div class="journey-date">
-                                            <i class="fas fa-calendar"></i>
-                                            {{ booking.journey_date.strftime('%d %b %Y') }}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="booking-summary">
-                                    <div class="summary-item">
-                                        <i class="fas fa-users"></i>
-                                        <span>{{ booking.passengers }} Passenger{{ 's' if booking.passengers > 1 else '' }}</span>
-                                    </div>
-                                    <div class="summary-item">
-                                        <i class="fas fa-rupee-sign"></i>
-                                        <span>₹{{ "%.2f"|format(booking.total_amount) }}</span>
-                                    </div>
-                                    {% if booking.payment %}
-                                        <div class="summary-item">
-                                            <i class="fas fa-credit-card"></i>
-                                            <span>{{ booking.payment.payment_method.title() }}</span>
-                                        </div>
-                                    {% endif %}
-                                    <div class="summary-item">
-                                        <i class="fas fa-train"></i>
-                                        <span>{{ booking.coach_class }} Class</span>
-                                    </div>
-                                    {% if booking.booking_type == 'tatkal' %}
-                                        <div class="summary-item tatkal-badge">
-                                            <i class="fas fa-bolt"></i>
-                                            <span>Tatkal</span>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <!-- Passenger Details with Seat Assignments -->
-                                {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
-                                <div class="passenger-details">
-                                    <h5><i class="fas fa-user-friends"></i> Passenger Details & Seat Allocation</h5>
-                                    <div class="passengers-list">
-                                        {% for passenger in booking.passengers_details %}
-                                        <div class="passenger-card">
-                                            <div class="passenger-info">
-                                                <div class="passenger-name">
-                                                    <i class="fas fa-user"></i>
-                                                    <strong>{{ passenger.name }}</strong>
-                                                    <span class="age-gender">{{ passenger.age }}{{ passenger.gender[0] }}</span>
-                                                </div>
-                                                {% if passenger.seat_number %}
-                                                <div class="seat-info">
-                                                    <i class="fas fa-chair"></i>
-                                                    <span class="seat-number">{{ passenger.seat_number }}</span>
-                                                    {% if passenger.berth_type %}
-                                                        <span class="berth-type">{{ passenger.berth_type }}</span>
-                                                        {% if passenger.comfort_rating %}
-                                                        <span class="comfort-rating" title="Comfort Rating">
-                                                            <i class="fas fa-star"></i> {{ passenger.comfort_rating }}/10
-                                                        </span>
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </div>
-                                                <div class="seat-explanation-compact">
-                                                    <i class="fas fa-info-circle"></i>
-                                                    <span class="explanation-text">{{ passenger.get_seat_explanation() }}</span>
-                                                </div>
-                                                {% else %}
-                                                <div class="seat-info pending">
-                                                    <i class="fas fa-clock"></i>
-                                                    <span>{{ passenger.get_seat_explanation() }}</span>
-                                                </div>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="booking-actions">
-                                    {% if booking.status == 'pending_payment' %}
-                                        <a href="{{ url_for('payment.pay', booking_id=booking.id) }}" 
-                                           class="btn btn-primary btn-sm">
-                                            <i class="fas fa-credit-card"></i> Complete Payment
-                                        </a>
-                                    {% elif booking.status in ['confirmed', 'rac'] %}
-                                        <a href="{{ url_for('pdf.download_ticket', booking_id=booking.id) }}" 
-                                           class="btn btn-primary btn-sm" target="_blank" 
-                                           title="Download ticket as PDF">
-                                            <i class="fas fa-download"></i> Download PDF
-                                        </a>
-                                    {% endif %}
-                                    
-                                    {% if booking.status in ['confirmed', 'waitlisted'] %}
-                                        <a href="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}" 
-                                           class="btn btn-danger btn-sm"
-                                           onclick="return confirm('Are you sure you want to cancel this booking?')">
-                                            <i class="fas fa-times"></i> Cancel Booking
-                                        </a>
-                                    {% endif %}
-                                    
-                                    {% if booking.status in ['confirmed', 'cancelled', 'waitlisted'] %}
-                                        {% set existing_tdr = booking.refund_requests|first %}
-                                        {% if existing_tdr %}
-                                            <span class="btn btn-secondary btn-sm disabled">
-                                                <i class="fas fa-receipt"></i> TDR Filed: {{ existing_tdr.tdr_number }}
-                                            </span>
-                                        {% else %}
-                                            <a href="{{ url_for('booking.file_tdr', booking_id=booking.id) }}" 
-                                               class="btn btn-warning btn-sm">
-                                                <i class="fas fa-receipt"></i> File TDR
-                                            </a>
-                                        {% endif %}
-                                    {% endif %}
-                                    
-                                    <a href="{{ url_for('pnr_enquiry') }}?pnr={{ booking.pnr }}" 
-                                       class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-info"></i> View Details
-                                    </a>
+                                <div class="journey-date">
+                                    <i class="fas fa-calendar"></i>
+                                    {{ booking.journey_date.strftime('%d %b %Y') }}
                                 </div>
                             </div>
                         </div>
+
+                        <div class="booking-summary">
+                            <div class="summary-item" id="b1">
+                                <i class="fas fa-users"></i>
+                                <span>{{ booking.passengers }} Passenger{{ 's' if booking.passengers > 1 else ''
+                                    }}</span>
+                            </div>
+                            <div class="summary-item" id="b2">
+                                <i class="fas fa-rupee-sign"></i>
+                                <span>₹{{ "%.2f"|format(booking.total_amount) }}</span>
+                            </div>
+                            {% if booking.payment %}
+                            <div class="summary-item" id="b3">
+                                <i class="fas fa-credit-card"></i>
+                                <span>{{ booking.payment.payment_method.title() }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="summary-item" id="b4">
+                                <i class="fas fa-train"></i>
+                                <span>{{ booking.coach_class }} Class</span>
+                            </div>
+                            {% if booking.booking_type == 'tatkal' %}
+                            <div class="summary-item tatkal-badge" id="b5">
+                                <i class="fas fa-bolt"></i>
+                                <span>Tatkal</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Passenger Details with Seat Assignments -->
+                        {% if booking.status in ['confirmed', 'rac'] and booking.passengers_details %}
+                        <div class="passenger-details">
+                            <h5><i class="fas fa-user-friends"></i> Passenger Details & Seat Allocation</h5>
+                            <div class="passengers-list">
+                                {% for passenger in booking.passengers_details %}
+                                <div class="passenger-card">
+                                    <div class="passenger-info">
+                                        <div class="passenger-name">
+                                            <i class="fas fa-user"></i>
+                                            <strong>{{ passenger.name }}</strong>
+                                            <span class="age-gender">{{ passenger.age }}{{ passenger.gender[0] }}</span>
+                                        </div>
+                                        {% if passenger.seat_number %}
+                                        <div class="seat-info">
+                                            <i class="fas fa-chair"></i>
+                                            <span class="seat-number">{{ passenger.seat_number }}</span>
+                                            {% if passenger.berth_type %}
+                                            <span class="berth-type">{{ passenger.berth_type }}</span>
+                                            {% if passenger.comfort_rating %}
+                                            <span class="comfort-rating" title="Comfort Rating">
+                                                <i class="fas fa-star"></i> {{ passenger.comfort_rating }}/10
+                                            </span>
+                                            {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        <div class="seat-explanation-compact">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span class="explanation-text">{{ passenger.get_seat_explanation() }}</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="seat-info pending">
+                                            <i class="fas fa-clock"></i>
+                                            <span>{{ passenger.get_seat_explanation() }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="booking-actions">
+                            {% if booking.status == 'pending_payment' %}
+                            <a href="{{ url_for('payment.pay', booking_id=booking.id) }}"
+                                class="btn btn-primary btn-sm">
+                                <i class="fas fa-credit-card"></i> Complete Payment
+                            </a>
+                            {% elif booking.status in ['confirmed', 'rac'] %}
+                            <a href="{{ url_for('pdf.download_ticket', booking_id=booking.id) }}"
+                                class="btn btn-primary btn-sm" target="_blank" title="Download ticket as PDF">
+                                <i class="fas fa-download"></i> Download PDF
+                            </a>
+                            {% endif %}
+
+                            {% if booking.status in ['confirmed', 'waitlisted'] %}
+                            <a href="{{ url_for('booking.cancel_booking', booking_id=booking.id) }}"
+                                class="btn btn-danger btn-sm"
+                                onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                <i class="fas fa-times"></i> Cancel Booking
+                            </a>
+                            {% endif %}
+
+                            {% if booking.status in ['confirmed', 'cancelled', 'waitlisted'] %}
+                            {% set existing_tdr = booking.refund_requests|first %}
+                            {% if existing_tdr %}
+                            <span class="btn btn-secondary btn-sm disabled">
+                                <i class="fas fa-receipt"></i> TDR Filed: {{ existing_tdr.tdr_number }}
+                            </span>
+                            {% else %}
+                            <a href="{{ url_for('booking.file_tdr', booking_id=booking.id) }}"
+                                class="btn btn-warning btn-sm">
+                                <i class="fas fa-receipt"></i> File TDR
+                            </a>
+                            {% endif %}
+                            {% endif %}
+
+                            <a href="{{ url_for('pnr_enquiry') }}?pnr={{ booking.pnr }}"
+                                class="btn btn-secondary btn-sm">
+                                <i class="fas fa-info"></i> View Details
+                            </a>
+                        </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-ticket-alt"></i>
                 </div>
-                <h3>No bookings found</h3>
-                <p>You haven't made any train bookings yet.</p>
-                <a href="{{ url_for('index') }}" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Search Trains
-                </a>
             </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <h3>No bookings found</h3>
+            <p>You haven't made any train bookings yet.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Search Trains
+            </a>
+        </div>
         {% endif %}
-        
+
         <!-- Payment History Section -->
         <div class="payment-history-section">
             <div class="section-header">
@@ -778,65 +851,66 @@
                     <i class="fas fa-eye" id="paymentToggleIcon"></i> Toggle View
                 </button>
             </div>
-            
+
             <div id="paymentHistoryContent" class="payment-history-content">
                 {% if payments %}
-                    <div class="payments-timeline">
-                        {% for payment in payments %}
-                            <div class="payment-item">
-                                <div class="payment-timeline-marker status-{{ payment.status }}">
-                                    {% if payment.status == 'completed' %}
-                                        <i class="fas fa-check"></i>
-                                    {% elif payment.status == 'failed' %}
-                                        <i class="fas fa-times"></i>
-                                    {% else %}
-                                        <i class="fas fa-clock"></i>
-                                    {% endif %}
+                <div class="payments-timeline">
+                    {% for payment in payments %}
+                    <div class="payment-item">
+                        <div class="payment-timeline-marker status-{{ payment.status }}">
+                            {% if payment.status == 'completed' %}
+                            <i class="fas fa-check"></i>
+                            {% elif payment.status == 'failed' %}
+                            <i class="fas fa-times"></i>
+                            {% else %}
+                            <i class="fas fa-clock"></i>
+                            {% endif %}
+                        </div>
+
+                        <div class="payment-card">
+                            <div class="payment-header">
+                                <div class="transaction-info">
+                                    <strong class="transaction-id">{{ payment.transaction_id or 'N/A' }}</strong>
+                                    <span class="payment-date">
+                                        {{ payment.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                    </span>
                                 </div>
-                                
-                                <div class="payment-card">
-                                    <div class="payment-header">
-                                        <div class="transaction-info">
-                                            <strong class="transaction-id">{{ payment.transaction_id or 'N/A' }}</strong>
-                                            <span class="payment-date">
-                                                {{ payment.created_at.strftime('%d %b %Y, %I:%M %p') }}
-                                            </span>
-                                        </div>
-                                        <span class="payment-status status-{{ payment.status }}">
-                                            {{ payment.status.title() }}
-                                        </span>
-                                    </div>
-                                    
-                                    <div class="payment-details-grid">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Amount</span>
-                                            <span class="detail-value">₹{{ "%.2f"|format(payment.amount) }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Payment Method</span>
-                                            <span class="detail-value">{{ payment.payment_method.title() }}</span>
-                                        </div>
-                                        {% if payment.booking %}
-                                            <div class="detail-item">
-                                                <span class="detail-label">PNR</span>
-                                                <span class="detail-value">{{ payment.booking.pnr }}</span>
-                                            </div>
-                                            <div class="detail-item">
-                                                <span class="detail-label">Train</span>
-                                                <span class="detail-value">{{ payment.booking.train.number }} - {{ payment.booking.train.name }}</span>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                                <span class="payment-status status-{{ payment.status }}">
+                                    {{ payment.status.title() }}
+                                </span>
                             </div>
-                        {% endfor %}
+
+                            <div class="payment-details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Amount</span>
+                                    <span class="detail-value">₹{{ "%.2f"|format(payment.amount) }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Payment Method</span>
+                                    <span class="detail-value">{{ payment.payment_method.title() }}</span>
+                                </div>
+                                {% if payment.booking %}
+                                <div class="detail-item">
+                                    <span class="detail-label">PNR</span>
+                                    <span class="detail-value">{{ payment.booking.pnr }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Train</span>
+                                    <span class="detail-value">{{ payment.booking.train.number }} - {{
+                                        payment.booking.train.name }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
+                    {% endfor %}
+                </div>
                 {% else %}
-                    <div class="empty-payment-state">
-                        <i class="fas fa-credit-card"></i>
-                        <h3>No payment history</h3>
-                        <p>Your payment transactions will appear here.</p>
-                    </div>
+                <div class="empty-payment-state">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>No payment history</h3>
+                    <p>Your payment transactions will appear here.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -846,340 +920,340 @@
 
 {% block scripts %}
 <style>
-/* Passenger Details Styling */
-.passenger-details {
-    margin-top: 20px;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
+    /* Passenger Details Styling */
+    .passenger-details {
+        margin-top: 20px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
 
-.passenger-details h5 {
-    color: #495057;
-    margin-bottom: 15px;
-    font-size: 1rem;
-}
+    .passenger-details h5 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-size: 1rem;
+    }
 
-.passengers-list {
-    display: grid;
-    gap: 10px;
-}
+    .passengers-list {
+        display: grid;
+        gap: 10px;
+    }
 
-.passenger-card {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    padding: 12px;
-}
+    .passenger-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 12px;
+    }
 
-.passenger-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    .passenger-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.passenger-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-}
+    .passenger-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+    }
 
-.passenger-name strong {
-    color: #212529;
-}
+    .passenger-name strong {
+        color: #212529;
+    }
 
-.age-gender {
-    background: #6c757d;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
+    .age-gender {
+        background: #6c757d;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
 
-.seat-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #28a745;
-    font-weight: 500;
-}
+    .seat-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #28a745;
+        font-weight: 500;
+    }
 
-.seat-info.pending {
-    color: #ffc107;
-}
+    .seat-info.pending {
+        color: #ffc107;
+    }
 
-.seat-number {
-    background: #28a745;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
+    .seat-number {
+        background: #28a745;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
 
-.berth-type {
-    background: #17a2b8;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-}
+    .berth-type {
+        background: #17a2b8;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
 
-.tatkal-badge {
-    background: linear-gradient(45deg, #ffc107, #fd7e14);
-    color: white;
-    border-radius: 12px;
-    padding: 4px 8px;
-    font-weight: bold;
-    font-size: 0.8rem;
-}
+    .tatkal-badge {
+        background: linear-gradient(45deg, #ffc107, #fd7e14);
+        color: white;
+        border-radius: 12px;
+        padding: 4px 8px;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
 
-/* Payment History Section Styling */
-.payment-history-section {
-    margin-top: 3rem;
-    background: white;
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    position: relative;
-    overflow: hidden;
-}
+    /* Payment History Section Styling */
+    .payment-history-section {
+        margin-top: 3rem;
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        position: relative;
+        overflow: hidden;
+    }
 
-.payment-history-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
+    .payment-history-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-}
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
 
-.section-header h2 {
-    color: #1e293b;
-    margin: 0;
-    font-size: 1.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
+    .section-header h2 {
+        color: #1e293b;
+        margin: 0;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
 
-.section-header h2 i {
-    color: #10b981;
-}
+    .section-header h2 i {
+        color: #10b981;
+    }
 
-.payment-history-content {
-    transition: all 0.3s ease;
-}
+    .payment-history-content {
+        transition: all 0.3s ease;
+    }
 
-.payments-timeline {
-    position: relative;
-    padding-left: 2rem;
-}
+    .payments-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
 
-.payments-timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #e2e8f0;
-}
+    .payments-timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+    }
 
-.payment-item {
-    position: relative;
-    margin-bottom: 2rem;
-}
+    .payment-item {
+        position: relative;
+        margin-bottom: 2rem;
+    }
 
-.payment-timeline-marker {
-    position: absolute;
-    left: -2rem;
-    top: 1rem;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 3px solid white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: bold;
-    z-index: 2;
-}
+    .payment-timeline-marker {
+        position: absolute;
+        left: -2rem;
+        top: 1rem;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 3px solid white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        z-index: 2;
+    }
 
-.payment-timeline-marker.status-completed {
-    background: #10b981;
-    color: white;
-}
+    .payment-timeline-marker.status-completed {
+        background: #10b981;
+        color: white;
+    }
 
-.payment-timeline-marker.status-failed {
-    background: #ef4444;
-    color: white;
-}
+    .payment-timeline-marker.status-failed {
+        background: #ef4444;
+        color: white;
+    }
 
-.payment-timeline-marker.status-pending {
-    background: #f59e0b;
-    color: white;
-}
+    .payment-timeline-marker.status-pending {
+        background: #f59e0b;
+        color: white;
+    }
 
-.payment-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
+    .payment-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
 
-.payment-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    border-color: #10b981;
-}
+    .payment-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #10b981;
+    }
 
-.payment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
+    .payment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
 
-.transaction-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
+    .transaction-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
 
-.transaction-id {
-    color: #1e293b;
-    font-size: 1rem;
-}
+    .transaction-id {
+        color: #1e293b;
+        font-size: 1rem;
+    }
 
-.payment-date {
-    color: #64748b;
-    font-size: 0.85rem;
-}
+    .payment-date {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
 
-.payment-status {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
+    .payment-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
 
-.payment-status.status-completed {
-    background: #dcfce7;
-    color: #166534;
-}
+    .payment-status.status-completed {
+        background: #dcfce7;
+        color: #166534;
+    }
 
-.payment-status.status-failed {
-    background: #fecaca;
-    color: #991b1b;
-}
+    .payment-status.status-failed {
+        background: #fecaca;
+        color: #991b1b;
+    }
 
-.payment-status.status-pending {
-    background: #fef3c7;
-    color: #92400e;
-}
+    .payment-status.status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
 
-.payment-details-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-}
+    .payment-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
 
-.detail-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
 
-.detail-label {
-    font-size: 0.8rem;
-    color: #64748b;
-    font-weight: 500;
-}
+    .detail-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 500;
+    }
 
-.detail-value {
-    color: #1e293b;
-    font-weight: 600;
-}
+    .detail-value {
+        color: #1e293b;
+        font-weight: 600;
+    }
 
-.empty-payment-state {
-    text-align: center;
-    padding: 3rem 2rem;
-    color: #64748b;
-}
+    .empty-payment-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #64748b;
+    }
 
-.empty-payment-state i {
-    font-size: 3rem;
-    color: #e2e8f0;
-    margin-bottom: 1rem;
-}
+    .empty-payment-state i {
+        font-size: 3rem;
+        color: #e2e8f0;
+        margin-bottom: 1rem;
+    }
 
-.empty-payment-state h3 {
-    color: #1e293b;
-    margin-bottom: 0.5rem;
-}
+    .empty-payment-state h3 {
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
 
-/* Dark theme support */
-[data-theme="dark"] .passenger-details {
-    background: #2d3748;
-    border-color: #4a5568;
-}
+    /* Dark theme support */
+    [data-theme="dark"] .passenger-details {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
 
-[data-theme="dark"] .payment-history-section {
-    background: #2d3748;
-    border-color: #4a5568;
-}
+    [data-theme="dark"] .payment-history-section {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
 
-[data-theme="dark"] .payment-card {
-    background: #374151;
-    border-color: #4a5568;
-}
+    [data-theme="dark"] .payment-card {
+        background: #374151;
+        border-color: #4a5568;
+    }
 
-[data-theme="dark"] .payments-timeline::before {
-    background: #4a5568;
-}
+    [data-theme="dark"] .payments-timeline::before {
+        background: #4a5568;
+    }
 
-[data-theme="dark"] .passenger-card {
-    background: #1a202c;
-    border-color: #4a5568;
-    color: #e2e8f0;
-}
+    [data-theme="dark"] .passenger-card {
+        background: #1a202c;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
 
-[data-theme="dark"] .passenger-name strong {
-    color: #e2e8f0;
-}
+    [data-theme="dark"] .passenger-name strong {
+        color: #e2e8f0;
+    }
 </style>
 
 <script>
     function filterBookings(status) {
         const bookings = document.querySelectorAll('.booking-item');
         const buttons = document.querySelectorAll('.filter-btn');
-        
+
         // Update active button
         buttons.forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
-        
+
         // Filter bookings
         bookings.forEach(booking => {
             const bookingStatus = booking.dataset.status;
-            
+
             if (status === 'all' || bookingStatus === status) {
                 booking.style.display = 'flex';
             } else {
@@ -1187,12 +1261,12 @@
             }
         });
     }
-    
+
     // Toggle payment history visibility
     function togglePaymentHistory() {
         const content = document.getElementById('paymentHistoryContent');
         const icon = document.getElementById('paymentToggleIcon');
-        
+
         if (content.style.display === 'none') {
             content.style.display = 'block';
             icon.className = 'fas fa-eye';
@@ -1201,11 +1275,11 @@
             icon.className = 'fas fa-eye-slash';
         }
     }
-    
+
     // Auto-format PNR numbers
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const pnrElements = document.querySelectorAll('.pnr');
-        pnrElements.forEach(function(element) {
+        pnrElements.forEach(function (element) {
             const pnr = element.textContent;
             element.textContent = pnr.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
         });
