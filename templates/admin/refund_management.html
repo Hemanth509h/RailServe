@@ -2,8 +2,243 @@
 
 {% block title %}Refund Management - Admin - RailServe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-design.css') }}">
+<style>
+.refund-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    background: var(--secondary-50);
+    min-height: 100vh;
+}
+
+.admin-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-8);
+    border-radius: var(--radius-2xl);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.admin-breadcrumb {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.admin-breadcrumb a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.admin-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: rgba(0, 0, 0, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: var(--primary-600);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-700);
+    transform: translateY(-1px);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--secondary-200);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-card.pending .stat-icon {
+    background: var(--gradient-warning);
+}
+
+.stat-card.approved .stat-icon {
+    background: var(--gradient-success);
+}
+
+.stat-card.rejected .stat-icon {
+    background: var(--gradient-error);
+}
+
+.stat-card.completed .stat-icon {
+    background: var(--gradient-primary);
+}
+
+.stat-content h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary-800);
+}
+
+.stat-content p {
+    margin: var(--space-1) 0 0 0;
+    color: var(--secondary-600);
+    font-weight: 500;
+}
+
+.admin-section {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--secondary-200);
+}
+
+.filters-row {
+    display: flex;
+    gap: var(--space-4);
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.filter-form {
+    display: flex;
+    gap: var(--space-4);
+    align-items: end;
+    flex: 1;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--secondary-700);
+    font-size: 0.875rem;
+}
+
+.filter-group select,
+.filter-group input {
+    padding: var(--space-3);
+    border: 2px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    background: white;
+    color: var(--secondary-800);
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .refund-container {
+        padding: var(--space-4);
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-header h1 {
+        font-size: 2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: var(--space-4);
+    }
+    
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stat-card,
+    .btn {
+        transition: none;
+    }
+    
+    .stat-card:hover,
+    .btn:hover {
+        transform: none;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="admin-container">
+<div class="refund-container">
     <div class="admin-header">
         <h1><i class="fas fa-money-bill-wave"></i> Refund Management</h1>
         <nav class="admin-breadcrumb">

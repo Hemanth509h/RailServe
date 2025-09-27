@@ -81,7 +81,7 @@
 }
 
 .stat-card:hover {
-    transform: translateY(-4px) scale(1.02);
+    transform: translateY(-2px);
     box-shadow: var(--admin-shadow-lg);
 }
 

@@ -2,16 +2,382 @@
 
 {% block title %}Booking Reports - Admin - RailServe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-design.css') }}">
+<style>
+.reports-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    background: var(--secondary-50);
+    min-height: 100vh;
+}
+
+.admin-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: var(--space-8);
+    border-radius: var(--radius-2xl);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--space-3);
+}
+
+.btn {
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: rgba(0, 0, 0, 0.1);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.admin-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--secondary-200);
+}
+
+.admin-card h3 {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--secondary-800);
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--secondary-200);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-icon.booking {
+    background: var(--gradient-primary);
+}
+
+.stat-icon.revenue {
+    background: var(--gradient-success);
+}
+
+.stat-icon.confirmed {
+    background: var(--gradient-success);
+}
+
+.stat-icon.tatkal {
+    background: var(--gradient-warning);
+}
+
+.stat-info h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary-800);
+}
+
+.stat-info p {
+    margin: var(--space-1) 0 0 0;
+    color: var(--secondary-600);
+    font-weight: 500;
+}
+
+.chart-container {
+    height: 400px;
+    position: relative;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--secondary-200);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--secondary-200);
+}
+
+.admin-table th {
+    background: var(--secondary-50);
+    font-weight: 600;
+    color: var(--secondary-800);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.admin-table tbody tr:hover {
+    background: var(--secondary-50);
+}
+
+.popularity-bar {
+    position: relative;
+    height: 24px;
+    background: var(--secondary-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-2);
+}
+
+.popularity-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+.popularity-bar span {
+    position: relative;
+    z-index: 1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--secondary-700);
+}
+
+.booking-type-badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.booking-type-badge.tatkal {
+    background: var(--warning-100);
+    color: var(--warning-600);
+}
+
+.booking-type-badge.general {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.status-badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.status-confirmed {
+    background: var(--success-100);
+    color: var(--success-600);
+}
+
+.status-badge.status-pending {
+    background: var(--warning-100);
+    color: var(--warning-600);
+}
+
+.status-badge.status-cancelled {
+    background: var(--error-100);
+    color: var(--error-600);
+}
+
+.filter-form {
+    display: flex;
+    gap: var(--space-4);
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--secondary-700);
+    font-size: 0.875rem;
+}
+
+.form-group select {
+    padding: var(--space-3);
+    border: 2px solid var(--secondary-200);
+    border-radius: var(--radius-lg);
+    background: white;
+    color: var(--secondary-800);
+    font-size: 1rem;
+}
+
+.date-info {
+    padding: var(--space-3);
+    background: var(--secondary-100);
+    border-radius: var(--radius-lg);
+    color: var(--secondary-700);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-12);
+    color: var(--secondary-500);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: var(--space-4);
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    color: var(--secondary-700);
+    margin-bottom: var(--space-2);
+}
+
+@media (max-width: 768px) {
+    .reports-container {
+        padding: var(--space-4);
+    }
+    
+    .admin-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .admin-header h1 {
+        font-size: 2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: var(--space-4);
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stat-card,
+    .btn {
+        transition: none;
+    }
+    
+    .stat-card:hover,
+    .btn:hover {
+        transform: none;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="admin-container">
+<div class="reports-container">
     <div class="admin-header">
         <h1><i class="fas fa-chart-pie"></i> Booking Reports & Analytics</h1>
         <div class="header-actions">
-            <a href="{{ url_for('admin.seat_allocation') }}" class="btn btn-primary">
-                <i class="fas fa-chair"></i> Manage Seats
-            </a>
             <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('admin.seat_allocation') }}" class="btn btn-primary">
+                <i class="fas fa-chair"></i> Manage Seats
             </a>
         </div>
     </div>
@@ -406,4 +772,5 @@ function exportToPDF() {
     alert('PDF export functionality would be implemented here using libraries like jsPDF');
 }
 </script>
+</div>
 {% endblock %}
