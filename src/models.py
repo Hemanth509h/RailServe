@@ -689,6 +689,7 @@ class TatkalOverride(db.Model):
     enabled_at = db.Column(db.DateTime, default=datetime.utcnow)
     override_message = db.Column(db.String(200), default='Tatkal booking enabled by admin')
     coach_classes = db.Column(db.String(200))  # Comma-separated list of classes, empty means all
+    train_ids = db.Column(db.Text)  # Comma-separated list of train IDs, empty means all trains
     valid_until = db.Column(db.DateTime)  # Optional expiry time
     
     # Relationships
@@ -702,6 +703,19 @@ class TatkalOverride(db.Model):
         if self.coach_classes:
             return [cls.strip() for cls in self.coach_classes.split(',') if cls.strip()]
         return []  # Empty list means all classes
+    
+    def get_train_ids_list(self):
+        """Get list of train IDs from comma-separated string"""
+        if self.train_ids:
+            return [int(tid.strip()) for tid in self.train_ids.split(',') if tid.strip().isdigit()]
+        return []  # Empty list means all trains
+    
+    def applies_to_train(self, train_id):
+        """Check if this override applies to a specific train"""
+        if not self.is_valid():
+            return False
+        train_list = self.get_train_ids_list()
+        return not train_list or train_id in train_list
     
     def is_valid(self):
         """Check if override is currently valid"""

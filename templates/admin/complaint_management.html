@@ -666,6 +666,7 @@
                     <div class="complaint-actions">
                         {% if complaint.status == 'open' %}
                             <form method="POST" action="{{ url_for('admin.assign_complaint', complaint_id=complaint.id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <button type="submit" class="btn-sm btn-primary">
                                     <i class="fas fa-user-plus"></i> Assign to Me
                                 </button>
@@ -707,6 +708,7 @@
     <div class="modal-content">
         <h3><i class="fas fa-check-circle"></i> Resolve Complaint</h3>
         <form id="resolveForm" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="resolution">Resolution Details</label>
                 <textarea name="resolution" 

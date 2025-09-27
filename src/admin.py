@@ -1167,16 +1167,19 @@ def tatkal_override():
     """Manage Tatkal booking override settings"""
     active_override = TatkalOverride.get_active_override()
     override_history = TatkalOverride.query.order_by(TatkalOverride.enabled_at.desc()).limit(10).all()
+    all_trains = Train.query.filter_by(active=True).order_by(Train.name).all()
     
     return render_template('admin/tatkal_override.html', 
                          active_override=active_override,
-                         override_history=override_history)
+                         override_history=override_history,
+                         all_trains=all_trains)
 
 @admin_bp.route('/tatkal-override/enable', methods=['POST'])
 @admin_required
 def enable_tatkal_override():
     """Enable Tatkal booking override"""
     coach_classes = request.form.get('coach_classes', '').strip()
+    train_ids = request.form.getlist('train_ids')  # Get list of selected train IDs
     override_message = request.form.get('override_message', 'Tatkal booking enabled by admin').strip()
     valid_hours = request.form.get('valid_hours', type=int)
     
@@ -1190,11 +1193,15 @@ def enable_tatkal_override():
     if valid_hours and valid_hours > 0:
         valid_until = datetime.utcnow() + timedelta(hours=valid_hours)
     
+    # Convert train IDs to comma-separated string
+    train_ids_str = ','.join(train_ids) if train_ids else None
+    
     new_override = TatkalOverride(
         is_enabled=True,
         enabled_by=current_user.id,
         override_message=override_message,
         coach_classes=coach_classes if coach_classes else None,
+        train_ids=train_ids_str,
         valid_until=valid_until
     )
     
@@ -1203,7 +1210,8 @@ def enable_tatkal_override():
     
     duration_msg = f" for {valid_hours} hours" if valid_hours else " (no expiry)"
     classes_msg = f" for classes: {coach_classes}" if coach_classes else " for all coach classes"
-    flash(f'Tatkal booking override enabled{duration_msg}{classes_msg}', 'success')
+    trains_msg = f" for {len(train_ids)} specific trains" if train_ids else " for all trains"
+    flash(f'Tatkal booking override enabled{duration_msg}{classes_msg}{trains_msg}', 'success')
     
     return redirect(url_for('admin.tatkal_override'))
 

@@ -26,12 +26,14 @@ form {
     display: grid;
     gap: 20px;
     grid-template-areas: "g1 g2"
+        "g5 g5"
         "g3 g4";
 }
 #g1 { grid-area: g1; }
 #g2 { grid-area: g2; }
 #g3 { grid-area: g3; }
 #g4 { grid-area: g4;align-self: center;justify-self: center; }
+#g5 { grid-area: g5; }
 
 .form-group {
     display: flex;
@@ -67,6 +69,11 @@ div#change-password {
                 <p><strong>Coach Classes:</strong> {{ active_override.coach_classes }}</p>
                 {% else %}
                 <p><strong>Coach Classes:</strong> All classes</p>
+                {% endif %}
+                {% if active_override.train_ids %}
+                <p><strong>Specific Trains:</strong> {{ active_override.get_train_ids_list()|length }} trains selected</p>
+                {% else %}
+                <p><strong>Train Coverage:</strong> All trains</p>
                 {% endif %}
                 {% if active_override.valid_until %}
                 <p><strong>Valid Until:</strong> {{ active_override.valid_until.strftime('%Y-%m-%d %H:%M:%S') }}</p>
@@ -112,6 +119,16 @@ div#change-password {
                             <input type="text" class="text-input" id="coach_classes" name="coach_classes" 
                                    placeholder="AC1,AC2,AC3,SL,2S,CC">
                             <div class="input-help">Comma-separated list of classes. Leave empty for all classes</div>
+                        </div>
+
+                        <div class="form-group" id="g5">
+                            <label for="train_selection" class="input-label">Train Selection (Optional)</label>
+                            <select multiple class="text-input" id="train_selection" name="train_ids" size="8" style="height: auto;">
+                                {% for train in all_trains %}
+                                <option value="{{ train.id }}">{{ train.number }} - {{ train.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="input-help">Hold Ctrl/Cmd to select multiple trains. Leave none selected for all trains</div>
                         </div>
 
                         <div class="form-group" id="g3">
@@ -171,6 +188,7 @@ div#change-password {
                                     <th>Enabled By</th>
                                     <th>Message</th>
                                     <th>Classes</th>
+                                    <th>Trains</th>
                                     <th>Valid Until</th>
                                     <th>Status</th>
                                 </tr>
@@ -182,6 +200,7 @@ div#change-password {
                                     <td>{{ override.admin_user.username }}</td>
                                     <td>{{ override.override_message }}</td>
                                     <td>{{ override.coach_classes or 'All' }}</td>
+                                    <td>{{ override.get_train_ids_list()|length if override.train_ids else 'All' }} {% if override.train_ids %}trains{% endif %}</td>
                                     <td>{{ override.valid_until.strftime('%Y-%m-%d %H:%M') if override.valid_until else 'No expiry' }}</td>
                                     <td>
                                         {% if override.is_valid() %}
