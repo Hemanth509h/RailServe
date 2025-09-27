@@ -13,18 +13,47 @@
     min-height: 100vh;
 }
 
-.admin-header {
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-8);
-    border-radius: var(--radius-2xl);
-    margin-bottom: var(--space-6);
-    box-shadow: var(--shadow-lg);
+.admin-header.modern-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--primary-700);
+    padding: 48px;
+    border-radius: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--space-4);
+    gap: var(--space-6);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.admin-header.modern-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.1;
+    border-radius: 24px;
+    z-index: -1;
+}
+
+.header-content {
+    text-align: center;
+    flex: 1;
+}
+
+.header-subtitle {
+    color: var(--secondary-600);
+    font-size: 1.1rem;
+    margin: 8px 0 0 0;
+    font-weight: 500;
 }
 
 .admin-header h1 {
@@ -239,12 +268,25 @@
 
 {% block content %}
 <div class="refund-container">
-    <div class="admin-header">
-        <h1><i class="fas fa-money-bill-wave"></i> Refund Management</h1>
-        <nav class="admin-breadcrumb">
-            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a> > 
-            <span>Refunds</span>
-        </nav>
+    <div class="admin-header modern-header">
+        <a href="{{ url_for('admin.dashboard') }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Dashboard
+        </a>
+        <div class="header-content">
+            <h1><i class="fas fa-money-bill-wave"></i> Refund Management</h1>
+            <p class="header-subtitle">Process and manage passenger refund requests</p>
+        </div>
+        <div class="header-actions">
+            <button onclick="exportRefundReports()" class="btn modern-btn primary">
+                <i class="fas fa-file-export"></i>
+                Export Reports
+            </button>
+            <button onclick="processRefunds()" class="btn modern-btn secondary">
+                <i class="fas fa-cogs"></i>
+                Process All
+            </button>
+        </div>
     </div>
 
     <div class="admin-content">

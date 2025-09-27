@@ -13,27 +13,146 @@
     min-height: 100vh;
 }
 
-.admin-header {
-    background: var(--gradient-primary);
-    color: white;
-    padding: var(--space-8);
-    border-radius: var(--radius-2xl);
-    margin-bottom: var(--space-6);
-    box-shadow: var(--shadow-lg);
+.admin-header.modern-header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--primary-700);
+    padding: 48px;
+    border-radius: 24px;
+    margin-bottom: 40px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--space-4);
+    gap: var(--space-6);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-.admin-header h1 {
+.admin-header.modern-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.1;
+    border-radius: 24px;
+    z-index: -1;
+}
+
+.admin-header.modern-header:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(31, 38, 135, 0.45);
+}
+
+.header-content {
+    text-align: center;
+    flex: 1;
+}
+
+.header-subtitle {
+    color: var(--secondary-600);
+    font-size: 1.1rem;
+    margin: 8px 0 0 0;
+    font-weight: 500;
+}
+
+.admin-header.modern-header h1 {
     margin: 0;
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-3);
+}
+
+.back-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.back-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    text-decoration: none;
+    color: white;
+}
+
+.back-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.back-button:hover::before {
+    left: 100%;
+}
+
+.modern-btn {
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    cursor: pointer;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.modern-btn.secondary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+}
+
+.modern-btn.primary:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.modern-btn.secondary:hover {
+    box-shadow: 0 6px 20px rgba(240, 147, 251, 0.6);
 }
 
 .header-actions {
@@ -370,15 +489,24 @@
 
 {% block content %}
 <div class="reports-container">
-    <div class="admin-header">
-        <h1><i class="fas fa-chart-pie"></i> Booking Reports & Analytics</h1>
+    <div class="admin-header modern-header">
+        <a href="{{ url_for('admin.dashboard') }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Dashboard
+        </a>
+        <div class="header-content">
+            <h1><i class="fas fa-chart-pie"></i> Booking Reports & Analytics</h1>
+            <p class="header-subtitle">Comprehensive booking insights and performance metrics</p>
+        </div>
         <div class="header-actions">
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </a>
-            <a href="{{ url_for('admin.seat_allocation') }}" class="btn btn-primary">
-                <i class="fas fa-chair"></i> Manage Seats
-            </a>
+            <button onclick="exportReports()" class="btn modern-btn primary">
+                <i class="fas fa-download"></i>
+                Export Reports
+            </button>
+            <button onclick="refreshData()" class="btn modern-btn secondary">
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+            </button>
         </div>
     </div>
     
