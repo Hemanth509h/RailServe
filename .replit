@@ -17,10 +17,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Railway Web Application"
+args = "Flask Railway App"
 
 [[workflows.workflow]]
-name = "Railway Web Application"
+name = "Flask Railway App"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -34,10 +34,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 39073
-externalPort = 3002
 
 [[ports]]
 localPort = 41725
