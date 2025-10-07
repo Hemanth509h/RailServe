@@ -4,6 +4,10 @@ RailServe Modern Design System
 ============================================================================
 A comprehensive, modern CSS framework for the railway reservation system
 with beautiful gradients, animations, and responsive design.
+
+File Purpose: Main design system providing consistent theming, animations,
+and responsive layouts across all pages of the application.
+============================================================================
 */
 
 /* ============================================================================
@@ -1469,4 +1473,249 @@ a:hover {
 
 .toast-info {
   border-left: 4px solid var(--primary-500);
+}
+/* ============================================================================
+   3D ANIMATION UTILITIES - Applied Across All Pages
+   ============================================================================ 
+   Subtle 3D transforms and animations for cards, buttons, and interactive elements
+*/
+
+/* Enable 3D transforms on parent containers */
+.transform-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Card hover 3D lift effect */
+.card-3d,
+.train-card,
+.feature-card,
+.booking-card,
+.payment-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover,
+.train-card:hover,
+.feature-card:hover,
+.booking-card:hover,
+.payment-card:hover {
+  transform: translateY(-8px) rotateX(5deg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Button 3D press effect */
+.btn,
+.btn-primary,
+.btn-secondary {
+  transition: all 0.2s ease;
+  transform-style: preserve-3d;
+}
+
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating animation for hero sections */
+.float-animation {
+  animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Pulse animation for CTAs */
+.pulse-animation {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================================================
+   IMPROVED MOBILE RESPONSIVENESS - All Pages
+   ============================================================================ */
+
+/* Mobile: Extra Small Devices (phones, less than 576px) */
+@media (max-width: 575px) {
+  /* Typography scaling */
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.125rem; }
+  
+  /* Container padding */
+  .container {
+    padding: 0 1rem;
+  }
+  
+  /* Grid adjustments */
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Card spacing */
+  .card, .train-card, .booking-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Form inputs */
+  input, select, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Button sizing */
+  .btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+  
+  /* Table responsiveness */
+  table {
+    font-size: 0.85rem;
+  }
+  
+  /* Disable 3D effects on mobile for performance */
+  .card-3d:hover,
+  .train-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Mobile: Small Devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tablet: Medium Devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Desktop: Large Devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* ============================================================================
+   TOUCH-FRIENDLY IMPROVEMENTS
+   ============================================================================ */
+
+/* Larger touch targets for mobile */
+@media (max-width: 767px) {
+  button,
+  a.btn,
+  .nav-link,
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px; /* Apple's recommended minimum */
+    min-width: 44px;
+  }
+  
+  /* Improve form field touch targets */
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    padding: 0.75rem;
+  }
+  
+  /* Better spacing for clickable elements */
+  .clickable-item {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY IMPROVEMENTS
+   ============================================================================ */
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable 3D transforms */
+  .card-3d:hover,
+  .train-card:hover,
+  .feature-card:hover {
+    transform: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  * {
+    border-width: 2px !important;
+  }
+  
+  .btn {
+    border: 2px solid currentColor;
+  }
 }
