@@ -1,4 +1,19 @@
-// Common authentication validation functions
+/**
+ * =============================================================================
+ * RailServe Authentication Validation
+ * =============================================================================
+ * Client-side validation for login and registration forms
+ * Provides real-time validation feedback to improve user experience
+ * =============================================================================
+ */
+
+/**
+ * Display Validation Error Message
+ * Shows error message below form field with consistent styling
+ * 
+ * @param {HTMLElement} element - Error message container element
+ * @param {string} message - Error message to display
+ */
 function showError(element, message) {
     element.textContent = message;
     element.style.display = 'block';
@@ -7,20 +22,31 @@ function showError(element, message) {
     element.style.marginTop = '0.25rem';
 }
 
+/**
+ * Hide Validation Error Message
+ * Clears and hides error message container
+ * 
+ * @param {HTMLElement} element - Error message container element
+ */
 function hideError(element) {
     element.textContent = '';
     element.style.display = 'none';
 }
 
-// Login form validation
+/**
+ * Initialize Login Form Validation
+ * Sets up real-time validation for username and password fields
+ * Validates form on submission and prevents invalid submissions
+ */
 function initLoginValidation() {
     const form = document.getElementById('loginForm');
     const username = document.getElementById('username');
     const password = document.getElementById('password');
     
+    // Exit if required elements not found
     if (!form || !username || !password) return;
     
-    // Real-time validation
+    // Real-time validation on input
     username.addEventListener('input', function() {
         validateUsername();
     });
@@ -29,7 +55,7 @@ function initLoginValidation() {
         validatePassword();
     });
     
-    // Form submission validation
+    // Validate form before submission
     form.addEventListener('submit', function(e) {
         if (!validateForm()) {
             e.preventDefault();
