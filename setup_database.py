@@ -1,103 +1,78 @@
 #!/usr/bin/env python3
 """
-RailServe 2025 - Comprehensive Database Setup Script
-==================================================
+RailServe 2025 - Enhanced Database Setup Script
+================================================
 
-This script creates a complete railway reservation system database with:
-- Core railway system tables (trains, stations, users, bookings)
-- Enhanced group booking system with modern enterprise features
-- Advanced payment and loyalty integration
-- Sustainability tracking and analytics
-- Modern audit trails and security features
+This script performs a complete database reset and setup:
+1. Drops all existing tables (clean slate)
+2. Creates all required tables from models
+3. Populates initial data (stations, trains, users)
+4. Verifies all tables and relationships
 
 Usage:
     python setup_database.py
 
 Environment Variables:
-    DATABASE_URL: PostgreSQL connection string (required)
+    DATABASE_URL: Database connection string (PostgreSQL or SQLite)
 """
 
 import os
 import sys
 import logging
-from datetime import datetime, date
+from datetime import datetime, time
 from decimal import Decimal
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-def setup_database():
-    """Main setup function - creates all tables and initial data using Flask models"""
-    logger.info("🚀 Starting RailServe 2025 database setup...")
-    
-    # Import Flask app and models
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+def drop_all_tables(db, engine):
+    """Drop all existing tables using reflection"""
+    logger.info("🗑️  Dropping all existing tables...")
     
     try:
-        from src.app import app, db
+        from sqlalchemy import MetaData, inspect
         
-        with app.app_context():
-            # Import core models
-            from src.models import (
-                User, Station, Train, TrainRoute, Booking, Passenger, 
-                Payment, RefundRequest, TatkalTimeSlot, TatkalOverride, 
-                ComplaintManagement, Waitlist, GroupBooking
-            )
+        inspector = inspect(engine)
+        existing_tables = inspector.get_table_names()
+        
+        if existing_tables:
+            logger.info(f"   Found {len(existing_tables)} existing tables: {', '.join(existing_tables)}")
             
-            logger.info("📋 Creating database tables...")
+            metadata = MetaData()
+            metadata.reflect(bind=engine)
+            metadata.drop_all(bind=engine)
             
-            # Drop and recreate all tables
-            db.drop_all()
-            db.create_all()
-            
-            # Verify tables were created
-            inspector = db.inspect(db.engine)
-            tables = inspector.get_table_names()
-            logger.info(f"✅ Created {len(tables)} database tables")
-            
-            # Create initial data
-            create_initial_data(db, User, Station, Train, TrainRoute)
-            
-            logger.info("🎉 Database setup completed successfully!")
-            logger.info("✨ RailServe 2025 is ready for operation!")
+            logger.info("✅ Successfully dropped all existing tables")
+        else:
+            logger.info("   No existing tables found - fresh database")
             
     except Exception as e:
-        logger.error(f"❌ Database setup failed: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+        logger.warning(f"   Note: {str(e)}")
+        logger.info("   Continuing with db.drop_all()...")
+        db.drop_all()
 
-def create_initial_data(db, User, Station, Train, TrainRoute):
-    """Create essential initial data for the system"""
-    from werkzeug.security import generate_password_hash
+def create_all_tables(db):
+    """Create all tables defined in models"""
+    logger.info("📋 Creating all database tables from models...")
     
-    logger.info("💾 Creating initial system data...")
+    db.create_all()
     
-    # Create admin user
-    admin = User(
-        username='admin',
-        email='admin@railserve.com',
-        password_hash=generate_password_hash('admin123'),
-        role='super_admin',
-        active=True
-    )
+    inspector = db.inspect(db.engine)
+    tables = inspector.get_table_names()
+    logger.info(f"✅ Created {len(tables)} tables:")
     
-    # Create test user
-    user = User(
-        username='user',
-        email='user@example.com',
-        password_hash=generate_password_hash('user123'),
-        role='user',
-        active=True
-    )
+    for i, table in enumerate(sorted(tables), 1):
+        logger.info(f"   {i:2d}. {table}")
     
-    db.session.add_all([admin, user])
+    return tables
+
+def create_initial_stations(db, Station):
+    """Create major railway stations across India"""
+    logger.info("🚉 Creating railway stations...")
     
-    # Create major stations
     stations_data = [
         ('NDLS', 'New Delhi', 'New Delhi', 'Delhi'),
         ('CSMT', 'Mumbai CST', 'Mumbai', 'Maharashtra'),
@@ -118,7 +93,12 @@ def create_initial_data(db, User, Station, Train, TrainRoute):
         ('PURI', 'Puri', 'Puri', 'Odisha'),
         ('NGP', 'Nagpur', 'Nagpur', 'Maharashtra'),
         ('BPL', 'Bhopal Junction', 'Bhopal', 'Madhya Pradesh'),
-        ('INDB', 'Indore Junction', 'Indore', 'Madhya Pradesh')
+        ('INDB', 'Indore Junction', 'Indore', 'Madhya Pradesh'),
+        ('GHY', 'Guwahati', 'Guwahati', 'Assam'),
+        ('PAT', 'Patna Junction', 'Patna', 'Bihar'),
+        ('ALD', 'Allahabad Junction', 'Prayagraj', 'Uttar Pradesh'),
+        ('AGC', 'Agra Cantt', 'Agra', 'Uttar Pradesh'),
+        ('JAT', 'Jammu Tawi', 'Jammu', 'Jammu & Kashmir')
     ]
     
     stations = []
@@ -133,29 +113,32 @@ def create_initial_data(db, User, Station, Train, TrainRoute):
         stations.append(station)
     
     db.session.add_all(stations)
+    db.session.commit()
     
-    # Create sample trains
+    logger.info(f"✅ Created {len(stations)} railway stations")
+    return stations
+
+def create_initial_trains(db, Train):
+    """Create sample trains with realistic data"""
+    logger.info("🚂 Creating trains...")
+    
     trains_data = [
-        ('12301', 'Rajdhani Express', 400, 350, 2.5, 50, 4.0),
-        ('12302', 'New Delhi Rajdhani', 400, 350, 2.5, 50, 4.0),
-        ('12951', 'Mumbai Rajdhani', 350, 300, 2.8, 40, 4.5),
-        ('12952', 'New Delhi Rajdhani', 350, 300, 2.8, 40, 4.5),
-        ('12621', 'Tamil Nadu Express', 450, 400, 1.8, 60, 3.0),
-        ('12622', 'Tamil Nadu Express', 450, 400, 1.8, 60, 3.0),
-        ('12841', 'Coromandel Express', 400, 350, 2.0, 50, 3.2),
-        ('12842', 'Coromandel Express', 400, 350, 2.0, 50, 3.2),
-        ('16031', 'Andaman Express', 420, 380, 1.4, 50, 2.2),
-        ('16032', 'Andaman Express', 420, 380, 1.4, 50, 2.2),
-        ('12431', 'Trivandrum Rajdhani', 300, 250, 3.5, 35, 5.5),
-        ('12432', 'Trivandrum Rajdhani', 300, 250, 3.5, 35, 5.5),
-        ('11013', 'Coimbatore Express', 400, 350, 1.3, 45, 2.0),
-        ('11014', 'Coimbatore Express', 400, 350, 1.3, 45, 2.0),
-        ('12605', 'Pallavan Express', 380, 330, 1.4, 40, 2.1),
-        ('12606', 'Pallavan Express', 380, 330, 1.4, 40, 2.1),
-        ('12223', 'Kaifiyat Express', 380, 320, 1.5, 45, 2.8),
-        ('12224', 'Kaifiyat Express', 380, 320, 1.5, 45, 2.8),
-        ('12253', 'Anga Express', 360, 310, 1.6, 40, 2.5),
-        ('12254', 'Anga Express', 360, 310, 1.6, 40, 2.5)
+        ('12301', 'Rajdhani Express', 400, 400, 2.5, 50, 4.0),
+        ('12302', 'New Delhi Rajdhani', 400, 400, 2.5, 50, 4.0),
+        ('12951', 'Mumbai Rajdhani', 350, 350, 2.8, 40, 4.5),
+        ('12952', 'New Delhi Rajdhani', 350, 350, 2.8, 40, 4.5),
+        ('12621', 'Tamil Nadu Express', 450, 450, 1.8, 60, 3.0),
+        ('12622', 'Tamil Nadu Express', 450, 450, 1.8, 60, 3.0),
+        ('12841', 'Coromandel Express', 400, 400, 2.0, 50, 3.2),
+        ('12842', 'Coromandel Express', 400, 400, 2.0, 50, 3.2),
+        ('16031', 'Andaman Express', 420, 420, 1.4, 50, 2.2),
+        ('16032', 'Andaman Express', 420, 420, 1.4, 50, 2.2),
+        ('12431', 'Trivandrum Rajdhani', 300, 300, 3.5, 35, 5.5),
+        ('12432', 'Trivandrum Rajdhani', 300, 300, 3.5, 35, 5.5),
+        ('11013', 'Coimbatore Express', 400, 400, 1.3, 45, 2.0),
+        ('11014', 'Coimbatore Express', 400, 400, 1.3, 45, 2.0),
+        ('12605', 'Pallavan Express', 380, 380, 1.4, 40, 2.1),
+        ('12606', 'Pallavan Express', 380, 380, 1.4, 40, 2.1),
     ]
     
     trains = []
@@ -173,15 +156,185 @@ def create_initial_data(db, User, Station, Train, TrainRoute):
         trains.append(train)
     
     db.session.add_all(trains)
-    
-    # Commit all data
     db.session.commit()
     
-    logger.info("✅ Created initial data:")
-    logger.info(f"   - {len(stations)} major railway stations")
-    logger.info(f"   - {len(trains)} popular trains")
-    logger.info("   - Admin user (admin/admin123)")
-    logger.info("   - Test user (user/user123)")
+    logger.info(f"✅ Created {len(trains)} trains")
+    return trains
+
+def create_train_routes(db, TrainRoute, Train, trains, stations):
+    """Create realistic train routes"""
+    logger.info("🛤️  Creating train routes...")
+    
+    station_map = {s.code: s for s in stations}
+    train_map = {t.number: t for t in trains}
+    
+    routes_data = [
+        {
+            'train_number': '12301',
+            'route': [
+                ('NDLS', 0, None, time(16, 50), 0),
+                ('AGC', 1, time(19, 30), time(19, 35), 195),
+                ('BPL', 2, time(23, 55), time(0, 5), 705),
+                ('NGP', 3, time(6, 15), time(6, 25), 1089),
+                ('BZA', 4, time(16, 40), time(16, 50), 1589),
+                ('MAS', 5, time(20, 45), None, 1759)
+            ]
+        },
+        {
+            'train_number': '12302',
+            'route': [
+                ('MAS', 0, None, time(23, 0), 0),
+                ('BZA', 1, time(4, 15), time(4, 25), 170),
+                ('NGP', 2, time(14, 40), time(14, 50), 670),
+                ('BPL', 3, time(21, 0), time(21, 10), 1054),
+                ('AGC', 4, time(1, 30), time(1, 35), 1564),
+                ('NDLS', 5, time(4, 15), None, 1759)
+            ]
+        },
+        {
+            'train_number': '12621',
+            'route': [
+                ('NDLS', 0, None, time(22, 30), 0),
+                ('AGC', 1, time(1, 15), time(1, 20), 195),
+                ('BPL', 2, time(6, 0), time(6, 10), 705),
+                ('NGP', 3, time(11, 40), time(11, 50), 1089),
+                ('BZA', 4, time(20, 50), time(21, 0), 1589),
+                ('MAS', 5, time(1, 15), None, 1759)
+            ]
+        },
+    ]
+    
+    routes_created = 0
+    for route_data in routes_data:
+        train = train_map.get(route_data['train_number'])
+        if train:
+            for station_code, seq, arr, dep, dist in route_data['route']:
+                if station_code in station_map:
+                    route = TrainRoute(
+                        train_id=train.id,
+                        station_id=station_map[station_code].id,
+                        sequence=seq,
+                        arrival_time=arr,
+                        departure_time=dep,
+                        distance_from_start=dist
+                    )
+                    db.session.add(route)
+                    routes_created += 1
+    
+    db.session.commit()
+    logger.info(f"✅ Created {routes_created} train route entries")
+
+def create_admin_users(db, User):
+    """Create admin and test users"""
+    from werkzeug.security import generate_password_hash
+    
+    logger.info("👥 Creating admin users...")
+    
+    admin = User(
+        username='admin',
+        email='admin@railserve.com',
+        password_hash=generate_password_hash('admin123'),
+        role='super_admin',
+        active=True
+    )
+    
+    test_user = User(
+        username='testuser',
+        email='user@example.com',
+        password_hash=generate_password_hash('user123'),
+        role='user',
+        active=True
+    )
+    
+    db.session.add_all([admin, test_user])
+    db.session.commit()
+    
+    logger.info("✅ Created admin users")
+    logger.info("   - Admin: admin / admin123")
+    logger.info("   - Test User: testuser / user123")
+
+def verify_database_setup(db):
+    """Verify the database setup is correct"""
+    logger.info("🔍 Verifying database setup...")
+    
+    from src.models import User, Station, Train, TrainRoute, Booking
+    
+    checks = []
+    
+    user_count = User.query.count()
+    checks.append(('Users', user_count, user_count >= 2))
+    
+    station_count = Station.query.count()
+    checks.append(('Stations', station_count, station_count >= 10))
+    
+    train_count = Train.query.count()
+    checks.append(('Trains', train_count, train_count >= 5))
+    
+    route_count = TrainRoute.query.count()
+    checks.append(('Routes', route_count, route_count >= 5))
+    
+    logger.info("📊 Database Statistics:")
+    all_passed = True
+    for name, count, passed in checks:
+        status = "✅" if passed else "❌"
+        logger.info(f"   {status} {name}: {count}")
+        all_passed = all_passed and passed
+    
+    return all_passed
+
+def setup_database():
+    """Main setup function - complete database initialization"""
+    logger.info("=" * 70)
+    logger.info("🚀 RailServe 2025 - Database Setup & Initialization")
+    logger.info("=" * 70)
+    
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    
+    try:
+        from src.app import app, db
+        from src.models import (
+            User, Station, Train, TrainRoute, Booking, Passenger,
+            Payment, RefundRequest, TatkalTimeSlot, TatkalOverride,
+            ComplaintManagement, Waitlist, GroupBooking
+        )
+        
+        with app.app_context():
+            drop_all_tables(db, db.engine)
+            
+            tables = create_all_tables(db)
+            
+            logger.info("\n" + "=" * 70)
+            logger.info("💾 Populating Initial Data")
+            logger.info("=" * 70)
+            
+            stations = create_initial_stations(db, Station)
+            trains = create_initial_trains(db, Train)
+            create_train_routes(db, TrainRoute, Train, trains, stations)
+            create_admin_users(db, User)
+            
+            logger.info("\n" + "=" * 70)
+            logger.info("🔍 Final Verification")
+            logger.info("=" * 70)
+            
+            if verify_database_setup(db):
+                logger.info("\n" + "=" * 70)
+                logger.info("🎉 DATABASE SETUP COMPLETED SUCCESSFULLY!")
+                logger.info("=" * 70)
+                logger.info("\n✨ RailServe 2025 is ready for operation!")
+                logger.info("\n🔐 Login Credentials:")
+                logger.info("   Admin: admin / admin123")
+                logger.info("   User:  testuser / user123")
+                logger.info("\n" + "=" * 70)
+            else:
+                logger.error("❌ Database verification failed!")
+                sys.exit(1)
+            
+    except Exception as e:
+        logger.error(f"\n❌ DATABASE SETUP FAILED!")
+        logger.error(f"Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == '__main__':
     setup_database()
