@@ -2325,7 +2325,7 @@ div#form-select2 {
                             <a href="{{ url_for('booking.booking_history') }}" class="dropdown-item">
                                 <i class="fas fa-history"></i> Booking History
                             </a>
-                            <a href="{{ url_for('modern_groups.dashboard') }}" class="dropdown-item">
+                            <a href="{{ url_for('modern_groups.group_dashboard') }}" class="dropdown-item">
                                 <i class="fas fa-users"></i> Group Bookings
                             </a>
                             <a href="{{ url_for('submit_complaint') }}" class="dropdown-item">
@@ -2417,8 +2417,8 @@ div#form-select2 {
                         <!-- Regular user links -->
                         <li><a href="{{ url_for('universal_search') }}"><i class="fas fa-ticket-alt"></i> Book Ticket</a></li>
                         <li><a href="{{ url_for('booking.booking_history') }}"><i class="fas fa-history"></i> My Bookings</a></li>
-                        <li><a href="{{ url_for('modern_groups.dashboard') }}"><i class="fas fa-users"></i> My Groups</a></li>
-                        <li><a href="{{ url_for('modern_groups.create') }}"><i class="fas fa-plus-circle"></i> Create Group</a></li>
+                        <li><a href="{{ url_for('modern_groups.group_dashboard') }}"><i class="fas fa-users"></i> My Groups</a></li>
+                        <li><a href="{{ url_for('modern_groups.create_modern_group') }}"><i class="fas fa-plus-circle"></i> Create Group</a></li>
                         <li><a href="{{ url_for('universal_search') }}"><i class="fas fa-bolt"></i> Tatkal Booking</a></li>
                         <li><a href="{{ url_for('auth.profile') }}"><i class="fas fa-user-circle"></i> My Profile</a></li>
                         <li><a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
