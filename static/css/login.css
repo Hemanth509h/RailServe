@@ -232,9 +232,7 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .auth-container {
-    background: linear-gradient(135deg, var(--bg-primary) 0%, #1e293b 100%);
-}
+
 
 [data-theme="dark"] .auth-card:hover {
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
