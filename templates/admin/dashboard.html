@@ -4,23 +4,44 @@
 
 {% block head %}
 <style>
-/* Admin Pages Styling */
-.admin-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px;
+/* Modern Admin Pages Styling - 2025 Design System with Gradients */
+:root {
+    --admin-gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --admin-gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --admin-gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --admin-card-bg: rgba(255, 255, 255, 0.95);
+    --admin-card-border: rgba(255, 255, 255, 0.2);
+    --admin-backdrop-blur: blur(20px);
+    --admin-shadow-modern: 0 8px 32px rgba(31, 38, 135, 0.37);
+    --admin-shadow-hover: 0 16px 48px rgba(31, 38, 135, 0.45);
+    --admin-radius-modern: 24px;
+    --admin-animation-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+/* Admin Container with Gradient Background */
+.admin-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Modern Admin Header with Glass Effect */
 .admin-header {
-    background: var(--admin-header-bg);
-    color: var(--text-inverse);
-    padding: 40px 48px;
-    border-radius: 16px;
+    background: var(--admin-card-bg);
+    backdrop-filter: var(--admin-backdrop-blur);
+    border: 1px solid var(--admin-card-border);
+    color: var(--primary-700);
+    padding: 48px;
+    border-radius: var(--admin-radius-modern);
     text-align: center;
-    margin-bottom: 32px;
-    box-shadow: var(--admin-shadow-lg);
+    margin-bottom: 40px;
+    box-shadow: var(--admin-shadow-modern);
     position: relative;
     overflow: hidden;
+    transition: all 0.4s var(--admin-animation-spring);
 }
 
 .admin-header::before {
@@ -29,15 +50,40 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6, #f59e0b);
+    bottom: 0;
+    background: var(--admin-gradient-primary);
+    opacity: 0.1;
+    z-index: -1;
 }
 
+.admin-header:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--admin-shadow-hover);
+}
+
+/* Rainbow gradient top border */
+.admin-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6, #f59e0b);
+    z-index: 1;
+}
+
+/* Gradient Text for h1 */
 .admin-header h1 {
-    margin: 0 0 12px 0;
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    margin: 0 0 16px 0;
+    font-size: 3rem;
+    font-weight: 800;
+    background: var(--admin-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
 }
 
 .admin-header p {
@@ -45,6 +91,7 @@
     opacity: 0.95;
     font-size: 1.125rem;
     font-weight: 400;
+    color: var(--admin-text-primary);
 }
 
 /* Stats Grid */
