@@ -79,40 +79,6 @@ class SeatAllocator:
             coach_prefixes = self.coach_prefixes.get(coach_class, ['X'])
             available_berths = self.berth_types.get(coach_class, ['Lower'])
             
-            # Check if this booking is part of a group
-            is_group_booking = booking.group_booking_id is not None
-            group_coach = None
-            
-            if is_group_booking:
-                # Try to find existing coach assignments from other bookings in the same group
-                group_bookings = Booking.query.filter_by(
-                    group_booking_id=booking.group_booking_id,
-                    train_id=booking.train_id,
-                    journey_date=booking.journey_date,
-                    coach_class=booking.coach_class,
-                    status='confirmed'
-                ).filter(Booking.id != booking_id).all()
-                
-                # Look for passengers who already have seat assignments
-                for other_booking in group_bookings:
-                    # LOGIC FIX: Use passengers relationship instead of passengers_details
-                    other_passengers = Passenger.query.filter_by(booking_id=other_booking.id).all()
-                    for other_passenger in other_passengers:
-                        if other_passenger.seat_number:
-                            # Extract coach from existing seat number
-                            parts = other_passenger.seat_number.split('-')
-                            if len(parts) == 2:
-                                group_coach = parts[0]
-                                break
-                    if group_coach:
-                        break
-            
-            # If no group coach found, select one for coordination
-            if is_group_booking and not group_coach:
-                coach_prefix = random.choice(coach_prefixes)
-                coach_num = random.randint(1, 8)
-                group_coach = f"{coach_prefix}{coach_num}"
-            
             # Generate seat assignments
             assigned_seats = []
             existing_seats = self._get_existing_seats(booking.train_id, booking.journey_date, coach_class)
@@ -123,14 +89,10 @@ class SeatAllocator:
                     assigned_seats.append(passenger.seat_number)
                     continue
                 
-                # For group bookings, try to use the same coach
-                if is_group_booking and group_coach:
-                    coach_part = group_coach
-                else:
-                    # Non-group booking - use random coach
-                    coach_prefix = random.choice(coach_prefixes)
-                    coach_num = random.randint(1, 8)
-                    coach_part = f"{coach_prefix}{coach_num}"
+                # Select random coach for seat allocation
+                coach_prefix = random.choice(coach_prefixes)
+                coach_num = random.randint(1, 8)
+                coach_part = f"{coach_prefix}{coach_num}"
                 
                 # Find available seat in the selected coach
                 seat_number = self._find_available_seat(coach_part, assigned_seats, existing_seats)

@@ -143,7 +143,6 @@ This document provides a comprehensive explanation of every file in the RailServ
   - `Booking` - Ticket bookings with passenger details
   - `Payment` - Payment records and transaction status
   - `Waitlist` - Waitlist management
-  - `GroupBooking` - Group booking coordination
   - `ComplaintManagement` - Customer complaint system
   - And 20+ other specialized models
 
