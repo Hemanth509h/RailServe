@@ -517,6 +517,172 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ===============================================
+   MODERN BACKGROUND ANIMATION FOR ALL PAGES
+   =============================================== */
+
+/* Animated gradient background */
+.animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+    background-size: 400% 400%;
+    animation: gradientFlow 15s ease infinite;
+    opacity: 0.15;
+}
+
+[data-theme="dark"] .animated-bg {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #312e81 50%, #1e3a8a 75%, #0f172a 100%);
+    background-size: 400% 400%;
+    animation: gradientFlow 20s ease infinite;
+    opacity: 0.4;
+}
+
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Floating particles background */
+.particles-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(59, 130, 246, 0.4);
+    border-radius: 50%;
+    animation: floatParticle 20s linear infinite;
+}
+
+[data-theme="dark"] .particle {
+    background: rgba(147, 197, 253, 0.3);
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 15s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 18s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 20s; }
+.particle:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 17s; }
+.particle:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 19s; }
+.particle:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 16s; }
+.particle:nth-child(7) { left: 70%; animation-delay: 2.5s; animation-duration: 21s; }
+.particle:nth-child(8) { left: 80%; animation-delay: 4.5s; animation-duration: 22s; }
+.particle:nth-child(9) { left: 90%; animation-delay: 1.5s; animation-duration: 18s; }
+.particle:nth-child(10) { left: 15%; animation-delay: 3.5s; animation-duration: 19s; }
+
+@keyframes floatParticle {
+    0% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) scale(1);
+        opacity: 0;
+    }
+}
+
+/* Wave animation background */
+.wave-bg {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,50 Q300,0 600,50 T1200,50 L1200,120 L0,120 Z' fill='rgba(59,130,246,0.1)'/%3E%3C/svg%3E");
+    background-size: 600px 120px;
+    animation: waveAnimation 15s linear infinite;
+}
+
+.wave:nth-child(2) {
+    opacity: 0.5;
+    animation-duration: 20s;
+    animation-direction: reverse;
+}
+
+.wave:nth-child(3) {
+    opacity: 0.3;
+    animation-duration: 25s;
+}
+
+@keyframes waveAnimation {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-600px);
+    }
+}
+
+[data-theme="dark"] .wave {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath d='M0,50 Q300,0 600,50 T1200,50 L1200,120 L0,120 Z' fill='rgba(67,56,202,0.15)'/%3E%3C/svg%3E");
+    background-size: 600px 120px;
+}
+
+/* Geometric pattern background */
+.geometric-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(59,130,246,0.03) 35px, rgba(59,130,246,0.03) 70px),
+        repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(59,130,246,0.03) 35px, rgba(59,130,246,0.03) 70px);
+    animation: geometricShift 30s linear infinite;
+}
+
+[data-theme="dark"] .geometric-bg {
+    background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(147,197,253,0.05) 35px, rgba(147,197,253,0.05) 70px),
+        repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(147,197,253,0.05) 35px, rgba(147,197,253,0.05) 70px);
+}
+
+@keyframes geometricShift {
+    0% {
+        background-position: 0 0, 0 0;
+    }
+    100% {
+        background-position: 70px 70px, -70px 70px;
+    }
+}
+
+/* ===============================================
    REDUCED MOTION SUPPORT
    =============================================== */
 
@@ -530,7 +696,11 @@ input:focus, select:focus, textarea:focus {
         scroll-behavior: auto !important;
     }
     
-    .hero-section {
-        animation: none;
+    .hero-section,
+    .animated-bg,
+    .particle,
+    .wave,
+    .geometric-bg {
+        animation: none !important;
     }
 }
