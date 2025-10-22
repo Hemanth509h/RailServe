@@ -293,7 +293,8 @@ def create_modern_groups(db, users, trains, stations):
         ModernGroupBooking, GroupMembership, ModernGroupInvitation,
         GroupBookingDetail, GroupPaymentSplit, ModernGroupMessage,
         GroupActivityLog, GroupAnalytics, GroupSplitBilling,
-        GroupMealCoordination
+        GroupMealCoordination, GroupLoyaltyIntegration, AdvancedSeatAllocation,
+        GroupSustainabilityTracking
     )
     
     logger.info("👥 Creating modern group bookings...")

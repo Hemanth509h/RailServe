@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Group - {{ group.group_name }} - RailServe{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Group Header -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-0">
+                                <i class="fas fa-users"></i> {{ group.group_name }}
+                            </h2>
+                            <p class="mb-0 mt-1">
+                                <span class="badge bg-light text-dark me-2">{{ group.group_code }}</span>
+                                <span class="badge bg-{{ 'success' if group.status == 'confirmed' else 'warning' if group.status == 'active' else 'info' }}">
+                                    {{ group.status.upper() }}
+                                </span>
+                                <span class="badge bg-secondary ms-2">{{ group.group_type.title() }} Travel</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('modern_groups.group_dashboard') }}" class="btn btn-light btn-sm">
+                                    <i class="fas fa-arrow-left"></i> Back
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center border-end">
+                            <h4 class="text-primary">{{ group.estimated_passengers }}</h4>
+                            <p class="text-muted small mb-0">Estimated Passengers</p>
+                        </div>
+                        <div class="col-md-3 text-center border-end">
+                            <h4 class="text-success">{{ group.get_member_count() }}</h4>
+                            <p class="text-muted small mb-0">Active Members</p>
+                        </div>
+                        <div class="col-md-3 text-center border-end">
+                            <h4 class="text-info">₹{{ '{:,.2f}'.format(group.total_estimated_cost or 0) }}</h4>
+                            <p class="text-muted small mb-0">Estimated Cost</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4 class="text-warning">{{ group.discount_applied and '{:,.2f}'.format(group.discount_applied) or '0.00' }}%</h4>
+                            <p class="text-muted small mb-0">Group Discount</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-3">
+                        <p class="small mb-1">Completion Progress: {{ completion_percentage }}%</p>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ completion_percentage }}%"
+                                 aria-valuenow="{{ completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ completion_percentage }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-lg-8">
+                    <!-- Group Members -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-users"></i> Group Members</h5>
+                            <button class="btn btn-primary btn-sm">
+                                <i class="fas fa-user-plus"></i> Invite Member
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            {% if memberships %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Joined</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for membership in memberships %}
+                                        <tr>
+                                            <td>
+                                                <i class="fas fa-user-circle text-primary me-2"></i>
+                                                {{ membership.user.username }}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'danger' if membership.role == 'leader' else 'info' }}">
+                                                    {{ membership.role.title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if membership.status == 'active' else 'secondary' }}">
+                                                    {{ membership.status.title() }}
+                                                </span>
+                                            </td>
+                                            <td class="small text-muted">
+                                                {{ membership.joined_at.strftime('%Y-%m-%d') if membership.joined_at else 'N/A' }}
+                                            </td>
+                                            <td>
+                                                {% if membership.role != 'leader' %}
+                                                <button class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center my-4">No members yet. Invite people to join your group!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Group Bookings -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-ticket-alt"></i> Group Bookings</h5>
+                            <button class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Add Booking
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            {% if bookings %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Train</th>
+                                            <th>Route</th>
+                                            <th>Date</th>
+                                            <th>Passengers</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in bookings %}
+                                        <tr>
+                                            <td>
+                                                {{ booking.train.name if booking.train else 'N/A' }}
+                                            </td>
+                                            <td class="small">
+                                                {{ booking.from_station.code if booking.from_station else 'N/A' }} → 
+                                                {{ booking.to_station.code if booking.to_station else 'N/A' }}
+                                            </td>
+                                            <td class="small">
+                                                {{ booking.journey_date.strftime('%Y-%m-%d') if booking.journey_date else 'N/A' }}
+                                            </td>
+                                            <td>{{ booking.passenger_count }}</td>
+                                            <td>₹{{ '{:,.2f}'.format(booking.final_amount or 0) }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if booking.booking_status == 'confirmed' else 'warning' }}">
+                                                    {{ booking.booking_status.title() }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted text-center my-4">No bookings yet. Start by adding a train booking!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Recent Messages -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-comments"></i> Recent Messages</h5>
+                            <button class="btn btn-info btn-sm">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_messages %}
+                            {% for message in recent_messages %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">{{ message.sender.username }}</h6>
+                                    <small class="text-muted">{{ message.created_at.strftime('%Y-%m-%d %H:%M') if message.created_at else 'N/A' }}</small>
+                                </div>
+                                <p class="mb-0 small">{{ message.message }}</p>
+                                {% if message.is_important %}
+                                <span class="badge bg-danger small mt-1">Important</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted text-center my-4">No messages yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-4">
+                    <!-- Financial Summary -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-rupee-sign"></i> Financial Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Estimated Cost:</span>
+                                    <strong>₹{{ '{:,.2f}'.format(financial_summary.total_estimated or 0) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Actual Cost:</span>
+                                    <strong class="text-primary">₹{{ '{:,.2f}'.format(financial_summary.total_actual or 0) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Paid Amount:</span>
+                                    <strong class="text-success">₹{{ '{:,.2f}'.format(financial_summary.total_paid or 0) }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Outstanding:</span>
+                                    <strong class="text-danger">₹{{ '{:,.2f}'.format(financial_summary.total_outstanding or 0) }}</strong>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Discount Applied:</span>
+                                    <strong class="text-warning">₹{{ '{:,.2f}'.format(financial_summary.discount_applied or 0) }}</strong>
+                                </div>
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ financial_summary.payment_completion_rate or 0 }}%">
+                                    {{ '{:.1f}'.format(financial_summary.payment_completion_rate or 0) }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">Payment Completion Rate</small>
+                        </div>
+                    </div>
+
+                    <!-- Group Information -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Group Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Group Code:</strong> <code>{{ group.group_code }}</code></p>
+                            <p><strong>Type:</strong> {{ group.group_type.title() }}</p>
+                            <p><strong>Created:</strong> {{ group.created_at.strftime('%Y-%m-%d') if group.created_at else 'N/A' }}</p>
+                            {% if group.travel_start_date %}
+                            <p><strong>Travel Start:</strong> {{ group.travel_start_date.strftime('%Y-%m-%d') }}</p>
+                            {% endif %}
+                            {% if group.travel_end_date %}
+                            <p><strong>Travel End:</strong> {{ group.travel_end_date.strftime('%Y-%m-%d') }}</p>
+                            {% endif %}
+                            {% if group.description %}
+                            <p><strong>Description:</strong> {{ group.description }}</p>
+                            {% endif %}
+                            {% if group.special_requirements %}
+                            <p><strong>Special Requirements:</strong> {{ group.special_requirements }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Pending Invitations -->
+                    {% if pending_invitations %}
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-envelope"></i> Pending Invitations</h5>
+                        </div>
+                        <div class="card-body">
+                            {% for invitation in pending_invitations %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <p class="mb-1 small"><strong>{{ invitation.invited_email }}</strong></p>
+                                <p class="mb-0 small text-muted">
+                                    Invited {{ invitation.created_at.strftime('%Y-%m-%d') if invitation.created_at else 'N/A' }}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
