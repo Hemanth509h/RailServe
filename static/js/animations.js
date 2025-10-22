@@ -240,8 +240,8 @@ function staggerAnimation(elements, animationClass, delay = 100) {
 /**
  * Add CSS ripple effect styles if not already present
  */
-const style = document.createElement('style');
-style.textContent = `
+const animationStyle = document.createElement('style');
+animationStyle.textContent = `
     .ripple-effect {
         position: absolute;
         border-radius: 50%;
@@ -263,7 +263,7 @@ style.textContent = `
         overflow: hidden;
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(animationStyle);
 
 /**
  * Initialize all animations when page loads

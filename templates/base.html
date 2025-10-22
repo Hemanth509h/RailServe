@@ -169,15 +169,7 @@ img.gallery-image:hover {
     opacity: 1;
 }
 
-/* Dark theme adjustments for images */
-[data-theme="dark"] img {
-    filter: brightness(0.9);
-}
-
-[data-theme="dark"] .image-placeholder {
-    background: var(--bg-primary);
-    border-color: var(--border-color);
-}
+/* Dark theme image adjustments moved to static/css/dark-theme.css */
 
 /* CSS Variables for Theming */
 :root {
@@ -242,68 +234,7 @@ img.gallery-image:hover {
     --admin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Dark Theme */
-[data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-accent: linear-gradient(135deg, #4338ca 0%, #3b82f6 100%);
-    --bg-table-header: #334155;
-    --bg-table-hover: #334155;
-    --bg-nav-mobile: #4338ca;
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-inverse: #ffffff;
-    --text-table-header: #f1f5f9;
-    --border-color: #475569;
-    --btn-primary: #4338ca;
-    --btn-primary-hover: #3730a3;
-    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    --hero-gradient: linear-gradient(135deg, #4338ca 0%, #3b82f6 50%, #06b6d4 100%);
-    --status-confirmed-bg: #064e3b;
-    --status-confirmed-text: #a7f3d0;
-    --status-waitlist-bg: #92400e;
-    --status-waitlist-text: #fde68a;
-    --status-cancelled-bg: #7f1d1d;
-    --status-cancelled-text: #fca5a5;
-    --fare-calc-bg: #1e3a8a;
-    --fare-calc-border: #3730a3;
-    --fare-calc-text: #bfdbfe;
-    --security-bg: #064e3b;
-    --security-text: #a7f3d0;
-    --security-icon: #6ee7b7;
-    --accent-color: #4338ca;
-    --accent-hover: #3730a3;
-    --success-color: #10b981;
-    --success-hover: #059669;
-    --warning-color: #f59e0b;
-    --warning-hover: #d97706;
-    --danger-color: #ef4444;
-    --danger-hover: #dc2626;
-    --info-color: #06b6d4;
-    --info-hover: #0891b2;
-    --alert-success-bg: #064e3b;
-    --alert-success-text: #a7f3d0;
-    --alert-success-border: #047857;
-    --alert-error-bg: #7f1d1d;
-    --alert-error-text: #fca5a5;
-    --alert-error-border: #dc2626;
-    --alert-info-bg: #1e3a8a;
-    --alert-info-text: #93c5fd;
-    --alert-info-border: #2563eb;
-    
-    /* Admin Specific Variables - Dark Theme */
-    --admin-header-bg: linear-gradient(135deg, #4338ca 0%, #3b82f6 100%);
-    --admin-card-bg: #1e293b;
-    --admin-border-light: #475569;
-    --admin-text-primary: #f8fafc;
-    --admin-text-secondary: #cbd5e1;
-    --admin-accent-blue: #4338ca;
-    --admin-accent-green: #10b981;
-    --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --admin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --admin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-}
+/* Dark theme variables are now in static/css/dark-theme.css */
 
 /* Reset and Base Styles */
 * {
@@ -926,10 +857,6 @@ body {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
 }
 
-[data-theme="dark"] .features-section {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-}
-
 .features-section h2 {
     text-align: center;
     margin-bottom: 3rem;
@@ -1029,11 +956,6 @@ body {
     background: #fef3c7;
     color: #92400e;
     border-left-color: var(--warning-color);
-}
-
-[data-theme="dark"] .alert-warning {
-    background: rgba(251, 191, 36, 0.1);
-    color: #fbbf24;
 }
 
 .flash-close {
@@ -2265,130 +2187,8 @@ div#form-select2 {
     }
 }
 
-/* Dark theme comprehensive support */
-[data-theme="dark"] .hero-content h1,
-[data-theme="dark"] .hero-content p,
-[data-theme="dark"] .hero-text-overlay h1,
-[data-theme="dark"] .hero-text-overlay p {
-    color: #ffffff !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="dark"] .search-form {
-    background: rgba(30, 41, 59, 0.95);
-    border: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .search-form label,
-[data-theme="dark"] .form-group label {
-    color: #f8fafc !important;
-}
-
-[data-theme="dark"] input,
-[data-theme="dark"] select,
-[data-theme="dark"] textarea {
-    background: #1e293b;
-    color: #f8fafc;
-    border-color: #475569;
-}
-
-[data-theme="dark"] input::placeholder {
-    color: #94a3b8;
-}
-
-[data-theme="dark"] option {
-    background: #1e293b;
-    color: #f8fafc;
-}
-
-[data-theme="dark"] h1,
-[data-theme="dark"] h2,
-[data-theme="dark"] h3,
-[data-theme="dark"] h4,
-[data-theme="dark"] h5,
-[data-theme="dark"] h6 {
-    color: #f8fafc !important;
-}
-
-[data-theme="dark"] p,
-[data-theme="dark"] span,
-[data-theme="dark"] div {
-    color: #e2e8f0;
-}
-
-[data-theme="dark"] .train-card h3,
-[data-theme="dark"] .feature-card h3,
-[data-theme="dark"] .card-header h3 {
-    color: #f8fafc !important;
-}
-
-[data-theme="dark"] .train-card p,
-[data-theme="dark"] .feature-card p {
-    color: #cbd5e1 !important;
-}
-
-[data-theme="dark"] .detail-item span {
-    color: #e2e8f0 !important;
-}
-
-[data-theme="dark"] table {
-    color: #f8fafc;
-}
-
-[data-theme="dark"] th {
-    color: #f1f5f9 !important;
-    background: #334155;
-}
-
-[data-theme="dark"] td {
-    color: #e2e8f0;
-}
-
-[data-theme="dark"] .no-results h3,
-[data-theme="dark"] .no-results p {
-    color: #f8fafc !important;
-}
-
-/* Railway-themed Background Animation - Enhanced and Visible */
-.railway-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;background:linear-gradient(to bottom,#87CEEB 0%,#f0f8ff 50%,#e8f4f8 100%);pointer-events:none;opacity:1;}
-[data-theme="dark"] .railway-bg{background:linear-gradient(to bottom,#0f172a 0%,#1e293b 50%,#334155 100%);opacity:1;}
-.railway-tracks{position:absolute;bottom:0;left:0;width:100%;height:40%;perspective:1000px;transform-style:preserve-3d;}
-.track{position:absolute;width:8px;height:100%;background:linear-gradient(to bottom,transparent 0%,#666 20%,#666 80%,transparent 100%);transform:rotateX(60deg) translateZ(-200px);opacity:0.25;}
-[data-theme="dark"] .track{background:linear-gradient(to bottom,transparent 0%,#94a3b8 20%,#94a3b8 80%,transparent 100%);opacity:0.3;}
-.track:nth-child(1){left:35%;animation:trackMove 8s linear infinite;}
-.track:nth-child(2){left:65%;animation:trackMove 8s linear infinite;}
-.railway-sleepers{position:absolute;bottom:0;left:0;width:100%;height:40%;}
-.sleeper{position:absolute;width:100%;height:4px;background:linear-gradient(90deg,transparent 0%,#8B7355 20%,#8B7355 80%,transparent 100%);opacity:0.15;animation:sleeperMove 2s linear infinite;}
-[data-theme="dark"] .sleeper{background:linear-gradient(90deg,transparent 0%,#64748b 20%,#64748b 80%,transparent 100%);opacity:0.2;}
-.sleeper:nth-child(1){bottom:10%;animation-delay:0s;}
-.sleeper:nth-child(2){bottom:20%;animation-delay:0.4s;}
-.sleeper:nth-child(3){bottom:30%;animation-delay:0.8s;}
-.sleeper:nth-child(4){bottom:40%;animation-delay:1.2s;}
-.sleeper:nth-child(5){bottom:50%;animation-delay:1.6s;}
-.railway-clouds{position:absolute;top:0;left:0;width:100%;height:60%;}
-.cloud{position:absolute;width:120px;height:40px;background:rgba(255,255,255,0.6);border-radius:40px;opacity:0.8;}
-[data-theme="dark"] .cloud{background:rgba(148,163,184,0.4);opacity:0.6;}
-.cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
-.cloud::before{width:50px;height:50px;top:-25px;left:10px;}
-.cloud::after{width:60px;height:60px;top:-30px;right:10px;}
-.cloud:nth-child(1){top:15%;left:-120px;animation:cloudMove 60s linear infinite;}
-.cloud:nth-child(2){top:25%;left:-180px;animation:cloudMove 75s linear infinite;animation-delay:10s;}
-.cloud:nth-child(3){top:35%;left:-220px;animation:cloudMove 90s linear infinite;animation-delay:20s;transform:scale(0.8);}
-.railway-particles{position:absolute;width:100%;height:100%;}
-.particle{position:absolute;width:4px;height:4px;background:radial-gradient(circle,rgba(59,130,246,0.8),transparent);border-radius:50%;animation:particleFloat 15s ease-in-out infinite;}
-[data-theme="dark"] .particle{background:radial-gradient(circle,rgba(96,165,250,0.7),transparent);}
-.particle:nth-child(1){left:10%;top:20%;animation-delay:0s;}
-.particle:nth-child(2){left:25%;top:40%;animation-delay:2s;}
-.particle:nth-child(3){left:45%;top:15%;animation-delay:4s;}
-.particle:nth-child(4){left:60%;top:35%;animation-delay:6s;}
-.particle:nth-child(5){left:75%;top:25%;animation-delay:8s;}
-.particle:nth-child(6){left:85%;top:45%;animation-delay:10s;}
-@keyframes trackMove{0%{transform:rotateX(60deg) translateZ(-200px) translateY(0);}100%{transform:rotateX(60deg) translateZ(-200px) translateY(100px);}}
-@keyframes sleeperMove{0%{transform:translateY(100%);opacity:0;}25%{opacity:0.1;}75%{opacity:0.1;}100%{transform:translateY(-100%);opacity:0;}}
-@keyframes cloudMove{0%{transform:translateX(0);}100%{transform:translateX(calc(100vw + 120px));}}
-@keyframes particleFloat{0%,100%{transform:translateY(0) translateX(0) scale(1);opacity:0.6;}25%{transform:translateY(-30px) translateX(20px) scale(1.2);opacity:0.8;}50%{transform:translateY(-60px) translateX(-10px) scale(0.9);opacity:1;}75%{transform:translateY(-30px) translateX(-20px) scale(1.1);opacity:0.8;}}
-@media (prefers-reduced-motion:reduce){.railway-bg,.track,.sleeper,.cloud,.particle{animation:none !important;opacity:0.05 !important;}}
-@media (max-width:768px){.railway-bg{opacity:0.8;}.track{opacity:0.2;}.sleeper{opacity:0.12;}.cloud{opacity:0.5;}.particle{opacity:0.6;}}
+/* Dark theme styles moved to static/css/dark-theme.css */
+/* Old railway background removed - using new animated background from animations.css */
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
