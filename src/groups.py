@@ -277,6 +277,111 @@ def seat_selection_interface(group_id):
         logger.error(f"Error in seat selection: {e}")
         return jsonify({'error': 'Failed to load seat selection'}), 500
 
+@modern_groups_bp.route('/group/<int:group_id>/save-seat-selection', methods=['POST'])
+@login_required
+def save_seat_selection(group_id):
+    """Save seat selection for group booking with validation"""
+    try:
+        group = ModernGroupBooking.query.get_or_404(group_id)
+        
+        # Check access permissions
+        access_check = check_group_access(group, current_user)
+        if not access_check['allowed']:
+            flash('You do not have permission to modify this group.', 'error')
+            return redirect(url_for('modern_groups.group_dashboard'))
+        
+        # Get form data
+        booking_id = request.form.get('booking_id')
+        selected_seats_str = request.form.get('selected_seats', '')
+        
+        if not selected_seats_str:
+            flash('No seats selected.', 'warning')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        # Parse and validate selected seats
+        selected_seats = [seat.strip() for seat in selected_seats_str.split(',') if seat.strip()]
+        
+        if not selected_seats:
+            flash('No seats selected.', 'warning')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        # Validate seat count doesn't exceed group size
+        if len(selected_seats) > group.estimated_passengers:
+            flash(f'Too many seats selected. Group size is {group.estimated_passengers} passengers.', 'warning')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        # Find or create AdvancedSeatAllocation records
+        from .modern_group_models import AdvancedSeatAllocation
+        
+        if not booking_id:
+            flash('No booking specified.', 'error')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        booking_detail = GroupBookingDetail.query.get(booking_id)
+        if not booking_detail or booking_detail.group_id != group_id:
+            flash('Invalid booking.', 'error')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        # Check for conflicting seat allocations from other groups
+        conflicting_seats = AdvancedSeatAllocation.query.filter(
+            AdvancedSeatAllocation.seat_number.in_(selected_seats),
+            AdvancedSeatAllocation.coach_class == booking_detail.coach_class,
+            AdvancedSeatAllocation.group_id != group_id,
+            AdvancedSeatAllocation.allocation_status == 'confirmed'
+        ).all()
+        
+        if conflicting_seats:
+            conflict_list = ', '.join([s.seat_number for s in conflicting_seats[:5]])
+            flash(f'Some seats are already allocated: {conflict_list}. Please select different seats.', 'error')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        # Begin transaction
+        try:
+            # Delete existing seat allocations for this booking
+            AdvancedSeatAllocation.query.filter_by(
+                group_id=group_id,
+                booking_detail_id=booking_id
+            ).delete()
+            
+            # Create new seat allocations
+            for seat in selected_seats:
+                seat_allocation = AdvancedSeatAllocation(
+                    group_id=group_id,
+                    booking_detail_id=booking_id,
+                    coach_class=booking_detail.coach_class,
+                    seat_number=seat,
+                    allocation_status='selected',
+                    allocated_at=datetime.utcnow()
+                )
+                db.session.add(seat_allocation)
+            
+            db.session.commit()
+            
+            # Log activity
+            log_group_activity(
+                group_id=group_id,
+                user_id=current_user.id,
+                activity_type='seat_selection',
+                description=f'Selected {len(selected_seats)} seats for booking',
+                metadata={'seats': selected_seats, 'booking_id': booking_id}
+            )
+            
+            flash(f'Successfully selected {len(selected_seats)} seats!', 'success')
+            
+        except Exception as db_error:
+            db.session.rollback()
+            logger.error(f"Database error during seat allocation: {db_error}")
+            flash('Failed to save seat selection due to a database error. Please try again.', 'error')
+            return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+        
+        return redirect(url_for('modern_groups.manage_group', group_id=group_id))
+        
+    except Exception as e:
+        logger.error(f"Error saving seat selection: {e}")
+        db.session.rollback()
+        flash('Failed to save seat selection. Please try again.', 'error')
+        return redirect(url_for('modern_groups.seat_selection_interface', group_id=group_id))
+
 @modern_groups_bp.route('/api/group_analytics/<int:group_id>')
 @login_required
 def group_analytics_api(group_id):
