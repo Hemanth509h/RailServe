@@ -2,7 +2,7 @@
 
 ## Overview
 
-RailServe is a comprehensive, modern railway reservation system built with Flask and designed for production use. The system provides complete booking functionality with enterprise-grade security, real-time seat allocation, and advanced administrative controls. It includes features like Tatkal booking, waitlist management, TDR (Ticket Deposit Receipt) system, and group booking coordination. The platform is designed to handle large-scale railway operations with intelligent seat allocation, automated chart preparation, and comprehensive reporting capabilities.
+RailServe is a comprehensive, modern railway reservation system built with Flask and designed for production use. The system provides complete booking functionality with enterprise-grade security, real-time seat allocation, and advanced administrative controls. It includes features like Tatkal booking, waitlist management, and TDR (Ticket Deposit Receipt) system. The platform is designed to handle large-scale railway operations with intelligent seat allocation, automated chart preparation, and comprehensive reporting capabilities.
 
 ## User Preferences
 
@@ -35,14 +35,6 @@ Preferred communication style: Simple, everyday language.
 - **Seat Allocation**: Intelligent seat assignment with preference-based allocation
 - **Waitlist Management**: FIFO queue system with automatic confirmation processing
 - **Tatkal System**: Time-based premium booking with specialized availability windows
-- **Modern Group Booking System (2025)**: Enterprise-grade group travel coordination with:
-  - **Group Types**: Family (3-20 pax, 33% discount), Corporate (6-100 pax, 15% discount), Tour (10-200 pax, 18% discount), Event (15-500 pax, 25% discount), Educational (20-300 pax, 30% discount)
-  - **Member Management**: Invitation system, role-based permissions, activity tracking
-  - **Payment Coordination**: Split billing with multiple methods (equal, percentage, amount, lead pays)
-  - **Real-time Features**: Group messaging, seat selection with visual seat maps, corporate dashboard
-  - **Advanced Analytics**: Engagement metrics, booking efficiency, cost optimization insights
-  - **Meal Coordination**: Bulk meal ordering with group discounts
-  - **Sustainability Tracking**: Carbon footprint calculation and reporting
 
 #### Payment Processing
 - **Multiple Methods**: Support for card, UPI, and net banking payments
@@ -100,29 +92,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### October 16, 2025 - Modern Group Booking System Implementation
-- **Database Rewrite**: Completely rewrote setup_database.py to include all modern_group_models
-- **Modern Group Models**: Implemented comprehensive group booking system with 12+ specialized tables:
-  - ModernGroupBooking: Core group entity with metadata and status workflow
-  - GroupMembership: Member roles and permissions management
-  - ModernGroupInvitation: Invitation system with expiration tracking
-  - GroupBookingDetail: Individual booking coordination within groups
-  - GroupPaymentSplit: Payment splitting and transaction tracking
-  - ModernGroupMessage: Real-time group communication
-  - GroupActivityLog: Comprehensive activity tracking and timeline
-  - GroupAnalytics: Engagement metrics and performance insights
-  - GroupSplitBilling: Advanced billing configuration
-  - GroupMealCoordination: Bulk meal ordering system
-  - GroupLoyaltyIntegration: Loyalty program integration
-  - GroupSustainabilityTracking: Carbon footprint tracking
-  - AdvancedSeatAllocation: Visual seat map functionality
-- **Sample Data**: Created 4 sample modern groups (Family, Corporate, Tour, Educational) with full features
-- **User Access**: Added specialized group users (groupleader/group123, corporate_user/corp123)
-- **Template Verification**: Confirmed modern_groups dashboard template is functional with all features
-- **Route Integration**: All modern group routes properly registered at /groups/ prefix
-- **Database Tables**: Created 39 total tables including all modern group functionality
-- **Modern Group Dashboard**: Accessible at /groups/dashboard after login
-- **Features Working**: Group creation, member management, payment coordination, analytics, messaging
+### October 22, 2025 - Group Booking Features Removed
+- **Simplified System**: Removed all group booking features to streamline the application
+- **Database Cleanup**: Removed GroupBooking, GroupMemberInvitation, GroupMemberPayment, and GroupMessage models
+- **Modern Group System**: Deleted src/modern_group_models.py and all associated modern group functionality
+- **Blueprint Cleanup**: Removed groups blueprint from application registration
+- **Template Cleanup**: Deleted templates/modern_groups/ folder
+- **Setup Script**: Rewrote setup_database.py without any group booking functionality
+- **Focus**: Application now focuses on core individual booking features
 
 ### September 27, 2025 - Complete Replit Environment Setup
 - **Project Import**: Successfully imported RailServe from GitHub to Replit environment
@@ -140,7 +117,4 @@ Preferred communication style: Simple, everyday language.
 - **Development Server**: Running on port 5000 with Flask debug mode
 - **Admin Access**: Username: admin, Password: admin123
 - **Test User**: Username: testuser, Password: user123
-- **Group Leader**: Username: groupleader, Password: group123 (for testing modern group features)
-- **Corporate User**: Username: corporate_user, Password: corp123 (for corporate group features)
-- **Database**: PostgreSQL with comprehensive railway data (25 stations, 16 trains, 18 routes, 4 modern groups)
-- **Modern Groups**: Access at /groups/dashboard - features Family, Corporate, Tour, and Educational group bookings
+- **Database**: PostgreSQL with comprehensive railway data (25 stations, 16 trains)
