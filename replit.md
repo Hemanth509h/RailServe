@@ -92,6 +92,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 22, 2025 - Enhanced Visual Effects and Modular Theme System
+- **Background Animations**: Added comprehensive animated backgrounds to ALL pages including:
+  - Animated gradient background with smooth color transitions
+  - 10 floating particles that move upward across the screen
+  - Wave animations at the bottom of pages
+  - Geometric pattern overlay for subtle visual depth
+- **Modular CSS/JS Architecture**: Separated theme and animation code for better maintainability:
+  - Created `static/css/dark-theme.css` for all dark theme styles
+  - Created `static/js/dark-theme.js` for theme toggle functionality
+  - Updated `static/css/animations.css` with modern background animations
+  - Removed all inline styles and scripts from `templates/base.html`
+- **Improved Code Organization**: All visual effects are now in separate, modular files
+- **Enhanced User Experience**: Consistent animated backgrounds across every page (homepage, login, register, PNR enquiry, admin pages, etc.)
+
 ### October 22, 2025 - Group Booking Features Removed
 - **Simplified System**: Removed all group booking features to streamline the application
 - **Database Cleanup**: Removed GroupBooking, GroupMemberInvitation, GroupMemberPayment, and GroupMessage models
