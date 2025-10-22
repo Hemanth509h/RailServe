@@ -233,11 +233,11 @@
 <div class="hero-section">
     <div class="hero-content">
         <div class="hero-text-overlay">
-            <h1><i class="fas fa-train"></i> Welcome to RailServe 2025</h1>
-            <p class="lead">Book your railway tickets with modern technology - fast, secure, and reliable</p>
+            <h1 class="animate-fade-in-down"><i class="fas fa-train floating-icon"></i> Welcome to RailServe 2025</h1>
+            <p class="lead animate-fade-in-up">Book your railway tickets with modern technology - fast, secure, and reliable</p>
         </div>
 
-        <div class="search-form">
+        <div class="search-form animate-scale-in">
             <form method="POST" action="{{ url_for('search_trains_route') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-row">
@@ -400,25 +400,25 @@
 
 <div class="features-section">
     <div class="container">
-        <h2>Why Choose RailServe?</h2>
+        <h2 class="animate-fade-in">Why Choose RailServe?</h2>
         <div class="features-grid">
-            <div class="feature-card">
-                <i class="fas fa-shield-alt"></i>
+            <div class="feature-card animate-fade-in-up scroll-reveal">
+                <i class="fas fa-shield-alt floating-icon"></i>
                 <h3>Secure Booking</h3>
                 <p>Your transactions are protected with advanced security measures</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-clock"></i>
+            <div class="feature-card animate-fade-in-up scroll-reveal">
+                <i class="fas fa-clock floating-icon"></i>
                 <h3>24/7 Service</h3>
                 <p>Book tickets anytime, anywhere with our round-the-clock service</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-mobile-alt"></i>
+            <div class="feature-card animate-fade-in-up scroll-reveal">
+                <i class="fas fa-mobile-alt floating-icon"></i>
                 <h3>Mobile Friendly</h3>
                 <p>Easy booking experience on all devices</p>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-headset"></i>
+            <div class="feature-card animate-fade-in-up scroll-reveal">
+                <i class="fas fa-headset floating-icon"></i>
                 <h3>Customer Support</h3>
                 <p>Get help when you need it with our dedicated support team</p>
             </div>
