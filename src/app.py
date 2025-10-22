@@ -94,14 +94,12 @@ from .auth import auth_bp
 from .admin import admin_bp
 from .booking import booking_bp
 from .payment import payment_bp
-from .groups import modern_groups_bp as groups_bp
 from .pdf_routes import pdf_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(booking_bp, url_prefix='/booking')
 app.register_blueprint(payment_bp, url_prefix='/payment')
-app.register_blueprint(groups_bp, url_prefix='/groups')
 app.register_blueprint(pdf_bp, url_prefix='/pdf')
 
 # Error handlers
