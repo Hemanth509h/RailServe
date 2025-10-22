@@ -2271,6 +2271,45 @@ div#form-select2 {
     border: 1px solid var(--border-color);
 }
 
+/* Railway-themed Background Animation */
+.railway-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;background:linear-gradient(to bottom,#87CEEB 0%,#f0f8ff 50%,#e8f4f8 100%);pointer-events:none;}
+[data-theme="dark"] .railway-bg{background:linear-gradient(to bottom,#0f172a 0%,#1e293b 50%,#334155 100%);}
+.railway-tracks{position:absolute;bottom:0;left:0;width:100%;height:40%;perspective:1000px;transform-style:preserve-3d;}
+.track{position:absolute;width:8px;height:100%;background:linear-gradient(to bottom,transparent 0%,#666 20%,#666 80%,transparent 100%);transform:rotateX(60deg) translateZ(-200px);opacity:0.15;}
+[data-theme="dark"] .track{background:linear-gradient(to bottom,transparent 0%,#444 20%,#444 80%,transparent 100%);}
+.track:nth-child(1){left:35%;animation:trackMove 8s linear infinite;}
+.track:nth-child(2){left:65%;animation:trackMove 8s linear infinite;}
+.railway-sleepers{position:absolute;bottom:0;left:0;width:100%;height:40%;}
+.sleeper{position:absolute;width:100%;height:4px;background:linear-gradient(90deg,transparent 0%,#8B7355 20%,#8B7355 80%,transparent 100%);opacity:0.1;animation:sleeperMove 2s linear infinite;}
+[data-theme="dark"] .sleeper{background:linear-gradient(90deg,transparent 0%,#5a4a3a 20%,#5a4a3a 80%,transparent 100%);}
+.sleeper:nth-child(1){bottom:10%;animation-delay:0s;}
+.sleeper:nth-child(2){bottom:20%;animation-delay:0.4s;}
+.sleeper:nth-child(3){bottom:30%;animation-delay:0.8s;}
+.sleeper:nth-child(4){bottom:40%;animation-delay:1.2s;}
+.sleeper:nth-child(5){bottom:50%;animation-delay:1.6s;}
+.railway-clouds{position:absolute;top:0;left:0;width:100%;height:60%;}
+.cloud{position:absolute;width:120px;height:40px;background:rgba(255,255,255,0.6);border-radius:40px;opacity:0.7;}
+[data-theme="dark"] .cloud{background:rgba(100,116,139,0.3);}
+.cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
+.cloud::before{width:50px;height:50px;top:-25px;left:10px;}
+.cloud::after{width:60px;height:60px;top:-30px;right:10px;}
+.cloud:nth-child(1){top:15%;left:-120px;animation:cloudMove 60s linear infinite;}
+.cloud:nth-child(2){top:25%;left:-180px;animation:cloudMove 75s linear infinite;animation-delay:10s;}
+.cloud:nth-child(3){top:35%;left:-220px;animation:cloudMove 90s linear infinite;animation-delay:20s;transform:scale(0.8);}
+.railway-particles{position:absolute;width:100%;height:100%;}
+.particle{position:absolute;width:3px;height:3px;background:radial-gradient(circle,rgba(59,130,246,0.6),transparent);border-radius:50%;animation:particleFloat 15s ease-in-out infinite;}
+.particle:nth-child(1){left:10%;top:20%;animation-delay:0s;}
+.particle:nth-child(2){left:25%;top:40%;animation-delay:2s;}
+.particle:nth-child(3){left:45%;top:15%;animation-delay:4s;}
+.particle:nth-child(4){left:60%;top:35%;animation-delay:6s;}
+.particle:nth-child(5){left:75%;top:25%;animation-delay:8s;}
+.particle:nth-child(6){left:85%;top:45%;animation-delay:10s;}
+@keyframes trackMove{0%{transform:rotateX(60deg) translateZ(-200px) translateY(0);}100%{transform:rotateX(60deg) translateZ(-200px) translateY(100px);}}
+@keyframes sleeperMove{0%{transform:translateY(100%);opacity:0;}25%{opacity:0.1;}75%{opacity:0.1;}100%{transform:translateY(-100%);opacity:0;}}
+@keyframes cloudMove{0%{transform:translateX(0);}100%{transform:translateX(calc(100vw + 120px));}}
+@keyframes particleFloat{0%,100%{transform:translateY(0) translateX(0) scale(1);opacity:0.6;}25%{transform:translateY(-30px) translateX(20px) scale(1.2);opacity:0.8;}50%{transform:translateY(-60px) translateX(-10px) scale(0.9);opacity:1;}75%{transform:translateY(-30px) translateX(-20px) scale(1.1);opacity:0.8;}}
+@media (prefers-reduced-motion:reduce){.railway-bg,.track,.sleeper,.cloud,.particle{animation:none !important;opacity:0.05 !important;}}
+@media (max-width:768px){.railway-bg{opacity:0.6;}.track,.sleeper{opacity:0.08;}.cloud{opacity:0.4;}.particle{display:none;}}
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" 
@@ -2280,6 +2319,12 @@ div#form-select2 {
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+<div class="railway-bg">
+<div class="railway-tracks"><div class="track"></div><div class="track"></div></div>
+<div class="railway-sleepers"><div class="sleeper"></div><div class="sleeper"></div><div class="sleeper"></div><div class="sleeper"></div><div class="sleeper"></div></div>
+<div class="railway-clouds"><div class="cloud"></div><div class="cloud"></div><div class="cloud"></div></div>
+<div class="railway-particles"><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div></div>
+</div>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">

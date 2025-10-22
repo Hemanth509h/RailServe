@@ -305,7 +305,12 @@ button.success-button {
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/auth_validation.js') }}"></script>
+<script>
+function showError(element,message){element.textContent=message;element.style.display='block';element.style.color='#e74c3c';element.style.fontSize='0.875rem';element.style.marginTop='0.25rem';}
+function hideError(element){element.textContent='';element.style.display='none';}
+function initLoginValidation(){const form=document.getElementById('loginForm');const username=document.getElementById('username');const password=document.getElementById('password');if(!form||!username||!password)return;username.addEventListener('input',function(){validateUsername();});password.addEventListener('input',function(){validatePassword();});form.addEventListener('submit',function(e){if(!validateForm()){e.preventDefault();}});function validateUsername(){const value=username.value.trim();const errorElement=document.getElementById('username-error');if(value.length===0){showError(errorElement,'Username is required');return false;}else if(value.length<3){showError(errorElement,'Username must be at least 3 characters');return false;}else{hideError(errorElement);return true;}}function validatePassword(){const value=password.value;const errorElement=document.getElementById('password-error');if(value.length===0){showError(errorElement,'Password is required');return false;}else if(value.length<3){showError(errorElement,'Password must be at least 3 characters');return false;}else{hideError(errorElement);return true;}}function validateForm(){const isUsernameValid=validateUsername();const isPasswordValid=validatePassword();return isUsernameValid&&isPasswordValid;}}
+document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('loginForm')){initLoginValidation();}});
+</script>
 {% endblock %}
 
 {% block content %}
