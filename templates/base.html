@@ -2392,6 +2392,7 @@ div#form-select2 {
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dark-theme.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" 
             integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" 
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -2399,11 +2400,19 @@ div#form-select2 {
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-<div class="railway-bg">
-<div class="railway-tracks"><div class="track"></div><div class="track"></div></div>
-<div class="railway-sleepers"><div class="sleeper"></div><div class="sleeper"></div><div class="sleeper"></div><div class="sleeper"></div><div class="sleeper"></div></div>
-<div class="railway-clouds"><div class="cloud"></div><div class="cloud"></div><div class="cloud"></div></div>
-<div class="railway-particles"><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div><div class="particle"></div></div>
+<!-- Modern Animated Background -->
+<div class="animated-bg"></div>
+<div class="particles-bg">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
 </div>
     <nav class="navbar">
         <div class="nav-container">
@@ -3333,194 +3342,6 @@ function setupViewportOptimization() {
     });
 }
 
-/**
- * RailServe Theme Toggle System
- * Handles switching between light and dark themes with smooth transitions
- */
-
-class ThemeManager {
-    constructor() {
-        // Honor system preference if no stored theme
-        const stored = localStorage.getItem('railserve-theme');
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        this.currentTheme = stored || systemTheme;
-        this.themeToggle = null;
-        this.themeIcon = null;
-        this.themeText = null;
-        this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        
-        this.init();
-    }
-    
-    init() {
-        // Apply saved theme
-        this.applyTheme(this.currentTheme);
-        
-        // Set up toggle button
-        this.setupToggleButton();
-        
-        // Listen for system preference changes
-        this.watchSystemPreference();
-    }
-    
-    setupToggleButton() {
-        this.themeToggle = document.getElementById('toggleTheme');
-        this.themeIcon = document.getElementById('theme-icon');
-        this.themeText = document.getElementById('theme-text');
-        
-        if (this.themeToggle) {
-            this.themeToggle.addEventListener('click', () => {
-                this.toggleTheme();
-                this.addRippleEffect();
-            });
-            
-            // Update button state
-            this.updateToggleButton();
-        }
-    }
-    
-    toggleTheme() {
-        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        this.applyTheme(this.currentTheme);
-        this.saveTheme();
-        this.updateToggleButton();
-        
-        // Add theme transition animation
-        this.animateThemeTransition();
-    }
-    
-    applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        
-        // Update meta theme-color for mobile browsers
-        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-        if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', 
-                theme === 'dark' ? '#0f172a' : '#1e40af'
-            );
-        }
-        
-        // Trigger custom event for other components
-        document.dispatchEvent(new CustomEvent('themeChanged', { 
-            detail: { theme } 
-        }));
-    }
-    
-    updateToggleButton() {
-        if (!this.themeIcon || !this.themeText || !this.themeToggle) return;
-        
-        if (this.currentTheme === 'dark') {
-            this.themeIcon.className = 'fas fa-sun';
-            this.themeText.textContent = 'Light';
-            this.themeToggle.setAttribute('aria-pressed', 'true');
-            this.themeToggle.setAttribute('aria-label', 'Switch to light theme');
-        } else {
-            this.themeIcon.className = 'fas fa-moon';
-            this.themeText.textContent = 'Dark';
-            this.themeToggle.setAttribute('aria-pressed', 'false');
-            this.themeToggle.setAttribute('aria-label', 'Switch to dark theme');
-        }
-    }
-    
-    saveTheme() {
-        localStorage.setItem('railserve-theme', this.currentTheme);
-    }
-    
-    watchSystemPreference() {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        mediaQuery.addEventListener('change', (e) => {
-            // Only auto-switch if user hasn't manually set a preference
-            if (!localStorage.getItem('railserve-theme')) {
-                this.currentTheme = e.matches ? 'dark' : 'light';
-                this.applyTheme(this.currentTheme);
-                this.updateToggleButton();
-            }
-        });
-    }
-    
-    animateThemeTransition() {
-        // Skip animation if user prefers reduced motion
-        if (this.prefersReducedMotion) return;
-        
-        // Create a smooth transition overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: ${this.currentTheme === 'dark' ? '#0f172a' : '#f8fafc'};
-            opacity: 0;
-            pointer-events: none;
-            z-index: 9999;
-            transition: opacity 0.3s ease;
-        `;
-        
-        document.body.appendChild(overlay);
-        
-        // Animate the overlay
-        requestAnimationFrame(() => {
-            overlay.style.opacity = '0.7';
-        });
-        
-        setTimeout(() => {
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(overlay);
-            }, 300);
-        }, 150);
-    }
-    
-    addRippleEffect() {
-        if (!this.themeToggle || this.prefersReducedMotion) return;
-        
-        const ripple = document.createElement('span');
-        const rect = this.themeToggle.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height) * 2;
-        
-        ripple.style.cssText = `
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            width: ${size}px;
-            height: ${size}px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            animation: ripple 0.6s linear;
-            pointer-events: none;
-            z-index: 1;
-        `;
-        
-        this.themeToggle.style.position = 'relative';
-        this.themeToggle.style.overflow = 'hidden';
-        this.themeToggle.appendChild(ripple);
-        
-        // Add ripple animation
-        if (!document.querySelector('#ripple-keyframes')) {
-            const style = document.createElement('style');
-            style.id = 'ripple-keyframes';
-            style.textContent = `
-                @keyframes ripple {
-                    to {
-                        transform: translate(-50%, -50%) scale(1);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        setTimeout(() => {
-            if (ripple.parentNode) {
-                ripple.parentNode.removeChild(ripple);
-            }
-        }, 600);
-    }
-}
-
 // Simple Dropdown navigation functionality without keyboard navigation
 document.addEventListener('DOMContentLoaded', function() {
     const userDropdown = document.getElementById('userDropdown');
@@ -3565,11 +3386,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize theme manager
-    window.themeManager = new ThemeManager();
-});
+// Theme manager is initialized by dark-theme.js
     </script>
 
     <!-- 3D Background Animation -->
@@ -3728,6 +3545,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modern 3D animations are handled by modern-3d-animations.js
     </script>
 
+    <script src="{{ url_for('static', filename='js/dark-theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/animations.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
