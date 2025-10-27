@@ -19,7 +19,7 @@ app = Flask(__name__,
             static_folder='../static')
 
 # Load configuration - require SESSION_SECRET for security
-app.secret_key = os.environ.get("SESSION_SECRET")
+app.secret_key =os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
 if not app.secret_key:
     if flask_env == 'production':
         raise RuntimeError("SESSION_SECRET environment variable is required in production")
@@ -28,7 +28,7 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Use DATABASE_URL with fallback to local database
-database_url = os.environ.get("DATABASE_URL")
+database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
 
 if database_url:
     # Validate that DATABASE_URL is a proper connection string
