@@ -1,4 +1,4 @@
-================================================================================
+﻿================================================================================
                     RAILSERVE PROJECT DOCUMENTATION
                     Railway Reservation System 2025
 ================================================================================
@@ -147,33 +147,6 @@ Step 6: Run the Application
 Step 7: Access the Application
   Open browser: http://localhost:5000
 
-3.3 RUNNING OUTSIDE REPLIT
----------------------------
-The application is designed to run anywhere Python is supported:
-
-1. Ensure DATABASE_URL is set correctly for your environment
-2. Set SESSION_SECRET to a random secure string
-3. For production, use proper WSGI server (Gunicorn, uWSGI)
-4. Configure reverse proxy (Nginx, Apache) if needed
-5. Set FLASK_ENV=production for production deployments
-
-Example with Gunicorn:
-  $ gunicorn --workers 4 --bind 0.0.0.0:8000 main:app
-
-Example with systemd service:
-  [Unit]
-  Description=RailServe Application
-  After=network.target
-  
-  [Service]
-  User=www-data
-  WorkingDirectory=/path/to/railserve
-  Environment="DATABASE_URL=postgresql://..."
-  Environment="SESSION_SECRET=..."
-  ExecStart=/usr/bin/gunicorn --workers 4 --bind 0.0.0.0:5000 main:app
-  
-  [Install]
-  WantedBy=multi-user.target
 
 ================================================================================
 4. DATABASE SCHEMA
