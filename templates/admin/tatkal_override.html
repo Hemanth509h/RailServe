@@ -25,14 +25,28 @@
 form {
     display: grid;
     gap: 20px;
-    grid-template-areas: "g1 g2"
+    grid-template-areas: 
+        "g1 g2"
         "g5 g5"
         "g3 g4";
 }
+
+@media (max-width: 768px) {
+    form {
+        grid-template-areas: 
+            "g1"
+            "g2"
+            "g5"
+            "g3"
+            "g4";
+        grid-template-columns: 1fr;
+    }
+}
+
 #g1 { grid-area: g1; }
 #g2 { grid-area: g2; }
 #g3 { grid-area: g3; }
-#g4 { grid-area: g4;align-self: center;justify-self: center; }
+#g4 { grid-area: g4; align-self: center; justify-self: center; width: 100%; }
 #g5 { grid-area: g5; }
 
 .form-group {
