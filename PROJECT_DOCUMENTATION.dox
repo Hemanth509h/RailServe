@@ -1,0 +1,668 @@
+================================================================================
+                    RAILSERVE PROJECT DOCUMENTATION
+                    Railway Reservation System 2025
+================================================================================
+
+Document Version: 1.0
+Last Updated: October 27, 2025
+Project Status: Production Ready
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. PROJECT OVERVIEW
+2. SYSTEM ARCHITECTURE
+3. INSTALLATION GUIDE
+4. DATABASE SCHEMA
+5. APPLICATION MODULES
+6. USER GUIDE
+7. ADMIN GUIDE
+8. API ENDPOINTS
+9. DEPLOYMENT GUIDE
+10. TROUBLESHOOTING
+11. MAINTENANCE
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+Project Name: RailServe
+Description: Modern railway reservation system with advanced features
+Technology Stack:
+  - Backend: Python 3.11, Flask 3.1.2
+  - Database: PostgreSQL / SQLite
+  - Frontend: HTML5, CSS3, JavaScript (Bootstrap, Feather Icons)
+  - Server: Gunicorn 23.0.0
+  - ORM: SQLAlchemy 2.0.43
+
+Key Features:
+  ✓ User registration and authentication
+  ✓ Train search and booking
+  ✓ Tatkal booking system
+  ✓ PNR enquiry
+  ✓ Waitlist management
+  ✓ Dynamic pricing
+  ✓ Payment processing
+  ✓ PDF ticket generation
+  ✓ Complaint management
+  ✓ Admin dashboard with analytics
+  ✓ Route management
+  ✓ Seat allocation algorithms
+  ✓ Dark theme support
+
+================================================================================
+2. SYSTEM ARCHITECTURE
+================================================================================
+
+Application Structure:
+  
+  RailServe/
+  ├── src/                          # Source code directory
+  │   ├── __init__.py              # Package initialization
+  │   ├── app.py                   # Flask app setup & configuration
+  │   ├── database.py              # Database configuration
+  │   ├── models.py                # SQLAlchemy ORM models
+  │   ├── auth.py                  # Authentication blueprint
+  │   ├── admin.py                 # Admin panel blueprint
+  │   ├── booking.py               # Booking management blueprint
+  │   ├── payment.py               # Payment processing blueprint
+  │   ├── pdf_routes.py            # PDF generation routes
+  │   ├── pdf_generator.py         # PDF ticket generator
+  │   ├── email_service.py         # Email notifications
+  │   ├── queue_manager.py         # Queue management
+  │   ├── route_graph.py           # Route algorithms
+  │   ├── seat_allocation.py       # Seat allocation logic
+  │   └── utils.py                 # Utility functions
+  │
+  ├── templates/                    # Jinja2 HTML templates
+  │   ├── admin/                   # Admin panel templates
+  │   ├── errors/                  # Error pages (403, 404, 500)
+  │   └── *.html                   # User-facing templates
+  │
+  ├── static/                       # Static assets
+  │   ├── css/                     # Stylesheets
+  │   └── js/                      # JavaScript files
+  │
+  ├── main.py                       # Application entry point
+  ├── init_db.py                    # Database initialization
+  ├── requirements.txt              # Python dependencies
+  ├── FINAL_REVIEW.md              # Final review document
+  └── replit.md                    # Project notes
+
+Design Patterns:
+  - MVC (Model-View-Controller) architecture
+  - Blueprint pattern for modular routes
+  - Factory pattern for app initialization
+  - Repository pattern for database access
+
+================================================================================
+3. INSTALLATION GUIDE
+================================================================================
+
+3.1 SYSTEM REQUIREMENTS
+------------------------
+  - Python 3.11 or higher
+  - PostgreSQL 12+ (or SQLite for development)
+  - 512 MB RAM minimum
+  - 1 GB disk space
+
+3.2 INSTALLATION STEPS
+----------------------
+
+Step 1: Clone or Download the Project
+  $ git clone <repository-url>
+  $ cd railserve
+
+Step 2: Create Virtual Environment (Optional but Recommended)
+  $ python -m venv venv
+  $ source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+Step 3: Install Dependencies
+  $ pip install -r requirements.txt
+
+Step 4: Configure Environment Variables
+  Create a .env file or set the following:
+  
+  # Database Configuration
+  DATABASE_URL=postgresql://user:password@localhost:5432/railserve
+  # OR for SQLite (development):
+  # DATABASE_URL=sqlite:///railway.db
+  
+  # Security
+  SESSION_SECRET=your-secret-key-here-change-this
+  FLASK_ENV=production  # or 'development' for dev mode
+
+Step 5: Initialize Database
+  $ python init_db.py
+
+Step 6: Run the Application
+  
+  Development:
+  $ python main.py
+  
+  Production:
+  $ gunicorn --bind 0.0.0.0:5000 main:app
+
+Step 7: Access the Application
+  Open browser: http://localhost:5000
+
+3.3 RUNNING OUTSIDE REPLIT
+---------------------------
+The application is designed to run anywhere Python is supported:
+
+1. Ensure DATABASE_URL is set correctly for your environment
+2. Set SESSION_SECRET to a random secure string
+3. For production, use proper WSGI server (Gunicorn, uWSGI)
+4. Configure reverse proxy (Nginx, Apache) if needed
+5. Set FLASK_ENV=production for production deployments
+
+Example with Gunicorn:
+  $ gunicorn --workers 4 --bind 0.0.0.0:8000 main:app
+
+Example with systemd service:
+  [Unit]
+  Description=RailServe Application
+  After=network.target
+  
+  [Service]
+  User=www-data
+  WorkingDirectory=/path/to/railserve
+  Environment="DATABASE_URL=postgresql://..."
+  Environment="SESSION_SECRET=..."
+  ExecStart=/usr/bin/gunicorn --workers 4 --bind 0.0.0.0:5000 main:app
+  
+  [Install]
+  WantedBy=multi-user.target
+
+================================================================================
+4. DATABASE SCHEMA
+================================================================================
+
+4.1 USER TABLE
+--------------
+  id: INTEGER (Primary Key)
+  username: VARCHAR(64) (Unique)
+  email: VARCHAR(120) (Unique)
+  password_hash: VARCHAR(256)
+  role: VARCHAR(20) [user, admin, super_admin]
+  active: BOOLEAN
+  reset_token: VARCHAR(100)
+  reset_token_expiry: DATETIME
+  created_at: DATETIME
+
+4.2 STATION TABLE
+-----------------
+  id: INTEGER (Primary Key)
+  name: VARCHAR(100) (Unique)
+  code: VARCHAR(10) (Unique)
+  city: VARCHAR(50)
+  state: VARCHAR(50)
+  active: BOOLEAN
+  created_at: DATETIME
+
+4.3 TRAIN TABLE
+---------------
+  id: INTEGER (Primary Key)
+  number: VARCHAR(10) (Unique)
+  name: VARCHAR(100)
+  total_seats: INTEGER
+  available_seats: INTEGER
+  fare_per_km: FLOAT
+  tatkal_seats: INTEGER
+  tatkal_fare_per_km: FLOAT
+  active: BOOLEAN
+  created_at: DATETIME
+
+4.4 TRAIN_ROUTE TABLE
+---------------------
+  id: INTEGER (Primary Key)
+  train_id: INTEGER (Foreign Key -> train.id)
+  station_id: INTEGER (Foreign Key -> station.id)
+  sequence: INTEGER
+  arrival_time: TIME
+  departure_time: TIME
+  distance_from_start: FLOAT
+
+4.5 BOOKING TABLE
+-----------------
+  id: INTEGER (Primary Key)
+  pnr: VARCHAR(10) (Unique)
+  user_id: INTEGER (Foreign Key -> user.id)
+  train_id: INTEGER (Foreign Key -> train.id)
+  from_station_id: INTEGER (Foreign Key -> station.id)
+  to_station_id: INTEGER (Foreign Key -> station.id)
+  journey_date: DATE
+  passengers: INTEGER
+  total_amount: FLOAT
+  booking_type: VARCHAR(10) [general, tatkal]
+  quota: VARCHAR(20)
+  coach_class: VARCHAR(10)
+  status: VARCHAR(20)
+  waitlist_type: VARCHAR(10)
+  chart_prepared: BOOLEAN
+  berth_preference: VARCHAR(20)
+  booking_date: DATETIME
+
+4.6 PAYMENT TABLE
+-----------------
+  id: INTEGER (Primary Key)
+  booking_id: INTEGER (Foreign Key -> booking.id)
+  user_id: INTEGER (Foreign Key -> user.id)
+  amount: FLOAT
+  payment_method: VARCHAR(20)
+  transaction_id: VARCHAR(100) (Unique)
+  status: VARCHAR(20)
+  payment_date: DATETIME
+
+Additional Tables:
+  - passenger: Passenger details for bookings
+  - waitlist: Waitlist management
+  - complaint_management: User complaints
+  - platform_management: Platform allocation
+  - emergency_quota: Emergency quota management
+  - tatkal_timeslot: Tatkal booking time windows
+  - dynamic_pricing: Dynamic fare pricing rules
+
+================================================================================
+5. APPLICATION MODULES
+================================================================================
+
+5.1 AUTHENTICATION MODULE (src/auth.py)
+----------------------------------------
+Routes:
+  - /auth/login          [GET, POST] - User login
+  - /auth/register       [GET, POST] - User registration
+  - /auth/logout         [GET]       - User logout
+  - /auth/forgot-password [GET, POST] - Password reset request
+  - /auth/reset-password  [GET, POST] - Password reset
+
+Features:
+  - Password hashing with Werkzeug
+  - Session management with Flask-Login
+  - Password reset with token expiry
+  - Role-based access control
+
+5.2 BOOKING MODULE (src/booking.py)
+------------------------------------
+Routes:
+  - /booking/book-ticket      [GET, POST] - Book train ticket
+  - /booking/seat-selection   [GET, POST] - Select seats
+  - /booking/history          [GET]       - View booking history
+  - /booking/cancel/<id>      [POST]      - Cancel booking
+  - /booking/tatkal           [GET, POST] - Tatkal booking
+
+Features:
+  - Seat availability checking
+  - Dynamic pricing calculation
+  - Waitlist management
+  - PNR generation
+  - Booking confirmation
+
+5.3 ADMIN MODULE (src/admin.py)
+--------------------------------
+Routes:
+  - /admin/dashboard          [GET] - Admin dashboard
+  - /admin/trains             [GET, POST] - Manage trains
+  - /admin/stations           [GET, POST] - Manage stations
+  - /admin/routes             [GET, POST] - Manage routes
+  - /admin/bookings           [GET] - View all bookings
+  - /admin/users              [GET, POST] - User management
+  - /admin/analytics          [GET] - Analytics & reports
+  - /admin/complaints         [GET, POST] - Complaint management
+  - /admin/waitlist           [GET] - Waitlist management
+  - /admin/dynamic-pricing    [GET, POST] - Pricing rules
+
+Features:
+  - Full CRUD operations for trains, stations, routes
+  - Booking reports and analytics
+  - User role management
+  - Platform allocation
+  - Chart preparation
+  - Emergency quota management
+
+5.4 PAYMENT MODULE (src/payment.py)
+------------------------------------
+Routes:
+  - /payment/process       [POST] - Process payment
+  - /payment/success       [GET]  - Payment success page
+  - /payment/failure       [GET]  - Payment failure page
+
+Features:
+  - Payment gateway integration
+  - Transaction tracking
+  - Payment status updates
+  - Refund processing
+
+5.5 PDF GENERATION (src/pdf_generator.py & src/pdf_routes.py)
+--------------------------------------------------------------
+Routes:
+  - /pdf/ticket/<booking_id> [GET] - Generate ticket PDF
+  - /pdf/invoice/<booking_id> [GET] - Generate invoice PDF
+
+Features:
+  - PDF ticket generation with QR code
+  - Invoice generation
+  - Booking details formatting
+  - ReportLab integration
+
+================================================================================
+6. USER GUIDE
+================================================================================
+
+6.1 REGISTRATION & LOGIN
+-------------------------
+1. Click "Register" in the navigation bar
+2. Fill in username, email, and password
+3. Click "Register" button
+4. Login with your credentials
+
+6.2 SEARCHING FOR TRAINS
+-------------------------
+1. On homepage, select "From Station" and "To Station"
+2. Choose journey date
+3. Click "Search Trains"
+4. View available trains with seat availability
+
+6.3 BOOKING A TICKET
+---------------------
+1. After searching, click "Book Now" on desired train
+2. Select number of passengers
+3. Choose quota (General, Ladies, Senior, Tatkal)
+4. Select coach class (AC1, AC2, AC3, SL, 2S)
+5. Enter passenger details
+6. Choose seat preference
+7. Review booking details
+8. Proceed to payment
+9. Complete payment
+10. Download PDF ticket
+
+6.4 PNR ENQUIRY
+---------------
+1. Click "PNR Enquiry" in navigation
+2. Enter 10-digit PNR number
+3. View booking status, seat details, and journey information
+
+6.5 BOOKING HISTORY
+-------------------
+1. Login to your account
+2. Navigate to "My Bookings" or "Profile"
+3. View all past and upcoming bookings
+4. Download tickets or cancel bookings
+
+6.6 TATKAL BOOKING
+------------------
+1. Tatkal booking opens at specific time slots
+2. Select Tatkal quota during booking
+3. Pay higher tatkal fare
+4. Instant confirmation (subject to availability)
+
+6.7 COMPLAINT SUBMISSION
+------------------------
+1. Navigate to "Submit Complaint"
+2. Select category (Booking, Service, Technical, etc.)
+3. Enter PNR if related to booking
+4. Provide subject and detailed description
+5. Submit complaint
+6. Track status with ticket number
+
+================================================================================
+7. ADMIN GUIDE
+================================================================================
+
+7.1 ACCESSING ADMIN PANEL
+--------------------------
+1. Login with admin credentials
+2. Navigate to /admin/dashboard
+3. Access all admin features from sidebar
+
+7.2 MANAGING TRAINS
+--------------------
+1. Go to "Trains" section
+2. Add New Train:
+   - Enter train number and name
+   - Set total seats and fare per km
+   - Configure tatkal seats and fare
+   - Set active status
+3. Edit existing trains
+4. Deactivate trains when needed
+
+7.3 MANAGING STATIONS
+----------------------
+1. Go to "Stations" section
+2. Add New Station:
+   - Enter station name and code
+   - Specify city and state
+   - Set active status
+3. Edit or deactivate stations
+
+7.4 MANAGING ROUTES
+--------------------
+1. Go to "Routes" section
+2. Select train
+3. Add stations to route:
+   - Set sequence number
+   - Specify arrival/departure times
+   - Set distance from start
+4. Reorder or remove stations
+
+7.5 BOOKING MANAGEMENT
+-----------------------
+1. View all bookings in "Bookings" section
+2. Filter by status, date, or PNR
+3. Cancel bookings if needed
+4. Process refunds
+5. Update booking status
+
+7.6 WAITLIST MANAGEMENT
+------------------------
+1. Access "Waitlist Management"
+2. View all waitlisted bookings
+3. Allocate seats when available
+4. Confirm waitlisted passengers
+5. Manage chart preparation
+
+7.7 DYNAMIC PRICING
+--------------------
+1. Go to "Dynamic Pricing"
+2. Set pricing rules:
+   - Base fare multiplier
+   - Demand-based pricing
+   - Time-based pricing
+   - Special event pricing
+3. Apply rules to specific trains or routes
+
+7.8 ANALYTICS & REPORTS
+------------------------
+1. Access "Analytics" dashboard
+2. View key metrics:
+   - Daily/monthly revenue
+   - Booking statistics
+   - Occupancy rates
+   - Popular routes
+3. Generate custom reports
+4. Export data for analysis
+
+================================================================================
+8. API ENDPOINTS
+================================================================================
+
+8.1 AUTHENTICATION ENDPOINTS
+-----------------------------
+POST /auth/login
+  Request: {username, password}
+  Response: {success, redirect_url}
+
+POST /auth/register
+  Request: {username, email, password}
+  Response: {success, message}
+
+GET /auth/logout
+  Response: Redirect to homepage
+
+8.2 BOOKING ENDPOINTS
+----------------------
+POST /booking/book-ticket
+  Request: {train_id, from_station, to_station, journey_date, passengers, ...}
+  Response: {booking_id, pnr, status}
+
+GET /booking/history
+  Response: {bookings: [...]}
+
+POST /booking/cancel/<booking_id>
+  Response: {success, refund_amount}
+
+8.3 SEARCH ENDPOINTS
+---------------------
+POST /search_trains
+  Request: {from_station, to_station, journey_date}
+  Response: {trains: [...]}
+
+GET /search
+  Query: search_query, search_type
+  Response: {trains: [...]}
+
+8.4 ADMIN ENDPOINTS
+--------------------
+POST /admin/trains/add
+  Request: {number, name, total_seats, fare_per_km, ...}
+  Response: {success, train_id}
+
+POST /admin/stations/add
+  Request: {name, code, city, state}
+  Response: {success, station_id}
+
+================================================================================
+9. DEPLOYMENT GUIDE
+================================================================================
+
+9.1 DEPLOYMENT ON REPLIT
+-------------------------
+1. Application is pre-configured for Replit
+2. DATABASE_URL is automatically set
+3. Gunicorn workflow configured
+4. Deploy using "Publish" button
+
+9.2 DEPLOYMENT ON HEROKU
+-------------------------
+1. Install Heroku CLI
+2. Create Procfile:
+   web: gunicorn main:app
+3. Create app: heroku create railserve
+4. Add PostgreSQL: heroku addons:create heroku-postgresql
+5. Set environment variables:
+   heroku config:set SESSION_SECRET=your-secret
+6. Deploy: git push heroku main
+
+9.3 DEPLOYMENT ON AWS/DigitalOcean
+-----------------------------------
+1. Provision Ubuntu server
+2. Install Python, PostgreSQL, Nginx
+3. Clone repository
+4. Set up virtual environment
+5. Install dependencies
+6. Configure Nginx as reverse proxy
+7. Create systemd service
+8. Enable and start service
+
+9.4 DOCKER DEPLOYMENT
+----------------------
+1. Create Dockerfile:
+   FROM python:3.11
+   WORKDIR /app
+   COPY requirements.txt .
+   RUN pip install -r requirements.txt
+   COPY . .
+   CMD gunicorn --bind 0.0.0.0:5000 main:app
+
+2. Build: docker build -t railserve .
+3. Run: docker run -p 5000:5000 -e DATABASE_URL=... railserve
+
+================================================================================
+10. TROUBLESHOOTING
+================================================================================
+
+10.1 COMMON ISSUES
+------------------
+
+Issue: "gunicorn: command not found"
+Solution: Install dependencies: pip install -r requirements.txt
+
+Issue: "relation does not exist"
+Solution: Initialize database: python init_db.py
+
+Issue: 500 Internal Server Error
+Solution: Check logs, ensure DATABASE_URL is set correctly
+
+Issue: Static files not loading
+Solution: Verify static folder structure, check template paths
+
+Issue: Login not working
+Solution: Ensure SESSION_SECRET is set, check password hash
+
+Issue: Database connection failed
+Solution: Verify DATABASE_URL, check PostgreSQL service status
+
+10.2 DEBUG MODE
+---------------
+Enable debug mode in development:
+  $ export FLASK_ENV=development
+  $ python main.py
+
+Check application logs:
+  - Replit: View workflow logs
+  - Server: Check gunicorn/systemd logs
+  - Application: Check Flask error pages
+
+================================================================================
+11. MAINTENANCE
+================================================================================
+
+11.1 DATABASE BACKUPS
+---------------------
+PostgreSQL backup:
+  $ pg_dump -U username dbname > backup.sql
+
+SQLite backup:
+  $ cp railway.db railway_backup.db
+
+11.2 DATABASE MIGRATIONS
+------------------------
+When modifying models:
+1. Update models in src/models.py
+2. Use Flask-Migrate or Alembic for migrations
+3. Test in development first
+4. Apply to production
+
+11.3 UPDATING DEPENDENCIES
+--------------------------
+1. Review security updates
+2. Update requirements.txt
+3. Test in development
+4. Deploy to production
+
+11.4 MONITORING
+---------------
+- Monitor application logs
+- Track database performance
+- Monitor server resources
+- Set up error notifications
+- Regular security audits
+
+11.5 SECURITY UPDATES
+---------------------
+- Keep dependencies updated
+- Regular password policy review
+- Monitor failed login attempts
+- Review admin access logs
+- Update SSL certificates
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+
+For support and questions, please refer to the project repository or contact
+the development team.
+
+Version: 1.0
+Last Updated: October 27, 2025

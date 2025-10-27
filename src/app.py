@@ -28,9 +28,7 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Use DATABASE_URL with fallback to local database
-database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
-
-
+database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
     # Validate that DATABASE_URL is a proper connection string
