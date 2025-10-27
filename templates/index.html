@@ -127,7 +127,6 @@
         padding: 1.5rem;
     }
     
-<<<<<<< HEAD
     #form-select, #form-select2 {
         flex-direction: column;
         align-items: center;
@@ -135,44 +134,31 @@
         width: 100%;
         height: 150px;
     }
+  
+
     p.lead.animate-fade-in-up {
     margin-bottom: 0;
 }
     .search-form .form-group {
         min-width: 250px;
         width: 100%;
-=======
+    }
+    
+   
     #form-select {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    #form-select2 {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .swap-btn {
-        order: 3;
-        padding-bottom: 0;
->>>>>>> 02453604cc3bceea75001c8ca5b8fbcc46cd0271
-    }
-    
-    .swap-btn button {
-        transform: rotate(90deg);
-        width: 100%;
-        max-width: 44px;
-    }
-    
-    .swap-btn button:hover {
-        transform: rotate(270deg);
-    }
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+}
 }
 
 @media (max-width: 480px) {
     .search-form {
-        padding: 1.25rem;
-    }
+    padding: 1.25rem;
+    height: 428px;
+}
     
     .search-form select,
     .search-form input[type="date"] {
@@ -183,6 +169,7 @@
     .search-form .btn {
         padding: 0.75rem 1.5rem;
         font-size: 0.95rem;
+        width: 90px;
     }
 }
 
@@ -251,7 +238,8 @@
         grid-template-columns: 1fr;
         gap: 15px;
     }
-}.train-card {
+}
+.train-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -264,6 +252,25 @@
     display: flex;
     gap: 1.5rem;
     flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+   div#form-select2 {
+    margin-top: 11rem;
+} 
+div#form-select2 {
+    margin-top: 5rem;
+    display: flex;
+    flex-direction: row;
+}#form-select {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    width: 313px;
+    flex-direction: column;
+}
+input#journey_date {
+    width: 123px;
+}
 }
 
 </style>
