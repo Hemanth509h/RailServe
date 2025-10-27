@@ -313,9 +313,10 @@ body {
 
 @media (max-width: 768px) {
     .nav-container {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 0 1rem;
+        flex-direction: row;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        justify-content: space-between;
     }
 }
 
@@ -324,6 +325,13 @@ body {
         padding: 0 2rem;
         min-height: 70px;
     }
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 .nav-brand a {
@@ -339,6 +347,37 @@ body {
 
 .nav-brand i {
     font-size: 1.8rem;
+}
+
+.nav-toggle {
+    display: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.75rem;
+    padding: 0.5rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border-radius: 0.375rem;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+.nav-toggle:active {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: scale(0.95);
+}
+
+.nav-toggle:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
 }
 
 .nav-menu {
@@ -494,32 +533,7 @@ body {
     }
 }
 
-@media (max-width: 768px) {
-    .nav-container {
-        padding: 0 1rem;
-        flex-wrap: nowrap;
-    }
-    
-    .nav-search {
-        display: none; /* Hide search on mobile to prevent overflow */
-    }
-    
-    .nav-menu {
-        gap: 0.25rem;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-    }
-    
-    .nav-link {
-        padding: 0.25rem 0.4rem;
-        font-size: 0.8rem;
-        white-space: nowrap;
-    }
-    
-    .nav-brand a {
-        font-size: 1.2rem;
-    }
-}
+/* Removed duplicate media query - main mobile styles are below at line 697 */
 
 /* 3D Toggle Button */
 .toggle-3d,
@@ -659,8 +673,9 @@ body {
 
     /* Navigation Mobile Styles */
     .nav-container {
-        padding: 0 1rem;
-        height: 60px;
+        padding: 0.75rem 1rem;
+        height: auto;
+        min-height: 60px;
     }
 
     .nav-menu {
@@ -669,37 +684,129 @@ body {
         top: 100%;
         left: 0;
         right: 0;
-        background: var(--bg-nav-mobile);
+        background: #1e40af;
         flex-direction: column;
         padding: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        border-top: 2px solid rgba(255, 255, 255, 0.2);
+        z-index: 9999;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
     }
 
     .nav-menu.active {
-        display: flex;
+        display: flex !important;
+        animation: slideDown 0.3s ease-out;
+        visibility: visible !important;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .nav-toggle {
-        display: block;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        padding: 0.5rem;
+        display: flex !important;
     }
 
     .nav-link {
-        padding: 0.75rem 1rem;
+        padding: 0.875rem 1rem;
         border-radius: 0.375rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+        width: 100%;
+        text-align: left;
+        font-size: 1rem;
+        color: white !important;
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+        background: transparent;
+    }
+    
+    .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .nav-link i {
+        color: white;
+        font-size: 1.1rem;
     }
 
     .nav-brand {
-        display: flex;
-        flex-direction: row;
-        gap: 90%;
+        display: flex !important;
+        flex-direction: row !important;
+        width: auto;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.25rem 0;
+        gap: 1rem;
+    }
+    
+    .nav-brand a {
+        font-size: 1.4rem !important;
+        white-space: nowrap;
+    }
+    
+    .nav-search {
+        order: 10;
+        width: 100%;
+        margin: 0.5rem 0;
+        max-width: 100%;
+        display: flex !important;
+    }
+    
+    .nav-search .search-form {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    .nav-search .search-input {
+        width: 100%;
+        color: white;
+    }
+    
+    .toggle-theme {
+        color: white !important;
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1rem;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .nav-dropdown {
+        width: 100%;
+    }
+    
+    .nav-dropdown .dropdown-toggle {
+        color: white !important;
+        width: 100%;
+    }
+    
+    .nav-dropdown .dropdown-menu {
+        position: static !important;
+        box-shadow: none;
+        background: rgba(0, 0, 0, 0.2);
+        border: none;
+        padding-left: 1rem;
+        width: 100%;
+        display: none;
+    }
+    
+    .nav-dropdown .dropdown-menu.show {
+        display: block !important;
+    }
+    
+    .nav-dropdown .dropdown-item {
+        color: white !important;
+        padding: 0.75rem 1rem;
     }
 
     .nav-user {
@@ -1501,114 +1608,7 @@ body {
 }
 
 /* ===== NAVIGATION RESPONSIVE FIXES ===== */
-.nav-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: var(--text-inverse);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-.nav-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-@media (max-width: 768px) {
-    .nav-toggle {
-        display: block;
-    }
-    
-    .nav-brand {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0;
-    }
-    
-    .nav-menu {
-        width: 100%;
-        flex-direction: column;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-        background: var(--bg-secondary);
-        border-radius: 8px;
-        margin-top: 0.5rem;
-    }
-    
-    .nav-menu.active {
-        max-height: 500px;
-        padding: 0.5rem 0;
-    }
-    
-    .nav-link {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
-        color: var(--text-primary);
-        text-decoration: none;
-        border-radius: 6px;
-        margin: 0.125rem 0.5rem;
-        transition: all 0.2s ease;
-        min-height: 44px;
-    }
-    
-    .nav-link:hover {
-        background-color: var(--accent-color);
-        color: var(--text-inverse);
-    }
-    
-    .nav-search {
-        width: 100%;
-        padding: 0.5rem 1rem;
-    }
-    
-    .search-form {
-        display: flex;
-        gap: 0.5rem;
-        width: 100%;
-    }
-    
-    .search-input {
-        flex: 1;
-        padding: 0.75rem;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 16px; /* Prevents zoom on iOS */
-        background: var(--bg-primary);
-        color: var(--text-primary);
-    }
-    
-    .search-btn {
-        padding: 0.75rem 1rem;
-        background: var(--accent-color);
-        color: var(--text-inverse);
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-    
-    .nav-dropdown .dropdown-menu {
-        position: static;
-        display: none;
-        width: 100%;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        margin-top: 0.25rem;
-        box-shadow: none;
-    }
-    
-    .nav-dropdown .dropdown-menu.show {
-        display: block;
-    }
-}
+/* All navigation styles moved to main navigation section around line ~675 to avoid conflicts */
 
 /* ===== CARD RESPONSIVE FIXES ===== */
 .card, .train-card, .booking-card, .payment-card, .admin-card {
@@ -2228,9 +2228,9 @@ div#form-select2 {
                     <i class="fas fa-train"></i>
                     RailServe
                 </a>
-                <span class="nav-toggle">
+                <button class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
                     <i class="fas fa-bars" id="nav-toggle-icon"></i>
-                </span>
+                </button>
             </div>
             
             <div class="nav-menu">
@@ -2590,12 +2590,39 @@ function setupNavigation() {
     });
     
     // Mobile menu toggle (if needed)
-    const mobileToggle = document.querySelector('.mobile-toggle');
+    const mobileToggle = document.querySelector('.nav-toggle');
     const navMenu = document.querySelector('.nav-menu');
     
     if (mobileToggle && navMenu) {
         mobileToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
+            const isExpanded = navMenu.classList.contains('active');
+            mobileToggle.setAttribute('aria-expanded', isExpanded);
+            
+            // Toggle icon between bars and times
+            const icon = document.getElementById('nav-toggle-icon');
+            if (icon) {
+                if (isExpanded) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                mobileToggle.setAttribute('aria-expanded', 'false');
+                const icon = document.getElementById('nav-toggle-icon');
+                if (icon) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
         });
     }
 }
