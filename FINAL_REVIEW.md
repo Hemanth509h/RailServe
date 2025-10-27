@@ -149,6 +149,16 @@ The RailServe railway reservation system has been successfully migrated to the R
 **Solution:** Removed local_railway.db duplicates and attached_assets folder  
 **Status:** ✅ Resolved
 
+### 6. Hardcoded Database Credentials (CRITICAL SECURITY FIX)
+**Problem:** Database URL had hardcoded PostgreSQL credentials  
+**Solution:** Removed hardcoded credentials, now uses environment variable only  
+**Status:** ✅ Resolved
+
+### 7. Hardcoded Session Secret (CRITICAL SECURITY FIX)
+**Problem:** Flask secret key had hardcoded fallback value "railway-secret-key-2025"  
+**Solution:** Removed default value, app now fails fast in production if SESSION_SECRET not set  
+**Status:** ✅ Resolved - Verified by Architect
+
 ---
 
 ## Performance & Security
@@ -163,9 +173,12 @@ The RailServe railway reservation system has been successfully migrated to the R
 - ✅ CSRF protection enabled globally
 - ✅ Secure session cookies (HTTPOnly, SameSite=Lax)
 - ✅ Password hashing with Werkzeug (no hardcoded method)
-- ✅ Environment-based secret key management
+- ✅ Environment-based secret key management (no hardcoded defaults)
 - ✅ SQL injection protection via SQLAlchemy ORM
 - ✅ Role-based access control implemented
+- ✅ No hardcoded database credentials
+- ✅ Proper .gitignore to prevent committing sensitive files
+- ✅ Fails fast in production if SESSION_SECRET not set
 
 ---
 
