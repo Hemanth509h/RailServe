@@ -190,7 +190,7 @@ img.gallery-image:hover {
     --btn-primary-hover: #2563eb;
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    --hero-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+    --hero-gradient: linear-gradient(135deg, #1e40afb0 0%, #3b82f6 50%, #06b6d4 100%);
     --status-confirmed-bg: #dcfce7;
     --status-confirmed-text: #166534;
     --status-waitlist-bg: #fef3c7;
@@ -533,6 +533,13 @@ body {
         white-space: nowrap;
         flex-shrink: 0;
     }
+}
+@media (max-width: 768px){
+.nav-menu.active{
+    position: absolute;
+    width: 280px;
+    top:65px
+}
 }
 
 /* Removed duplicate media query - main mobile styles are below at line 697 */
@@ -1007,7 +1014,7 @@ body {
 /* Features Section */
 .features-section {
     padding: 4rem 0;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #3b83f6de 0%, #2564ebd2 100%);
 }
 
 .features-section h2 {
@@ -1790,6 +1797,7 @@ body {
 }
 
 /* ===== DROPDOWN NAVIGATION STYLES ===== */
+
 .nav-dropdown {
     position: relative;
     display: inline-block;
@@ -1798,8 +1806,7 @@ body {
 
 /* Ensure nav container doesn't interfere with dropdown */
 .nav-menu {
-    position: relative;
-    z-index: 999;
+    z-index: 9999;
 }
 
 .dropdown-toggle {
