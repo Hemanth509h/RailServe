@@ -4,7 +4,11 @@
 
 {% block head %}
 <style>
-    /* Enhanced Search Form for Index Page */
+    /* =================================================================
+       BASE STYLES - Search Form (Desktop)
+       ================================================================= */
+
+    /* Main search form container */
     .search-form {
         background: var(--bg-secondary);
         padding: 2.5rem;
@@ -17,10 +21,11 @@
     }
 
     .search-form .form-row {
-       display: flex;
+        display: flex;
         gap: 1.5rem;
     }
 
+    /* Station selection layout (From/To stations) */
     #form-select {
         display: flex;
         gap: 1rem;
@@ -29,6 +34,7 @@
         align-content: center;
     }
 
+    /* Journey date and search button layout */
     #form-select2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -68,6 +74,7 @@
         box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
 
+    /* Station swap button */
     .swap-btn {
         display: flex;
         align-items: flex-end;
@@ -97,6 +104,7 @@
         transform: rotate(180deg);
     }
 
+    /* Search button styling */
     .search-form .btn {
         padding: 0.875rem 2rem;
         background: linear-gradient(135deg, #3b82f6, #1d4ed8);
@@ -120,67 +128,10 @@
         box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .search-form {
-            padding: 1.5rem;
-            margin: 0 0.5rem;
-            width: calc(100% - 1rem);
-        }
+    /* =================================================================
+       BASE STYLES - Universal Search Filter
+       ================================================================= */
 
-        #form-select,
-        #form-select2 {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 1rem;
-            width: 100%;
-            height: auto;
-        }
-
-        p.lead.animate-fade-in-up {
-            margin-bottom: 1rem;
-        }
-
-        .search-form .form-group {
-            width: 100%;
-        }
-
-        #form-select {
-            display: flex;
-            gap: 1rem;
-            align-items: stretch;
-            width: 100%;
-            flex-direction: column;
-        }
-
-        .swap-btn {
-            padding-bottom: 0;
-            align-items: center;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .search-form {
-            padding: 1rem;
-            margin: 0 0.5rem;
-            width: calc(100% - 1rem);
-        }
-
-        .search-form select,
-        .search-form input[type="date"] {
-            padding: 0.75rem;
-            font-size: 0.95rem;
-            width: 100%;
-        }
-
-        .search-form .btn {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
-            width: 100%;
-        }
-    }
-
-    /* Enhanced Universal Search Form */
     .search-filters {
         display: grid;
         grid-template-columns: 2fr 1fr auto;
@@ -240,12 +191,9 @@
         transform: translateY(-1px);
     }
 
-    @media (max-width: 768px) {
-        .search-filters {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-    }
+    /* =================================================================
+       BASE STYLES - Train Cards & Grid
+       ================================================================= */
 
     .train-card {
         background: var(--bg-secondary);
@@ -265,31 +213,107 @@
         justify-content: center;
     }
 
+    /* =================================================================
+       RESPONSIVE DESIGN - Tablet & Mobile (768px and below)
+       ================================================================= */
+
     @media (max-width: 768px) {
-        .trains-grid {
-            flex-direction: column;
+        /* Search form adjustments for mobile */
+        .search-form {
+            padding: 1.5rem;
+            margin: 0 0.5rem;
+            width: calc(100% - 1rem);
+        }
+
+        /* Station selection - stack vertically on mobile */
+        #form-select {
+            display: flex;
+            gap: 1rem;
             align-items: stretch;
-        }
-
-        .train-card {
             width: 100%;
+            flex-direction: column;
         }
-    }
 
-    @media (max-width: 768px) {
-        div#form-select2 {
+        /* Journey date and button - stack vertically on mobile */
+        #form-select2 {
             margin-top: 1rem;
             display: flex;
             flex-direction: column;
             grid-template-columns: 1fr;
             width: 100%;
+            gap: 1rem;
+            align-items: stretch;
+            height: auto;
         }
 
+        /* Hero text spacing adjustment */
+        p.lead.animate-fade-in-up {
+            margin-bottom: 1rem;
+        }
+
+        /* Form groups take full width on mobile */
+        .search-form .form-group {
+            width: 100%;
+        }
+
+        /* Journey date input full width */
         input#journey_date {
             width: 100%;
         }
 
+        /* Search button full width on mobile */
         .search-form .btn {
+            width: 100%;
+        }
+
+        /* Station swap button alignment */
+        .swap-btn {
+            padding-bottom: 0;
+            align-items: center;
+        }
+
+        /* Universal search filter - single column on mobile */
+        .search-filters {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        /* Train grid - stack cards vertically on mobile */
+        .trains-grid {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        /* Train cards take full width on mobile */
+        .train-card {
+            width: 100%;
+        }
+    }
+
+    /* =================================================================
+       RESPONSIVE DESIGN - Small Mobile (480px and below)
+       ================================================================= */
+
+    @media (max-width: 480px) {
+        /* Further reduce padding on very small screens */
+        .search-form {
+            padding: 1rem;
+            margin: 0 0.5rem;
+            width: calc(100% - 1rem);
+        }
+
+        /* Smaller input fields on very small screens */
+        .search-form select,
+        .search-form input[type="date"] {
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            width: 100%;
+        }
+
+        /* Smaller button on very small screens */
+        .search-form .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
             width: 100%;
         }
     }
