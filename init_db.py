@@ -131,9 +131,18 @@ def generate_station_code(city_name, existing_codes):
 def create_stations(num_stations=1250):
     """Create railway stations"""
     print(f"\nGenerating {num_stations} stations...")
+    
+    existing_count = Station.query.count()
+    if existing_count >= num_stations:
+        print(f"  Stations already exist ({existing_count} found)")
+        return Station.query.all()
+    
+    existing_station_names = set(s.name for s in Station.query.all())
+    existing_station_codes = set(s.code for s in Station.query.all())
+    
     stations = []
-    existing_codes = set()
-    existing_names = set()
+    existing_codes = existing_station_codes.copy()
+    existing_names = existing_station_names.copy()
     
     station_types = ['Junction', 'Central', 'Terminal', 'City', 'Cantt', 'Road']
     
@@ -200,19 +209,30 @@ def create_stations(num_stations=1250):
             existing_names.add(station_name)
             cities_used += 1
     
-    db.session.bulk_save_objects(stations)
-    db.session.commit()
-    print(f"✓ Created {len(stations)} stations")
+    if stations:
+        db.session.bulk_save_objects(stations)
+        db.session.commit()
+        print(f"✓ Created {len(stations)} new stations (total: {Station.query.count()})")
+    else:
+        print(f"✓ All stations already exist ({existing_count} stations)")
+    
     return Station.query.all()
 
 def create_trains(num_trains=1500, stations=None):
     """Create trains with routes"""
     print(f"\nGenerating {num_trains} trains...")
-    trains = []
-    existing_numbers = set()
     
-    for i in range(num_trains):
-        train_number = str(10000 + i).zfill(5)
+    existing_count = Train.query.count()
+    if existing_count >= num_trains:
+        print(f"  Trains already exist ({existing_count} found)")
+        return Train.query.all()
+    
+    trains = []
+    existing_numbers = set(t.number for t in Train.query.all())
+    trains_to_create = num_trains - existing_count
+    
+    for i in range(trains_to_create):
+        train_number = str(10000 + existing_count + i).zfill(5)
         while train_number in existing_numbers:
             train_number = str(random.randint(10000, 99999))
         
@@ -241,11 +261,15 @@ def create_trains(num_trains=1500, stations=None):
         existing_numbers.add(train_number)
         
         if (i + 1) % 100 == 0:
-            print(f"  Generated {i + 1}/{num_trains} trains...")
+            print(f"  Generated {i + 1}/{trains_to_create} trains...")
     
-    db.session.bulk_save_objects(trains)
-    db.session.commit()
-    print(f"✓ Created {len(trains)} trains")
+    if trains:
+        db.session.bulk_save_objects(trains)
+        db.session.commit()
+        print(f"✓ Created {len(trains)} new trains (total: {Train.query.count()})")
+    else:
+        print(f"✓ All trains already exist ({existing_count} trains)")
+    
     return Train.query.all()
 
 def create_train_routes(trains, stations):
