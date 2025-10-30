@@ -370,20 +370,41 @@
 
     .trains-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr));
         gap: 2rem;
         margin-top: 2rem;
     }
     
     @media (max-width: 1200px) {
         .trains-grid {
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 450px), 1fr));
+            gap: 1.5rem;
         }
     }
     
-    @media (max-width: 900px) {
+    @media (max-width: 768px) {
         .trains-grid {
             grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .train-card {
+            max-width: 100%;
+        }
+        
+        /* Make seat availability table responsive on mobile */
+        .availability-table {
+            font-size: 0.75rem;
+        }
+        
+        .availability-table thead th,
+        .availability-table td {
+            padding: 0.5rem 0.4rem;
+        }
+        
+        .avail-badge {
+            font-size: 0.65rem;
+            padding: 0.25rem 0.4rem;
         }
     }
 
