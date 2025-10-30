@@ -19,7 +19,7 @@ from src.app import app, db
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_required
 from src.models import Train, Station, Booking, TrainRoute, ComplaintManagement
-from src.utils import get_running_trains, search_trains
+from src.utils import get_running_trains, search_trains, get_all_class_availability
 from datetime import datetime
 import random
 
@@ -76,6 +76,13 @@ def search_trains_route():
     # Search for trains on the specified route
     trains = search_trains(from_station, to_station, journey_date)
     
+    # Get seat availability for all coach classes for each train
+    trains_availability = {}
+    for train in trains:
+        trains_availability[train.id] = get_all_class_availability(
+            train.id, from_station, to_station, journey_date
+        )
+    
     # Get all stations again for the search form
     stations = Station.query.all()
     
@@ -83,6 +90,7 @@ def search_trains_route():
     return render_template('index.html', 
                          trains=trains, 
                          stations=stations,
+                         trains_availability=trains_availability,
                          search_performed=True,
                          from_station=from_station,
                          to_station=to_station,

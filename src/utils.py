@@ -41,6 +41,25 @@ def search_trains(from_station_id, to_station_id, journey_date):
     
     return valid_trains
 
+def get_all_class_availability(train_id, from_station_id, to_station_id, journey_date):
+    """Get seat availability for all coach classes for a train"""
+    coach_classes = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC']
+    availability = {}
+    
+    try:
+        journey_date_obj = datetime.strptime(str(journey_date), '%Y-%m-%d').date() if isinstance(journey_date, str) else journey_date
+    except:
+        journey_date_obj = date.today()
+    
+    for coach_class in coach_classes:
+        avail_data = check_seat_availability_detailed(
+            train_id, from_station_id, to_station_id, 
+            journey_date_obj, coach_class, 'general'
+        )
+        availability[coach_class] = avail_data
+    
+    return availability
+
 def calculate_fare(train_id, from_station_id, to_station_id, passengers, booking_type='general', coach_class='SL', passenger_details=None):
     """Calculate fare for the journey with coach class multipliers and age-based concessions"""
     from_route = TrainRoute.query.filter_by(
