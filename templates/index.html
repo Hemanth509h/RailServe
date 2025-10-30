@@ -201,8 +201,166 @@
         padding: 1.5rem;
         box-shadow: var(--card-shadow);
         transition: all 0.3s ease;
-        width: 370px;
+        width: 420px;
         max-width: 100%;
+    }
+    
+    /* Seat Availability Styles - Professional Railway Booking Design */
+    .seat-availability-section {
+        margin: 1rem 0;
+        background: var(--bg-primary);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    
+    .availability-header {
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-bottom: 2px solid #e74c3c;
+    }
+    
+    .availability-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--bg-secondary);
+    }
+    
+    .availability-table thead {
+        background: #ecf0f1;
+    }
+    
+    .availability-table thead th {
+        padding: 0.6rem 0.75rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #2c3e50;
+        text-transform: uppercase;
+        border-bottom: 2px solid #bdc3c7;
+    }
+    
+    .availability-table tbody tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background 0.2s ease;
+    }
+    
+    .availability-table tbody tr:hover {
+        background: rgba(52, 152, 219, 0.05);
+    }
+    
+    .availability-table tbody tr.row-available {
+        border-left: 3px solid #27ae60;
+    }
+    
+    .availability-table tbody tr.row-rac {
+        border-left: 3px solid #f39c12;
+    }
+    
+    .availability-table tbody tr.row-waitlist {
+        border-left: 3px solid #e74c3c;
+    }
+    
+    .availability-table td {
+        padding: 0.65rem 0.75rem;
+        font-size: 0.8rem;
+        color: var(--text-primary);
+    }
+    
+    .availability-table .class-code {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #2c3e50;
+        font-family: monospace;
+    }
+    
+    .availability-table .class-type {
+        color: #7f8c8d;
+        font-size: 0.75rem;
+    }
+    
+    .availability-table .fare-mult {
+        color: #95a5a6;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .availability-cell {
+        text-align: right;
+    }
+    
+    .avail-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        font-family: monospace;
+        letter-spacing: 0.5px;
+    }
+    
+    .avail-badge i {
+        font-size: 0.7rem;
+    }
+    
+    .badge-available {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .badge-rac {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .badge-waitlist {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .availability-footer {
+        display: flex;
+        gap: 1rem;
+        padding: 0.6rem 1rem;
+        background: #f8f9fa;
+        border-top: 1px solid var(--border-color);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.7rem;
+        color: #7f8c8d;
+    }
+    
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .dot-available {
+        background: #27ae60;
+    }
+    
+    .dot-rac {
+        background: #f39c12;
+    }
+    
+    .dot-waitlist {
+        background: #e74c3c;
     }
 
     .trains-grid {
@@ -409,18 +567,75 @@
 
                 <div class="train-details">
                     <div class="detail-item">
-                        <i class="fas fa-chair"></i>
-                        <span>Available Seats: {{ train.available_seats }}</span>
-                    </div>
-                    <div class="detail-item">
                         <i class="fas fa-rupee-sign"></i>
                         <span>Base Fare: ₹{{ "%.2f"|format(train.fare_per_km) }}/km</span>
                     </div>
                 </div>
 
+                {% if trains_availability and trains_availability[train.id] %}
+                <div class="seat-availability-section">
+                    <div class="availability-header">
+                        <i class="fas fa-chair"></i> Seat Availability
+                    </div>
+                    <table class="availability-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Type</th>
+                                <th>Fare</th>
+                                <th>Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set class_info = {
+                                'AC1': {'name': 'First AC', 'fare': '5.0x'},
+                                'AC2': {'name': 'AC 2 Tier', 'fare': '3.0x'},
+                                'AC3': {'name': 'AC 3 Tier', 'fare': '2.0x'},
+                                'SL': {'name': 'Sleeper', 'fare': '1.0x'},
+                                '2S': {'name': '2nd Sitting', 'fare': '0.6x'},
+                                'CC': {'name': 'Chair Car', 'fare': '1.2x'}
+                            } %}
+                            {% for class_code, avail in trains_availability[train.id].items() %}
+                            <tr class="avail-row {% if avail.available > 0 %}row-available{% elif avail.rac > 0 %}row-rac{% else %}row-waitlist{% endif %}">
+                                <td class="class-code">{{ class_code }}</td>
+                                <td class="class-type">{{ class_info[class_code]['name'] }}</td>
+                                <td class="fare-mult">{{ class_info[class_code]['fare'] }}</td>
+                                <td class="availability-cell">
+                                    {% if avail.available > 0 %}
+                                        <span class="avail-badge badge-available">
+                                            <i class="fas fa-check-circle"></i> AVAILABLE-{{ '%03d'|format(avail.available) }}
+                                        </span>
+                                    {% elif avail.rac > 0 %}
+                                        <span class="avail-badge badge-rac">
+                                            <i class="fas fa-exclamation-circle"></i> RAC-{{ '%02d'|format(avail.rac) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="avail-badge badge-waitlist">
+                                            <i class="fas fa-clock"></i> WL-{{ '%02d'|format(avail.waiting) }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="availability-footer">
+                        <div class="legend-item">
+                            <span class="legend-dot dot-available"></span> Available
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot dot-rac"></span> RAC
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot dot-waitlist"></span> Waitlist
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="train-actions">
                     {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" class="btn btn-primary">
+                    <a href="{{ url_for('booking.book_ticket', train_id=train.id, from_station=from_station, to_station=to_station, journey_date=journey_date) }}" class="btn btn-primary">
                         <i class="fas fa-ticket-alt"></i> Book Now
                     </a>
                     {% else %}

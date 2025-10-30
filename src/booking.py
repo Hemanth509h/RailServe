@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from .models import Train, Station, Booking, TrainRoute, Passenger, RefundRequest
 from .database import db
 from datetime import datetime, date
-from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability, calculate_cancellation_charges, check_seat_availability_detailed, get_live_train_status, check_current_reservation_available, get_waitlist_type
+from .utils import calculate_fare, check_seat_availability, is_booking_open, check_tatkal_availability, calculate_cancellation_charges, check_seat_availability_detailed, get_live_train_status, check_current_reservation_available, get_waitlist_type, get_all_class_availability
 from .seat_allocation import SeatAllocator
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
@@ -24,10 +24,25 @@ def book_ticket(train_id):
         TrainRoute.train_id == train_id
     ).order_by(TrainRoute.sequence).all()
     
+    # Get seat availability for all classes if station and date are provided
+    from_station_id = request.args.get('from_station', type=int)
+    to_station_id = request.args.get('to_station', type=int)
+    journey_date = request.args.get('journey_date')
+    
+    seat_availability = None
+    if from_station_id and to_station_id and journey_date:
+        seat_availability = get_all_class_availability(
+            train_id, from_station_id, to_station_id, journey_date
+        )
+    
     return render_template('book_ticket.html', 
                          train=train, 
                          stations=stations,
-                         train_stations=train_stations)
+                         train_stations=train_stations,
+                         seat_availability=seat_availability,
+                         from_station_id=from_station_id,
+                         to_station_id=to_station_id,
+                         journey_date=journey_date)
 
 @booking_bp.route('/book/<int:train_id>', methods=['POST'])
 @login_required
