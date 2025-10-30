@@ -1,348 +1,152 @@
-"""
-RailServe Database Initialization Script
-=========================================
-
-This script initializes the RailServe database with:
-- 1250 railway stations across India
-- 1500 trains with routes
-- Seat availability data for all coach classes
-- Sample admin user for testing
-
-Run this script once to set up the complete database:
-    python init_db.py
-"""
-
+import csv
+import os
+from datetime import datetime, date, time, timedelta
 from src.app import app, db
 from src.models import (
     User, Station, Train, TrainRoute, SeatAvailability,
-    TatkalTimeSlot, LoyaltyProgram, NotificationPreferences
+    TatkalTimeSlot
 )
 from werkzeug.security import generate_password_hash
-from datetime import datetime, time, date, timedelta
-from faker import Faker
 import random
-
-fake = Faker('en_IN')
-
-INDIAN_CITIES = [
-    ('Mumbai', 'Maharashtra'), ('Delhi', 'Delhi'), ('Bangalore', 'Karnataka'), 
-    ('Hyderabad', 'Telangana'), ('Ahmedabad', 'Gujarat'), ('Chennai', 'Tamil Nadu'),
-    ('Kolkata', 'West Bengal'), ('Pune', 'Maharashtra'), ('Jaipur', 'Rajasthan'),
-    ('Lucknow', 'Uttar Pradesh'), ('Kanpur', 'Uttar Pradesh'), ('Nagpur', 'Maharashtra'),
-    ('Indore', 'Madhya Pradesh'), ('Thane', 'Maharashtra'), ('Bhopal', 'Madhya Pradesh'),
-    ('Visakhapatnam', 'Andhra Pradesh'), ('Pimpri-Chinchwad', 'Maharashtra'), 
-    ('Patna', 'Bihar'), ('Vadodara', 'Gujarat'), ('Ghaziabad', 'Uttar Pradesh'),
-    ('Ludhiana', 'Punjab'), ('Agra', 'Uttar Pradesh'), ('Nashik', 'Maharashtra'),
-    ('Faridabad', 'Haryana'), ('Meerut', 'Uttar Pradesh'), ('Rajkot', 'Gujarat'),
-    ('Kalyan-Dombivali', 'Maharashtra'), ('Vasai-Virar', 'Maharashtra'), 
-    ('Varanasi', 'Uttar Pradesh'), ('Srinagar', 'Jammu and Kashmir'),
-    ('Aurangabad', 'Maharashtra'), ('Dhanbad', 'Jharkhand'), ('Amritsar', 'Punjab'),
-    ('Navi Mumbai', 'Maharashtra'), ('Allahabad', 'Uttar Pradesh'), 
-    ('Ranchi', 'Jharkhand'), ('Howrah', 'West Bengal'), ('Coimbatore', 'Tamil Nadu'),
-    ('Jabalpur', 'Madhya Pradesh'), ('Gwalior', 'Madhya Pradesh'),
-    ('Vijayawada', 'Andhra Pradesh'), ('Jodhpur', 'Rajasthan'), ('Madurai', 'Tamil Nadu'),
-    ('Raipur', 'Chhattisgarh'), ('Kota', 'Rajasthan'), ('Chandigarh', 'Chandigarh'),
-    ('Guwahati', 'Assam'), ('Solapur', 'Maharashtra'), ('Hubballi-Dharwad', 'Karnataka'),
-    ('Tiruchirappalli', 'Tamil Nadu'), ('Bareilly', 'Uttar Pradesh'),
-    ('Mysore', 'Karnataka'), ('Tiruppur', 'Tamil Nadu'), ('Gurgaon', 'Haryana'),
-    ('Aligarh', 'Uttar Pradesh'), ('Jalandhar', 'Punjab'), ('Bhubaneswar', 'Odisha'),
-    ('Salem', 'Tamil Nadu'), ('Warangal', 'Telangana'), ('Guntur', 'Andhra Pradesh'),
-    ('Bhiwandi', 'Maharashtra'), ('Saharanpur', 'Uttar Pradesh'), 
-    ('Gorakhpur', 'Uttar Pradesh'), ('Bikaner', 'Rajasthan'), ('Amravati', 'Maharashtra'),
-    ('Noida', 'Uttar Pradesh'), ('Jamshedpur', 'Jharkhand'), ('Bhilai', 'Chhattisgarh'),
-    ('Cuttack', 'Odisha'), ('Firozabad', 'Uttar Pradesh'), ('Kochi', 'Kerala'),
-    ('Nellore', 'Andhra Pradesh'), ('Bhavnagar', 'Gujarat'), ('Dehradun', 'Uttarakhand'),
-    ('Durgapur', 'West Bengal'), ('Asansol', 'West Bengal'), ('Rourkela', 'Odisha'),
-    ('Nanded', 'Maharashtra'), ('Kolhapur', 'Maharashtra'), ('Ajmer', 'Rajasthan'),
-    ('Akola', 'Maharashtra'), ('Gulbarga', 'Karnataka'), ('Jamnagar', 'Gujarat'),
-    ('Ujjain', 'Madhya Pradesh'), ('Loni', 'Uttar Pradesh'), ('Siliguri', 'West Bengal'),
-    ('Jhansi', 'Uttar Pradesh'), ('Ulhasnagar', 'Maharashtra'), ('Jammu', 'Jammu and Kashmir'),
-    ('Mangalore', 'Karnataka'), ('Erode', 'Tamil Nadu'), ('Belgaum', 'Karnataka'),
-    ('Ambattur', 'Tamil Nadu'), ('Tirunelveli', 'Tamil Nadu'), ('Malegaon', 'Maharashtra'),
-    ('Gaya', 'Bihar'), ('Jalgaon', 'Maharashtra'), ('Udaipur', 'Rajasthan'),
-    ('Maheshtala', 'West Bengal'), ('Davanagere', 'Karnataka'), ('Kozhikode', 'Kerala'),
-    ('Kurnool', 'Andhra Pradesh'), ('Rajpur Sonarpur', 'West Bengal'), 
-    ('Rajahmundry', 'Andhra Pradesh'), ('Bokaro', 'Jharkhand'), ('South Dumdum', 'West Bengal'),
-    ('Bellary', 'Karnataka'), ('Patiala', 'Punjab'), ('Gopalpur', 'West Bengal'),
-    ('Agartala', 'Tripura'), ('Bhagalpur', 'Bihar'), ('Muzaffarnagar', 'Uttar Pradesh'),
-    ('Bhatpara', 'West Bengal'), ('Panihati', 'West Bengal'), ('Latur', 'Maharashtra'),
-    ('Dhule', 'Maharashtra'), ('Rohtak', 'Haryana'), ('Korba', 'Chhattisgarh'),
-    ('Bhilwara', 'Rajasthan'), ('Berhampur', 'Odisha'), ('Muzaffarpur', 'Bihar'),
-    ('Ahmednagar', 'Maharashtra'), ('Mathura', 'Uttar Pradesh'), ('Kollam', 'Kerala'),
-    ('Avadi', 'Tamil Nadu'), ('Kadapa', 'Andhra Pradesh'), ('Kamarhati', 'West Bengal'),
-    ('Sambalpur', 'Odisha'), ('Bilaspur', 'Chhattisgarh'), ('Shahjahanpur', 'Uttar Pradesh'),
-    ('Satara', 'Maharashtra'), ('Bijapur', 'Karnataka'), ('Rampur', 'Uttar Pradesh'),
-    ('Shivamogga', 'Karnataka'), ('Chandrapur', 'Maharashtra'), ('Junagadh', 'Gujarat'),
-    ('Thrissur', 'Kerala'), ('Alwar', 'Rajasthan'), ('Bardhaman', 'West Bengal'),
-    ('Kulti', 'West Bengal'), ('Kakinada', 'Andhra Pradesh'), ('Nizamabad', 'Telangana'),
-    ('Parbhani', 'Maharashtra'), ('Tumkur', 'Karnataka'), ('Khammam', 'Telangana'),
-    ('Ozhukarai', 'Puducherry'), ('Bihar Sharif', 'Bihar'), ('Panipat', 'Haryana'),
-    ('Darbhanga', 'Bihar'), ('Bally', 'West Bengal'), ('Aizawl', 'Mizoram'),
-    ('Dewas', 'Madhya Pradesh'), ('Ichalkaranji', 'Maharashtra'), ('Karnal', 'Haryana'),
-    ('Bathinda', 'Punjab'), ('Jalna', 'Maharashtra'), ('Eluru', 'Andhra Pradesh'),
-    ('Kirari Suleman Nagar', 'Delhi'), ('Barasat', 'West Bengal'), ('Purnia', 'Bihar'),
-    ('Satna', 'Madhya Pradesh'), ('Mau', 'Uttar Pradesh'), ('Sonipat', 'Haryana'),
-    ('Farrukhabad', 'Uttar Pradesh'), ('Sagar', 'Madhya Pradesh'), 
-    ('Rourkela', 'Odisha'), ('Durg', 'Chhattisgarh'), ('Imphal', 'Manipur'),
-    ('Ratlam', 'Madhya Pradesh'), ('Hapur', 'Uttar Pradesh'), ('Arrah', 'Bihar'),
-    ('Karimnagar', 'Telangana'), ('Etawah', 'Uttar Pradesh'), ('Ambernath', 'Maharashtra'),
-    ('North Dumdum', 'West Bengal'), ('Bharatpur', 'Rajasthan'), ('Begusarai', 'Bihar'),
-    ('New Delhi', 'Delhi'), ('Chhapra', 'Bihar'), ('Kadapa', 'Andhra Pradesh'),
-    ('Ramagundam', 'Telangana'), ('Pali', 'Rajasthan'), ('Satna', 'Madhya Pradesh'),
-    ('Vizianagaram', 'Andhra Pradesh'), ('Katihar', 'Bihar'), ('Hardwar', 'Uttarakhand'),
-    ('Sonipat', 'Haryana'), ('Nagercoil', 'Tamil Nadu'), ('Thanjavur', 'Tamil Nadu'),
-    ('Murwara', 'Madhya Pradesh'), ('Naihati', 'West Bengal'), ('Sambhal', 'Uttar Pradesh'),
-    ('Nadiad', 'Gujarat'), ('Yamunanagar', 'Haryana'), ('English Bazar', 'West Bengal'),
-    ('Eluru', 'Andhra Pradesh'), ('Munger', 'Bihar'), ('Panchkula', 'Haryana'),
-    ('Raayachuru', 'Karnataka'), ('Panvel', 'Maharashtra'), ('Deoghar', 'Jharkhand'),
-    ('Ongole', 'Andhra Pradesh'), ('Nandyal', 'Andhra Pradesh'), ('Morena', 'Madhya Pradesh'),
-    ('Bhiwani', 'Haryana'), ('Porbandar', 'Gujarat'), ('Palakkad', 'Kerala'),
-    ('Anand', 'Gujarat'), ('Puruliya', 'West Bengal'), ('Barasat', 'West Bengal'),
-    ('Kharagpur', 'West Bengal'), ('Unnao', 'Uttar Pradesh'), ('Shillong', 'Meghalaya'),
-]
-
-TRAIN_NAME_PREFIXES = [
-    'Rajdhani', 'Shatabdi', 'Duronto', 'Garib Rath', 'Humsafar', 'Tejas', 'Vande Bharat',
-    'Jan Shatabdi', 'Sampark Kranti', 'Yuva', 'Antyodaya', 'Suvidha', 'Double Decker',
-    'AC Express', 'SF Express', 'Mail', 'Passenger', 'Express', 'Local', 'Intercity'
-]
-
-TRAIN_NAME_SUFFIXES = [
-    'Express', 'Special', 'Link', 'Superfast', 'Intercity', 'Fast', 'Premium', 'Deluxe',
-    'Zonal', 'Regional', 'Metro', 'Shuttle', 'AC', 'Mail', 'Passenger'
-]
 
 COACH_CLASSES = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC']
 
-def generate_station_code(city_name, existing_codes):
-    """Generate unique 3-4 letter station code"""
-    base_code = ''.join([c[0] for c in city_name.split()[:3]]).upper()
-    if len(base_code) < 3:
-        base_code = city_name[:3].upper()
+def reset_database():
+    print("\n[RESET] Dropping all existing tables...")
+    db.drop_all()
+    print("✓ All tables dropped")
     
-    code = base_code[:4]
-    counter = 1
-    while code in existing_codes:
-        code = base_code[:3] + str(counter)
-        counter += 1
-    
-    return code
+    print("[RESET] Creating fresh database schema...")
+    db.create_all()
+    print("✓ Database schema created")
 
-def create_stations(num_stations=1250):
-    """Create railway stations"""
-    print(f"\nGenerating {num_stations} stations...")
+def load_stations_from_csv():
+    print("\n[STATIONS] Loading stations from CSV...")
+    csv_path = 'data/stations.csv'
     
-    existing_count = Station.query.count()
-    if existing_count >= num_stations:
-        print(f"  Stations already exist ({existing_count} found)")
-        return Station.query.all()
+    if not os.path.exists(csv_path):
+        print(f"ERROR: {csv_path} not found!")
+        return []
     
-    existing_station_names = set(s.name for s in Station.query.all())
-    existing_station_codes = set(s.code for s in Station.query.all())
+    stations_data = []
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            stations_data.append({
+                'name': row['name'],
+                'code': row['code'],
+                'city': row['city'],
+                'state': row['state'],
+                'active': row['active'].lower() == 'true',
+                'created_at': datetime.utcnow()
+            })
     
-    stations = []
-    existing_codes = existing_station_codes.copy()
-    existing_names = existing_station_names.copy()
-    
-    station_types = ['Junction', 'Central', 'Terminal', 'City', 'Cantt', 'Road']
-    
-    cities_used = 0
-    for city, state in INDIAN_CITIES:
-        if cities_used >= num_stations:
-            break
-            
-        station_name = f"{city} Junction"
-        if station_name not in existing_names:
-            code = generate_station_code(city, existing_codes)
-            station = Station(
-                name=station_name,
-                code=code,
-                city=city,
-                state=state,
-                active=True
-            )
-            stations.append(station)
-            existing_codes.add(code)
-            existing_names.add(station_name)
-            cities_used += 1
-    
-    for city, state in INDIAN_CITIES:
-        if cities_used >= num_stations:
-            break
-            
-        for stype in station_types:
-            if cities_used >= num_stations:
-                break
-                
-            station_name = f"{city} {stype}"
-            if station_name not in existing_names:
-                code = generate_station_code(f"{city}{stype}", existing_codes)
-                station = Station(
-                    name=station_name,
-                    code=code,
-                    city=city,
-                    state=state,
-                    active=True
-                )
-                stations.append(station)
-                existing_codes.add(code)
-                existing_names.add(station_name)
-                cities_used += 1
-    
-    while cities_used < num_stations:
-        city = fake.city()
-        state = random.choice([s for _, s in INDIAN_CITIES])
-        station_type = random.choice(station_types)
-        station_name = f"{city} {station_type}"
-        
-        if station_name not in existing_names:
-            code = generate_station_code(f"{city}{station_type}", existing_codes)
-            station = Station(
-                name=station_name,
-                code=code,
-                city=city,
-                state=state,
-                active=True
-            )
-            stations.append(station)
-            existing_codes.add(code)
-            existing_names.add(station_name)
-            cities_used += 1
-    
-    if stations:
-        db.session.bulk_save_objects(stations)
-        db.session.commit()
-        print(f"✓ Created {len(stations)} new stations (total: {Station.query.count()})")
-    else:
-        print(f"✓ All stations already exist ({existing_count} stations)")
+    db.session.bulk_insert_mappings(Station, stations_data)
+    db.session.commit()
+    print(f"✓ Loaded {len(stations_data)} stations")
     
     return Station.query.all()
 
-def create_trains(num_trains=1500, stations=None):
-    """Create trains with routes"""
-    print(f"\nGenerating {num_trains} trains...")
+def load_trains_from_csv():
+    print("\n[TRAINS] Loading trains from CSV...")
+    csv_path = 'data/trains.csv'
     
-    existing_count = Train.query.count()
-    if existing_count >= num_trains:
-        print(f"  Trains already exist ({existing_count} found)")
-        return Train.query.all()
+    if not os.path.exists(csv_path):
+        print(f"ERROR: {csv_path} not found!")
+        return []
     
-    trains = []
-    existing_numbers = set(t.number for t in Train.query.all())
-    trains_to_create = num_trains - existing_count
+    trains_data = []
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            total_seats = int(row['total_seats'])
+            trains_data.append({
+                'number': row['number'],
+                'name': row['name'],
+                'total_seats': total_seats,
+                'available_seats': total_seats,
+                'fare_per_km': float(row['fare_per_km']),
+                'tatkal_seats': int(row['tatkal_seats']),
+                'tatkal_fare_per_km': float(row['tatkal_fare_per_km']),
+                'active': row['active'].lower() == 'true',
+                'created_at': datetime.utcnow()
+            })
     
-    for i in range(trains_to_create):
-        train_number = str(10000 + existing_count + i).zfill(5)
-        while train_number in existing_numbers:
-            train_number = str(random.randint(10000, 99999))
-        
-        prefix = random.choice(TRAIN_NAME_PREFIXES)
-        suffix = random.choice(TRAIN_NAME_SUFFIXES)
-        
-        source_station = random.choice(stations)
-        dest_station = random.choice([s for s in stations if s.id != source_station.id])
-        
-        train_name = f"{source_station.city} {dest_station.city} {prefix} {suffix}"
-        
-        total_seats = random.randint(500, 1200)
-        tatkal_seats = int(total_seats * 0.1)
-        
-        train = Train(
-            number=train_number,
-            name=train_name,
-            total_seats=total_seats,
-            available_seats=total_seats,
-            fare_per_km=random.uniform(0.5, 2.5),
-            tatkal_seats=tatkal_seats,
-            tatkal_fare_per_km=random.uniform(1.5, 4.0),
-            active=True
-        )
-        trains.append(train)
-        existing_numbers.add(train_number)
-        
-        if (i + 1) % 100 == 0:
-            print(f"  Generated {i + 1}/{trains_to_create} trains...")
-    
-    if trains:
-        db.session.bulk_save_objects(trains)
-        db.session.commit()
-        print(f"✓ Created {len(trains)} new trains (total: {Train.query.count()})")
-    else:
-        print(f"✓ All trains already exist ({existing_count} trains)")
+    db.session.bulk_insert_mappings(Train, trains_data)
+    db.session.commit()
+    print(f"✓ Loaded {len(trains_data)} trains")
     
     return Train.query.all()
 
 def create_train_routes(trains, stations):
-    """Create routes for trains"""
-    print(f"\nGenerating train routes...")
+    print("\n[ROUTES] Generating train routes...")
     
-    existing_route_count = TrainRoute.query.count()
-    if existing_route_count > 0:
-        print(f"  Routes already exist ({existing_route_count} found)")
-        trains_with_routes = db.session.query(TrainRoute.train_id).distinct().all()
-        trains_with_routes_set = set(tid[0] for tid in trains_with_routes)
-        trains = [t for t in trains if t.id not in trains_with_routes_set]
-        
-        if not trains:
-            print("✓ All trains already have routes")
-            return
-        
-        print(f"  Creating routes for {len(trains)} trains without routes...")
+    if len(stations) < 5:
+        print("ERROR: Not enough stations for routes!")
+        return
     
-    routes = []
-    route_count = 0
+    routes_data = []
+    total_routes = 0
+    batch_size = 50
     
-    for train in trains:
-        num_stops = random.randint(3, 15)
+    for idx, train in enumerate(trains):
+        num_stops = random.randint(3, 8)
         selected_stations = random.sample(stations, min(num_stops, len(stations)))
         
         current_distance = 0
-        current_time = time(random.randint(0, 23), random.choice([0, 15, 30, 45]))
+        base_hour = random.randint(0, 23)
+        base_minute = random.choice([0, 15, 30, 45])
+        current_minutes = base_hour * 60 + base_minute
         
         for seq, station in enumerate(selected_stations, 1):
             if seq > 1:
-                current_distance += random.randint(50, 300)
+                current_distance += random.randint(50, 250)
+                current_minutes += random.randint(30, 180)
             
-            arrival = current_time if seq > 1 else None
+            arrival_minutes = current_minutes if seq > 1 else None
             
-            stop_duration = random.randint(2, 10) if seq < len(selected_stations) else 0
-            departure_hour = (current_time.hour + (current_time.minute + stop_duration) // 60) % 24
-            departure_minute = (current_time.minute + stop_duration) % 60
-            departure = time(departure_hour, departure_minute)
+            if seq < len(selected_stations):
+                stop_duration = random.randint(2, 10)
+                departure_minutes = current_minutes + stop_duration
+            else:
+                departure_minutes = None
             
-            route = TrainRoute(
-                train_id=train.id,
-                station_id=station.id,
-                sequence=seq,
-                arrival_time=arrival,
-                departure_time=departure if seq < len(selected_stations) else None,
-                distance_from_start=current_distance
-            )
-            routes.append(route)
-            route_count += 1
+            routes_data.append({
+                'train_id': train.id,
+                'station_id': station.id,
+                'sequence': seq,
+                'arrival_time': time(arrival_minutes // 60 % 24, arrival_minutes % 60) if arrival_minutes else None,
+                'departure_time': time(departure_minutes // 60 % 24, departure_minutes % 60) if departure_minutes else None,
+                'distance_from_start': current_distance
+            })
+            total_routes += 1
             
-            current_time = departure
+            if seq < len(selected_stations):
+                current_minutes = departure_minutes
         
-        if route_count % 1000 == 0:
-            print(f"  Generated {route_count} route entries...")
+        if (idx + 1) % batch_size == 0:
+            db.session.bulk_insert_mappings(TrainRoute, routes_data)
+            db.session.commit()
+            print(f"  Processed {idx + 1}/{len(trains)} trains...")
+            routes_data = []
     
-    if routes:
-        db.session.bulk_save_objects(routes)
+    if routes_data:
+        db.session.bulk_insert_mappings(TrainRoute, routes_data)
         db.session.commit()
-        print(f"✓ Created {len(routes)} new route entries (total: {TrainRoute.query.count()})")
-    else:
-        print("✓ No new routes to create")
+    
+    print(f"✓ Created {total_routes} route entries")
 
-def create_seat_availability(trains, stations):
-    """Create seat availability data with batch commits to handle large datasets"""
-    print(f"\nGenerating seat availability data...")
+def create_limited_seat_availability(trains, days_ahead=14, sample_trains=200):
+    print(f"\n[AVAILABILITY] Generating seat availability for {days_ahead} days ahead...")
     
     today = date.today()
     total_records = 0
-    batch_size = 5000
-    availability_records = []
     
-    train_sample = random.sample(trains, min(300, len(trains)))
+    train_sample = random.sample(trains, min(sample_trains, len(trains)))
+    print(f"  Sampling {len(train_sample)} trains for availability data...")
+    
+    availability_data = []
+    batch_size = 1000
     
     for train_idx, train in enumerate(train_sample):
         train_routes = TrainRoute.query.filter_by(train_id=train.id).order_by(TrainRoute.sequence).all()
@@ -350,12 +154,11 @@ def create_seat_availability(trains, stations):
         if len(train_routes) < 2:
             continue
         
-        for i in range(min(3, len(train_routes) - 1)):
-            from_station = train_routes[i]
-            to_station = train_routes[i + 1]
-            
-            for days_ahead in range(30):
-                journey_date = today + timedelta(days=days_ahead)
+        route_pairs = [(train_routes[i], train_routes[i+1]) for i in range(min(2, len(train_routes)-1))]
+        
+        for from_route, to_route in route_pairs:
+            for days in range(days_ahead):
+                journey_date = today + timedelta(days=days)
                 
                 for coach_class in COACH_CLASSES:
                     class_capacity = {
@@ -367,47 +170,40 @@ def create_seat_availability(trains, stations):
                         'CC': int(train.total_seats * 0.05)
                     }
                     
-                    total_class_seats = class_capacity.get(coach_class, 100)
-                    available = random.randint(int(total_class_seats * 0.3), total_class_seats)
+                    total_class_seats = class_capacity.get(coach_class, 50)
+                    available = random.randint(int(total_class_seats * 0.4), total_class_seats)
                     
-                    for quota in ['general', 'tatkal', 'ladies']:
-                        availability = SeatAvailability(
-                            train_id=train.id,
-                            from_station_id=from_station.station_id,
-                            to_station_id=to_station.station_id,
-                            journey_date=journey_date,
-                            coach_class=coach_class,
-                            quota=quota,
-                            available_seats=available,
-                            waiting_list=random.randint(0, 20) if available < 10 else 0,
-                            rac_seats=random.randint(0, 5) if available < 30 else 0,
-                            last_updated=datetime.utcnow()
-                        )
-                        availability_records.append(availability)
-                        
-                        if len(availability_records) >= batch_size:
-                            db.session.bulk_save_objects(availability_records)
-                            db.session.commit()
-                            total_records += len(availability_records)
-                            availability_records = []
-                            if total_records % 25000 == 0:
-                                print(f"  Generated {total_records:,} availability records...")
+                    availability_data.append({
+                        'train_id': train.id,
+                        'from_station_id': from_route.station_id,
+                        'to_station_id': to_route.station_id,
+                        'journey_date': journey_date,
+                        'coach_class': coach_class,
+                        'quota': 'general',
+                        'available_seats': available,
+                        'waiting_list': random.randint(0, 15) if available < 10 else 0,
+                        'rac_seats': random.randint(0, 5) if available < 20 else 0,
+                        'last_updated': datetime.utcnow()
+                    })
+                    
+                    if len(availability_data) >= batch_size:
+                        db.session.bulk_insert_mappings(SeatAvailability, availability_data)
+                        db.session.commit()
+                        total_records += len(availability_data)
+                        availability_data = []
+        
+        if (train_idx + 1) % 20 == 0:
+            print(f"  Processed {train_idx + 1}/{len(train_sample)} trains, {total_records:,} records...")
     
-    if availability_records:
-        db.session.bulk_save_objects(availability_records)
+    if availability_data:
+        db.session.bulk_insert_mappings(SeatAvailability, availability_data)
         db.session.commit()
-        total_records += len(availability_records)
+        total_records += len(availability_data)
     
     print(f"✓ Created {total_records:,} seat availability records")
 
 def create_admin_user():
-    """Create default admin user"""
-    print("\nCreating admin user...")
-    
-    existing_admin = User.query.filter_by(username='admin').first()
-    if existing_admin:
-        print("  Admin user already exists")
-        return existing_admin
+    print("\n[ADMIN] Creating admin user...")
     
     admin = User(
         username='admin',
@@ -418,19 +214,11 @@ def create_admin_user():
     )
     db.session.add(admin)
     db.session.commit()
-    print(f"✓ Created admin user (username: admin, password: admin123)")
+    print("✓ Admin user created (username: admin, password: admin123)")
     return admin
 
-def create_tatkal_timeslots():
-    """Create Tatkal time slot configurations"""
-    print("\nCreating Tatkal time slots...")
-    
-    existing = TatkalTimeSlot.query.first()
-    if existing:
-        print("  Tatkal time slots already exist")
-        return
-    
-    admin = User.query.filter_by(role='super_admin').first()
+def create_tatkal_timeslots(admin):
+    print("\n[TATKAL] Creating Tatkal time slots...")
     
     ac_slot = TatkalTimeSlot(
         name='AC Classes Tatkal',
@@ -439,7 +227,7 @@ def create_tatkal_timeslots():
         close_time=time(23, 59),
         days_before_journey=1,
         active=True,
-        created_by=admin.id if admin else None
+        created_by=admin.id
     )
     
     non_ac_slot = TatkalTimeSlot(
@@ -449,54 +237,53 @@ def create_tatkal_timeslots():
         close_time=time(23, 59),
         days_before_journey=1,
         active=True,
-        created_by=admin.id if admin else None
+        created_by=admin.id
     )
     
     db.session.add(ac_slot)
     db.session.add(non_ac_slot)
     db.session.commit()
-    print("✓ Created Tatkal time slots")
+    print("✓ Tatkal time slots created")
 
 def main():
-    """Main initialization function"""
-    print("="*60)
-    print("RailServe Database Initialization")
-    print("="*60)
+    print("=" * 70)
+    print(" " * 15 + "RailServe Database Initialization")
+    print("=" * 70)
     
     with app.app_context():
-        print("\n[1/6] Creating database tables...")
-        db.create_all()
-        print("✓ Database tables created")
+        reset_database()
         
-        print("\n[2/6] Creating admin user...")
+        print("\n[1/6] Creating admin user...")
         admin = create_admin_user()
         
-        print("\n[3/6] Creating stations...")
-        stations = create_stations(num_stations=1250)
+        print("\n[2/6] Loading stations...")
+        stations = load_stations_from_csv()
+        print(f"  Total stations: {len(stations)}")
         
-        print("\n[4/6] Creating trains...")
-        trains = create_trains(num_trains=1500, stations=stations)
+        print("\n[3/6] Loading trains...")
+        trains = load_trains_from_csv()
+        print(f"  Total trains: {len(trains)}")
         
-        print("\n[5/6] Creating train routes...")
+        print("\n[4/6] Creating train routes...")
         create_train_routes(trains, stations)
         
-        print("\n[6/6] Creating seat availability data...")
-        create_seat_availability(trains, stations)
+        print("\n[5/6] Creating seat availability (limited to 14 days)...")
+        create_limited_seat_availability(trains, days_ahead=14, sample_trains=200)
         
-        print("\n[7/7] Creating Tatkal configurations...")
-        create_tatkal_timeslots()
+        print("\n[6/6] Creating Tatkal configurations...")
+        create_tatkal_timeslots(admin)
         
-        print("\n" + "="*60)
-        print("Database Initialization Complete!")
-        print("="*60)
+        print("\n" + "=" * 70)
+        print(" " * 20 + "Initialization Complete!")
+        print("=" * 70)
         print(f"\n📊 Summary:")
-        print(f"  • Stations: {Station.query.count()}")
-        print(f"  • Trains: {Train.query.count()}")
-        print(f"  • Train Routes: {TrainRoute.query.count()}")
-        print(f"  • Seat Availability Records: {SeatAvailability.query.count()}")
-        print(f"  • Admin User: admin / admin123")
+        print(f"  • Stations: {Station.query.count():,}")
+        print(f"  • Trains: {Train.query.count():,}")
+        print(f"  • Train Routes: {TrainRoute.query.count():,}")
+        print(f"  • Seat Availability: {SeatAvailability.query.count():,}")
+        print(f"  • Admin Credentials: admin / admin123")
         print(f"\n✅ RailServe is ready to use!")
-        print("="*60)
+        print("=" * 70)
 
 if __name__ == '__main__':
     main()

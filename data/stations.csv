@@ -38,12 +38,11 @@ Thiruvananthapuram Central,TVC,Thiruvananthapuram,Kerala,True
 Varanasi Junction,BSB,Varanasi,Uttar Pradesh,True
 Vijayawada Junction,BZA,Vijayawada,Andhra Pradesh,True
 Mumbai Junction,MUM,Mumbai,Maharashtra,True
-Mumbai Central,MUM1,Mumbai,Maharashtra,True
-Mumbai Terminal,MUM2,Mumbai,Maharashtra,True
-Mumbai City,MUM3,Mumbai,Maharashtra,True
-Mumbai Cantonment,MUM4,Mumbai,Maharashtra,True
-Mumbai Road,MUM5,Mumbai,Maharashtra,True
-Mumbai Station,MUM6,Mumbai,Maharashtra,True
+Mumbai Terminal,MUM1,Mumbai,Maharashtra,True
+Mumbai City,MUM2,Mumbai,Maharashtra,True
+Mumbai Cantonment,MUM3,Mumbai,Maharashtra,True
+Mumbai Road,MUM4,Mumbai,Maharashtra,True
+Mumbai Station,MUM5,Mumbai,Maharashtra,True
 Delhi Junction,DEL,Delhi,Delhi,True
 Delhi Central,DEL1,Delhi,Delhi,True
 Delhi Terminal,DEL2,Delhi,Delhi,True
@@ -55,9 +54,8 @@ Bangalore Junction,BAN,Bangalore,Karnataka,True
 Bangalore Central,BAN1,Bangalore,Karnataka,True
 Bangalore Terminal,BAN2,Bangalore,Karnataka,True
 Bangalore City,BAN3,Bangalore,Karnataka,True
-Bangalore Cantonment,BAN4,Bangalore,Karnataka,True
-Bangalore Road,BAN5,Bangalore,Karnataka,True
-Bangalore Station,BAN6,Bangalore,Karnataka,True
+Bangalore Road,BAN4,Bangalore,Karnataka,True
+Bangalore Station,BAN5,Bangalore,Karnataka,True
 Hyderabad Junction,HYD,Hyderabad,Telangana,True
 Hyderabad Central,HYD1,Hyderabad,Telangana,True
 Hyderabad Terminal,HYD2,Hyderabad,Telangana,True
@@ -65,20 +63,18 @@ Hyderabad City,HYD3,Hyderabad,Telangana,True
 Hyderabad Cantonment,HYD4,Hyderabad,Telangana,True
 Hyderabad Road,HYD5,Hyderabad,Telangana,True
 Hyderabad Station,HYD6,Hyderabad,Telangana,True
-Ahmedabad Junction,AHM,Ahmedabad,Gujarat,True
-Ahmedabad Central,AHM1,Ahmedabad,Gujarat,True
-Ahmedabad Terminal,AHM2,Ahmedabad,Gujarat,True
-Ahmedabad City,AHM3,Ahmedabad,Gujarat,True
-Ahmedabad Cantonment,AHM4,Ahmedabad,Gujarat,True
-Ahmedabad Road,AHM5,Ahmedabad,Gujarat,True
-Ahmedabad Station,AHM6,Ahmedabad,Gujarat,True
+Ahmedabad Central,AHM,Ahmedabad,Gujarat,True
+Ahmedabad Terminal,AHM1,Ahmedabad,Gujarat,True
+Ahmedabad City,AHM2,Ahmedabad,Gujarat,True
+Ahmedabad Cantonment,AHM3,Ahmedabad,Gujarat,True
+Ahmedabad Road,AHM4,Ahmedabad,Gujarat,True
+Ahmedabad Station,AHM5,Ahmedabad,Gujarat,True
 Chennai Junction,CHE,Chennai,Tamil Nadu,True
-Chennai Central,CHE1,Chennai,Tamil Nadu,True
-Chennai Terminal,CHE2,Chennai,Tamil Nadu,True
-Chennai City,CHE3,Chennai,Tamil Nadu,True
-Chennai Cantonment,CHE4,Chennai,Tamil Nadu,True
-Chennai Road,CHE5,Chennai,Tamil Nadu,True
-Chennai Station,CHE6,Chennai,Tamil Nadu,True
+Chennai Terminal,CHE1,Chennai,Tamil Nadu,True
+Chennai City,CHE2,Chennai,Tamil Nadu,True
+Chennai Cantonment,CHE3,Chennai,Tamil Nadu,True
+Chennai Road,CHE4,Chennai,Tamil Nadu,True
+Chennai Station,CHE5,Chennai,Tamil Nadu,True
 Kolkata Junction,KOL,Kolkata,West Bengal,True
 Kolkata Central,KOL1,Kolkata,West Bengal,True
 Kolkata Terminal,KOL2,Kolkata,West Bengal,True
@@ -86,20 +82,18 @@ Kolkata City,KOL3,Kolkata,West Bengal,True
 Kolkata Cantonment,KOL4,Kolkata,West Bengal,True
 Kolkata Road,KOL5,Kolkata,West Bengal,True
 Kolkata Station,KOL6,Kolkata,West Bengal,True
-Pune Junction,PUN,Pune,Maharashtra,True
-Pune Central,PUN1,Pune,Maharashtra,True
-Pune Terminal,PUN2,Pune,Maharashtra,True
-Pune City,PUN3,Pune,Maharashtra,True
-Pune Cantonment,PUN4,Pune,Maharashtra,True
-Pune Road,PUN5,Pune,Maharashtra,True
-Pune Station,PUN6,Pune,Maharashtra,True
-Jaipur Junction,JAI,Jaipur,Rajasthan,True
-Jaipur Central,JAI1,Jaipur,Rajasthan,True
-Jaipur Terminal,JAI2,Jaipur,Rajasthan,True
-Jaipur City,JAI3,Jaipur,Rajasthan,True
-Jaipur Cantonment,JAI4,Jaipur,Rajasthan,True
-Jaipur Road,JAI5,Jaipur,Rajasthan,True
-Jaipur Station,JAI6,Jaipur,Rajasthan,True
+Pune Central,PUN,Pune,Maharashtra,True
+Pune Terminal,PUN1,Pune,Maharashtra,True
+Pune City,PUN2,Pune,Maharashtra,True
+Pune Cantonment,PUN3,Pune,Maharashtra,True
+Pune Road,PUN4,Pune,Maharashtra,True
+Pune Station,PUN5,Pune,Maharashtra,True
+Jaipur Central,JAI,Jaipur,Rajasthan,True
+Jaipur Terminal,JAI1,Jaipur,Rajasthan,True
+Jaipur City,JAI2,Jaipur,Rajasthan,True
+Jaipur Cantonment,JAI3,Jaipur,Rajasthan,True
+Jaipur Road,JAI4,Jaipur,Rajasthan,True
+Jaipur Station,JAI5,Jaipur,Rajasthan,True
 Lucknow Junction,LUC,Lucknow,Uttar Pradesh,True
 Lucknow Central,LUC1,Lucknow,Uttar Pradesh,True
 Lucknow Terminal,LUC2,Lucknow,Uttar Pradesh,True
@@ -108,19 +102,17 @@ Lucknow Cantonment,LUC4,Lucknow,Uttar Pradesh,True
 Lucknow Road,LUC5,Lucknow,Uttar Pradesh,True
 Lucknow Station,LUC6,Lucknow,Uttar Pradesh,True
 Kanpur Junction,KAN,Kanpur,Uttar Pradesh,True
-Kanpur Central,KAN1,Kanpur,Uttar Pradesh,True
-Kanpur Terminal,KAN2,Kanpur,Uttar Pradesh,True
-Kanpur City,KAN3,Kanpur,Uttar Pradesh,True
-Kanpur Cantonment,KAN4,Kanpur,Uttar Pradesh,True
-Kanpur Road,KAN5,Kanpur,Uttar Pradesh,True
-Kanpur Station,KAN6,Kanpur,Uttar Pradesh,True
-Nagpur Junction,NAG,Nagpur,Maharashtra,True
-Nagpur Central,NAG1,Nagpur,Maharashtra,True
-Nagpur Terminal,NAG2,Nagpur,Maharashtra,True
-Nagpur City,NAG3,Nagpur,Maharashtra,True
-Nagpur Cantonment,NAG4,Nagpur,Maharashtra,True
-Nagpur Road,NAG5,Nagpur,Maharashtra,True
-Nagpur Station,NAG6,Nagpur,Maharashtra,True
+Kanpur Terminal,KAN1,Kanpur,Uttar Pradesh,True
+Kanpur City,KAN2,Kanpur,Uttar Pradesh,True
+Kanpur Cantonment,KAN3,Kanpur,Uttar Pradesh,True
+Kanpur Road,KAN4,Kanpur,Uttar Pradesh,True
+Kanpur Station,KAN5,Kanpur,Uttar Pradesh,True
+Nagpur Central,NAG,Nagpur,Maharashtra,True
+Nagpur Terminal,NAG1,Nagpur,Maharashtra,True
+Nagpur City,NAG2,Nagpur,Maharashtra,True
+Nagpur Cantonment,NAG3,Nagpur,Maharashtra,True
+Nagpur Road,NAG4,Nagpur,Maharashtra,True
+Nagpur Station,NAG5,Nagpur,Maharashtra,True
 Indore Junction,IND,Indore,Madhya Pradesh,True
 Indore Central,IND1,Indore,Madhya Pradesh,True
 Indore Terminal,IND2,Indore,Madhya Pradesh,True
@@ -135,13 +127,12 @@ Thane City,THA3,Thane,Maharashtra,True
 Thane Cantonment,THA4,Thane,Maharashtra,True
 Thane Road,THA5,Thane,Maharashtra,True
 Thane Station,THA6,Thane,Maharashtra,True
-Bhopal Junction,BHO,Bhopal,Madhya Pradesh,True
-Bhopal Central,BHO1,Bhopal,Madhya Pradesh,True
-Bhopal Terminal,BHO2,Bhopal,Madhya Pradesh,True
-Bhopal City,BHO3,Bhopal,Madhya Pradesh,True
-Bhopal Cantonment,BHO4,Bhopal,Madhya Pradesh,True
-Bhopal Road,BHO5,Bhopal,Madhya Pradesh,True
-Bhopal Station,BHO6,Bhopal,Madhya Pradesh,True
+Bhopal Central,BHO,Bhopal,Madhya Pradesh,True
+Bhopal Terminal,BHO1,Bhopal,Madhya Pradesh,True
+Bhopal City,BHO2,Bhopal,Madhya Pradesh,True
+Bhopal Cantonment,BHO3,Bhopal,Madhya Pradesh,True
+Bhopal Road,BHO4,Bhopal,Madhya Pradesh,True
+Bhopal Station,BHO5,Bhopal,Madhya Pradesh,True
 Visakhapatnam Junction,VIS,Visakhapatnam,Andhra Pradesh,True
 Visakhapatnam Central,VIS1,Visakhapatnam,Andhra Pradesh,True
 Visakhapatnam Terminal,VIS2,Visakhapatnam,Andhra Pradesh,True
@@ -149,13 +140,12 @@ Visakhapatnam City,VIS3,Visakhapatnam,Andhra Pradesh,True
 Visakhapatnam Cantonment,VIS4,Visakhapatnam,Andhra Pradesh,True
 Visakhapatnam Road,VIS5,Visakhapatnam,Andhra Pradesh,True
 Visakhapatnam Station,VIS6,Visakhapatnam,Andhra Pradesh,True
-Patna Junction,PAT,Patna,Bihar,True
-Patna Central,PAT1,Patna,Bihar,True
-Patna Terminal,PAT2,Patna,Bihar,True
-Patna City,PAT3,Patna,Bihar,True
-Patna Cantonment,PAT4,Patna,Bihar,True
-Patna Road,PAT5,Patna,Bihar,True
-Patna Station,PAT6,Patna,Bihar,True
+Patna Central,PAT,Patna,Bihar,True
+Patna Terminal,PAT1,Patna,Bihar,True
+Patna City,PAT2,Patna,Bihar,True
+Patna Cantonment,PAT3,Patna,Bihar,True
+Patna Road,PAT4,Patna,Bihar,True
+Patna Station,PAT5,Patna,Bihar,True
 Vadodara Junction,VAD,Vadodara,Gujarat,True
 Vadodara Central,VAD1,Vadodara,Gujarat,True
 Vadodara Terminal,VAD2,Vadodara,Gujarat,True
@@ -181,9 +171,8 @@ Agra Junction,AGR,Agra,Uttar Pradesh,True
 Agra Central,AGR1,Agra,Uttar Pradesh,True
 Agra Terminal,AGR2,Agra,Uttar Pradesh,True
 Agra City,AGR3,Agra,Uttar Pradesh,True
-Agra Cantonment,AGR4,Agra,Uttar Pradesh,True
-Agra Road,AGR5,Agra,Uttar Pradesh,True
-Agra Station,AGR6,Agra,Uttar Pradesh,True
+Agra Road,AGR4,Agra,Uttar Pradesh,True
+Agra Station,AGR5,Agra,Uttar Pradesh,True
 Nashik Junction,NAS,Nashik,Maharashtra,True
 Nashik Central,NAS1,Nashik,Maharashtra,True
 Nashik Terminal,NAS2,Nashik,Maharashtra,True
@@ -212,13 +201,12 @@ Rajkot City,RAJ3,Rajkot,Gujarat,True
 Rajkot Cantonment,RAJ4,Rajkot,Gujarat,True
 Rajkot Road,RAJ5,Rajkot,Gujarat,True
 Rajkot Station,RAJ6,Rajkot,Gujarat,True
-Varanasi Junction,VAR,Varanasi,Uttar Pradesh,True
-Varanasi Central,VAR1,Varanasi,Uttar Pradesh,True
-Varanasi Terminal,VAR2,Varanasi,Uttar Pradesh,True
-Varanasi City,VAR3,Varanasi,Uttar Pradesh,True
-Varanasi Cantonment,VAR4,Varanasi,Uttar Pradesh,True
-Varanasi Road,VAR5,Varanasi,Uttar Pradesh,True
-Varanasi Station,VAR6,Varanasi,Uttar Pradesh,True
+Varanasi Central,VAR,Varanasi,Uttar Pradesh,True
+Varanasi Terminal,VAR1,Varanasi,Uttar Pradesh,True
+Varanasi City,VAR2,Varanasi,Uttar Pradesh,True
+Varanasi Cantonment,VAR3,Varanasi,Uttar Pradesh,True
+Varanasi Road,VAR4,Varanasi,Uttar Pradesh,True
+Varanasi Station,VAR5,Varanasi,Uttar Pradesh,True
 Srinagar Junction,SRI,Srinagar,Jammu and Kashmir,True
 Srinagar Central,SRI1,Srinagar,Jammu and Kashmir,True
 Srinagar Terminal,SRI2,Srinagar,Jammu and Kashmir,True
@@ -240,13 +228,12 @@ Dhanbad City,DHA3,Dhanbad,Jharkhand,True
 Dhanbad Cantonment,DHA4,Dhanbad,Jharkhand,True
 Dhanbad Road,DHA5,Dhanbad,Jharkhand,True
 Dhanbad Station,DHA6,Dhanbad,Jharkhand,True
-Amritsar Junction,AMR,Amritsar,Punjab,True
-Amritsar Central,AMR1,Amritsar,Punjab,True
-Amritsar Terminal,AMR2,Amritsar,Punjab,True
-Amritsar City,AMR3,Amritsar,Punjab,True
-Amritsar Cantonment,AMR4,Amritsar,Punjab,True
-Amritsar Road,AMR5,Amritsar,Punjab,True
-Amritsar Station,AMR6,Amritsar,Punjab,True
+Amritsar Central,AMR,Amritsar,Punjab,True
+Amritsar Terminal,AMR1,Amritsar,Punjab,True
+Amritsar City,AMR2,Amritsar,Punjab,True
+Amritsar Cantonment,AMR3,Amritsar,Punjab,True
+Amritsar Road,AMR4,Amritsar,Punjab,True
+Amritsar Station,AMR5,Amritsar,Punjab,True
 Allahabad Junction,ALL,Allahabad,Uttar Pradesh,True
 Allahabad Central,ALL1,Allahabad,Uttar Pradesh,True
 Allahabad Terminal,ALL2,Allahabad,Uttar Pradesh,True
@@ -261,13 +248,12 @@ Ranchi City,RAN3,Ranchi,Jharkhand,True
 Ranchi Cantonment,RAN4,Ranchi,Jharkhand,True
 Ranchi Road,RAN5,Ranchi,Jharkhand,True
 Ranchi Station,RAN6,Ranchi,Jharkhand,True
-Howrah Junction,HOW,Howrah,West Bengal,True
-Howrah Central,HOW1,Howrah,West Bengal,True
-Howrah Terminal,HOW2,Howrah,West Bengal,True
-Howrah City,HOW3,Howrah,West Bengal,True
-Howrah Cantonment,HOW4,Howrah,West Bengal,True
-Howrah Road,HOW5,Howrah,West Bengal,True
-Howrah Station,HOW6,Howrah,West Bengal,True
+Howrah Central,HOW,Howrah,West Bengal,True
+Howrah Terminal,HOW1,Howrah,West Bengal,True
+Howrah City,HOW2,Howrah,West Bengal,True
+Howrah Cantonment,HOW3,Howrah,West Bengal,True
+Howrah Road,HOW4,Howrah,West Bengal,True
+Howrah Station,HOW5,Howrah,West Bengal,True
 Coimbatore Junction,COI,Coimbatore,Tamil Nadu,True
 Coimbatore Central,COI1,Coimbatore,Tamil Nadu,True
 Coimbatore Terminal,COI2,Coimbatore,Tamil Nadu,True
@@ -289,13 +275,12 @@ Gwalior City,GWA3,Gwalior,Madhya Pradesh,True
 Gwalior Cantonment,GWA4,Gwalior,Madhya Pradesh,True
 Gwalior Road,GWA5,Gwalior,Madhya Pradesh,True
 Gwalior Station,GWA6,Gwalior,Madhya Pradesh,True
-Vijayawada Junction,VIJ,Vijayawada,Andhra Pradesh,True
-Vijayawada Central,VIJ1,Vijayawada,Andhra Pradesh,True
-Vijayawada Terminal,VIJ2,Vijayawada,Andhra Pradesh,True
-Vijayawada City,VIJ3,Vijayawada,Andhra Pradesh,True
-Vijayawada Cantonment,VIJ4,Vijayawada,Andhra Pradesh,True
-Vijayawada Road,VIJ5,Vijayawada,Andhra Pradesh,True
-Vijayawada Station,VIJ6,Vijayawada,Andhra Pradesh,True
+Vijayawada Central,VIJ,Vijayawada,Andhra Pradesh,True
+Vijayawada Terminal,VIJ1,Vijayawada,Andhra Pradesh,True
+Vijayawada City,VIJ2,Vijayawada,Andhra Pradesh,True
+Vijayawada Cantonment,VIJ3,Vijayawada,Andhra Pradesh,True
+Vijayawada Road,VIJ4,Vijayawada,Andhra Pradesh,True
+Vijayawada Station,VIJ5,Vijayawada,Andhra Pradesh,True
 Jodhpur Junction,JOD,Jodhpur,Rajasthan,True
 Jodhpur Central,JOD1,Jodhpur,Rajasthan,True
 Jodhpur Terminal,JOD2,Jodhpur,Rajasthan,True
@@ -303,13 +288,12 @@ Jodhpur City,JOD3,Jodhpur,Rajasthan,True
 Jodhpur Cantonment,JOD4,Jodhpur,Rajasthan,True
 Jodhpur Road,JOD5,Jodhpur,Rajasthan,True
 Jodhpur Station,JOD6,Jodhpur,Rajasthan,True
-Madurai Junction,MAD,Madurai,Tamil Nadu,True
-Madurai Central,MAD1,Madurai,Tamil Nadu,True
-Madurai Terminal,MAD2,Madurai,Tamil Nadu,True
-Madurai City,MAD3,Madurai,Tamil Nadu,True
-Madurai Cantonment,MAD4,Madurai,Tamil Nadu,True
-Madurai Road,MAD5,Madurai,Tamil Nadu,True
-Madurai Station,MAD6,Madurai,Tamil Nadu,True
+Madurai Central,MAD,Madurai,Tamil Nadu,True
+Madurai Terminal,MAD1,Madurai,Tamil Nadu,True
+Madurai City,MAD2,Madurai,Tamil Nadu,True
+Madurai Cantonment,MAD3,Madurai,Tamil Nadu,True
+Madurai Road,MAD4,Madurai,Tamil Nadu,True
+Madurai Station,MAD5,Madurai,Tamil Nadu,True
 Raipur Junction,RAI,Raipur,Chhattisgarh,True
 Raipur Central,RAI1,Raipur,Chhattisgarh,True
 Raipur Terminal,RAI2,Raipur,Chhattisgarh,True
@@ -443,13 +427,13 @@ Bikaner City,BIK3,Bikaner,Rajasthan,True
 Bikaner Cantonment,BIK4,Bikaner,Rajasthan,True
 Bikaner Road,BIK5,Bikaner,Rajasthan,True
 Bikaner Station,BIK6,Bikaner,Rajasthan,True
-Amravati Junction,AMR7,Amravati,Maharashtra,True
-Amravati Central,AMR8,Amravati,Maharashtra,True
-Amravati Terminal,AMR9,Amravati,Maharashtra,True
-Amravati City,AMR10,Amravati,Maharashtra,True
-Amravati Cantonment,AMR11,Amravati,Maharashtra,True
-Amravati Road,AMR12,Amravati,Maharashtra,True
-Amravati Station,AMR13,Amravati,Maharashtra,True
+Amravati Junction,AMR6,Amravati,Maharashtra,True
+Amravati Central,AMR7,Amravati,Maharashtra,True
+Amravati Terminal,AMR8,Amravati,Maharashtra,True
+Amravati City,AMR9,Amravati,Maharashtra,True
+Amravati Cantonment,AMR10,Amravati,Maharashtra,True
+Amravati Road,AMR11,Amravati,Maharashtra,True
+Amravati Station,AMR12,Amravati,Maharashtra,True
 Noida Junction,NOI,Noida,Uttar Pradesh,True
 Noida Central,NOI1,Noida,Uttar Pradesh,True
 Noida Terminal,NOI2,Noida,Uttar Pradesh,True

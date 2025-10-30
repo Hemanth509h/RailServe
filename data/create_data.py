@@ -99,6 +99,7 @@ def generate_station_code(city_name, existing_codes):
 def create_stations_csv():
     stations = []
     existing_codes = set()
+    existing_names = set()
     
     for name, code, city, state in MAJOR_STATIONS:
         stations.append({
@@ -109,6 +110,7 @@ def create_stations_csv():
             'active': True
         })
         existing_codes.add(code)
+        existing_names.add(name)
     
     station_types = ['Junction', 'Central', 'Terminal', 'City', 'Cantonment', 'Road', 'Station']
     
@@ -117,6 +119,8 @@ def create_stations_csv():
             if len(stations) >= 1000:
                 break
             station_name = f"{city} {stype}"
+            if station_name in existing_names:
+                continue
             code = generate_station_code(f"{city}{stype}", existing_codes)
             stations.append({
                 'name': station_name,
@@ -126,6 +130,7 @@ def create_stations_csv():
                 'active': True
             })
             existing_codes.add(code)
+            existing_names.add(station_name)
         if len(stations) >= 1000:
             break
     
