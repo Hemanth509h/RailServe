@@ -36,6 +36,7 @@ def index():
         Rendered HTML template with:
         - List of currently running trains
         - All available stations for search dropdowns
+        - Coach-wise seat availability for popular trains
     """
     # Fetch all active trains currently running
     running_trains = get_running_trains()
@@ -43,7 +44,23 @@ def index():
     # Fetch all stations for the search form dropdowns
     stations = Station.query.all()
     
-    return render_template('index.html', trains=running_trains, stations=stations)
+    # Calculate seat availability for popular trains (first 6)
+    # Use a default date (today + 1 day) for availability display
+    from datetime import date, timedelta
+    default_date = date.today() + timedelta(days=1)
+    
+    trains_availability = {}
+    for train in running_trains[:6]:
+        # Get first two stations from the train's route as sample
+        train_routes = TrainRoute.query.filter_by(train_id=train.id).order_by(TrainRoute.sequence).limit(2).all()
+        if len(train_routes) >= 2:
+            from_station = train_routes[0].station_id
+            to_station = train_routes[1].station_id
+            trains_availability[train.id] = get_all_class_availability(
+                train.id, from_station, to_station, default_date
+            )
+    
+    return render_template('index.html', trains=running_trains, stations=stations, trains_availability=trains_availability)
 
 @app.route('/search_trains', methods=['POST'])
 def search_trains_route():

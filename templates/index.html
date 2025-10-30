@@ -681,6 +681,67 @@
                     </div>
                 </div>
 
+                {% if trains_availability and trains_availability[train.id] %}
+                <div class="seat-availability-section">
+                    <div class="availability-header">
+                        <i class="fas fa-chair"></i> Seat Availability (Sample Route)
+                    </div>
+                    <table class="availability-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Type</th>
+                                <th>Fare</th>
+                                <th>Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set class_info = {
+                                'AC1': {'name': 'First AC', 'fare': '5.0x'},
+                                'AC2': {'name': 'AC 2 Tier', 'fare': '3.0x'},
+                                'AC3': {'name': 'AC 3 Tier', 'fare': '2.0x'},
+                                'SL': {'name': 'Sleeper', 'fare': '1.0x'},
+                                '2S': {'name': '2nd Sitting', 'fare': '0.6x'},
+                                'CC': {'name': 'Chair Car', 'fare': '1.2x'}
+                            } %}
+                            {% for class_code, avail in trains_availability[train.id].items() %}
+                            <tr class="avail-row {% if avail.available > 0 %}row-available{% elif avail.rac > 0 %}row-rac{% else %}row-waitlist{% endif %}">
+                                <td class="class-code">{{ class_code }}</td>
+                                <td class="class-type">{{ class_info[class_code]['name'] }}</td>
+                                <td class="fare-mult">{{ class_info[class_code]['fare'] }}</td>
+                                <td class="availability-cell">
+                                    {% if avail.available > 0 %}
+                                        <span class="avail-badge badge-available">
+                                            <i class="fas fa-check-circle"></i> AVAILABLE-{{ '%03d'|format(avail.available) }}
+                                        </span>
+                                    {% elif avail.rac > 0 %}
+                                        <span class="avail-badge badge-rac">
+                                            <i class="fas fa-exclamation-circle"></i> RAC-{{ '%02d'|format(avail.rac) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="avail-badge badge-waitlist">
+                                            <i class="fas fa-clock"></i> WL-{{ '%02d'|format(avail.waiting) }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="availability-footer">
+                        <div class="legend-item">
+                            <span class="legend-dot dot-available"></span> Available
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot dot-rac"></span> RAC
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot dot-waitlist"></span> Waitlist
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="train-actions">
                     {% if current_user.is_authenticated %}
                     <a href="{{ url_for('booking.book_ticket', train_id=train.id) }}" class="btn btn-primary">
