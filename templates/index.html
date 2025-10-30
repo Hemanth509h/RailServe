@@ -197,12 +197,17 @@
     .train-card {
         background: var(--bg-secondary);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: var(--card-shadow);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
-        width: 420px;
-        max-width: 100%;
+        width: 100%;
+        max-width: 550px;
+    }
+    
+    .train-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
     
     /* Seat Availability Styles - Professional Railway Booking Design */
@@ -364,10 +369,22 @@
     }
 
     .trains-grid {
-        display: flex;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    @media (max-width: 1200px) {
+        .trains-grid {
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        }
+    }
+    
+    @media (max-width: 900px) {
+        .trains-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* =================================================================

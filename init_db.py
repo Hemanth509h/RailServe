@@ -275,6 +275,20 @@ def create_trains(num_trains=1500, stations=None):
 def create_train_routes(trains, stations):
     """Create routes for trains"""
     print(f"\nGenerating train routes...")
+    
+    existing_route_count = TrainRoute.query.count()
+    if existing_route_count > 0:
+        print(f"  Routes already exist ({existing_route_count} found)")
+        trains_with_routes = db.session.query(TrainRoute.train_id).distinct().all()
+        trains_with_routes_set = set(tid[0] for tid in trains_with_routes)
+        trains = [t for t in trains if t.id not in trains_with_routes_set]
+        
+        if not trains:
+            print("✓ All trains already have routes")
+            return
+        
+        print(f"  Creating routes for {len(trains)} trains without routes...")
+    
     routes = []
     route_count = 0
     
@@ -312,9 +326,12 @@ def create_train_routes(trains, stations):
         if route_count % 1000 == 0:
             print(f"  Generated {route_count} route entries...")
     
-    db.session.bulk_save_objects(routes)
-    db.session.commit()
-    print(f"✓ Created {len(routes)} route entries for {len(trains)} trains")
+    if routes:
+        db.session.bulk_save_objects(routes)
+        db.session.commit()
+        print(f"✓ Created {len(routes)} new route entries (total: {TrainRoute.query.count()})")
+    else:
+        print("✓ No new routes to create")
 
 def create_seat_availability(trains, stations):
     """Create seat availability data with batch commits to handle large datasets"""

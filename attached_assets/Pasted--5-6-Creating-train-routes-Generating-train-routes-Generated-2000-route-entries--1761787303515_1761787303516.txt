@@ -1,0 +1,142 @@
+
+
+[5/6] Creating train routes...
+
+Generating train routes...
+  Generated 2000 route entries...
+  Generated 6000 route entries...
+  Generated 9000 route entries...
+Traceback (most recent call last):
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "train_route_train_id_sequence_key"
+DETAIL:  Key (train_id, sequence)=(5, 1) already exists.
+
+
+The above exception was the direct cause of the following exception:  
+
+Traceback (most recent call last):
+  File "C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\init_db.py", line 485, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\init_db.py", line 464, in main
+    create_train_routes(trains, stations)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hemanth\OneDrive\Desktop\projects\PBL Project\RailServe\init_db.py", line 315, in create_train_routes
+    db.session.bulk_save_objects(routes)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\scoping.py", line
+ 1359, in bulk_save_objects
+    return self._proxied.bulk_save_objects(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        objects,
+        ^^^^^^^^
+    ...<2 lines>...
+        preserve_order=preserve_order,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line
+ 4586, in bulk_save_objects
+    self._bulk_save_mappings(
+    ~~~~~~~~~~~~~~~~~~~~~~~~^
+        mapper,
+        ^^^^^^^
+    ...<5 lines>...
+        render_nulls=False,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line
+ 4763, in _bulk_save_mappings
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\session.py", line
+ 4752, in _bulk_save_mappings
+    bulk_persistence._bulk_insert(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        mapper,
+        ^^^^^^^
+    ...<4 lines>...
+        render_nulls=render_nulls,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\bulk_persistence.py", line 222, in _bulk_insert
+    result = persistence._emit_insert_statements(
+        base_mapper,
+    ...<6 lines>...
+        execution_options=execution_options,
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options   
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 1416, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\sql\elements.py", line 523, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 1638, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context       
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e     
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\base.py", line
+ 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\anaconda\Lib\site-packages\sqlalchemy\engine\default.py", line 942, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "train_route_train_id_sequence_key"
+DETAIL:  Key (train_id, sequence)=(5, 1) already exists.
+
+[SQL: INSERT INTO train_route (train_id, station_id, sequence, departure_time, distance_from_start) VALUES (%(train_id)s, %(station_id)s, %(sequence)s, %(departure_time)s, %(distance_from_start)s) RETURNING train_route.id]
+[parameters: {'train_id': 5, 'station_id': 346, 'sequence': 1, 'departure_time': datetime.time(13, 9), 'distance_from_start': 0}]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
