@@ -1,11 +1,11 @@
 # RailServe 2025 - Project Structure & Organization
 
-**Last Updated:** October 27, 2025
+**Last Updated:** October 30, 2025
 
 ---
 
 ## Project Overview
-RailServe is a comprehensive railway reservation system built with Flask, featuring real-time booking, dynamic pricing, waitlist management, and administrative controls.
+RailServe is a comprehensive railway reservation system built with Flask, featuring **professional IRCTC-style seat availability displays**, real-time booking across all coach classes, dynamic pricing, waitlist management, and administrative controls with support for 1,500 trains and 1,250 stations.
 
 ---
 

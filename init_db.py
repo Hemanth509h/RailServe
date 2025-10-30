@@ -293,25 +293,27 @@ def create_train_routes(trains, stations):
     print(f"✓ Created {len(routes)} route entries for {len(trains)} trains")
 
 def create_seat_availability(trains, stations):
-    """Create seat availability data for all coach classes"""
+    """Create seat availability data with batch commits to handle large datasets"""
     print(f"\nGenerating seat availability data...")
-    availability_records = []
     
     today = date.today()
+    total_records = 0
+    batch_size = 5000
+    availability_records = []
     
-    train_sample = random.sample(trains, min(500, len(trains)))
+    train_sample = random.sample(trains, min(300, len(trains)))
     
-    for train in train_sample:
+    for train_idx, train in enumerate(train_sample):
         train_routes = TrainRoute.query.filter_by(train_id=train.id).order_by(TrainRoute.sequence).all()
         
         if len(train_routes) < 2:
             continue
         
-        for i in range(min(5, len(train_routes) - 1)):
+        for i in range(min(3, len(train_routes) - 1)):
             from_station = train_routes[i]
             to_station = train_routes[i + 1]
             
-            for days_ahead in range(90):
+            for days_ahead in range(30):
                 journey_date = today + timedelta(days=days_ahead)
                 
                 for coach_class in COACH_CLASSES:
@@ -341,10 +343,21 @@ def create_seat_availability(trains, stations):
                             last_updated=datetime.utcnow()
                         )
                         availability_records.append(availability)
+                        
+                        if len(availability_records) >= batch_size:
+                            db.session.bulk_save_objects(availability_records)
+                            db.session.commit()
+                            total_records += len(availability_records)
+                            availability_records = []
+                            if total_records % 25000 == 0:
+                                print(f"  Generated {total_records:,} availability records...")
     
-    db.session.bulk_save_objects(availability_records)
-    db.session.commit()
-    print(f"✓ Created {len(availability_records)} seat availability records")
+    if availability_records:
+        db.session.bulk_save_objects(availability_records)
+        db.session.commit()
+        total_records += len(availability_records)
+    
+    print(f"✓ Created {total_records:,} seat availability records")
 
 def create_admin_user():
     """Create default admin user"""

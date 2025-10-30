@@ -1,4 +1,4 @@
-modules = ["web", "nodejs-20", "python-3.11"]
+modules = ["web", "nodejs-20", "python-3.11", "postgresql-16"]
 [agent]
 expertMode = true
 
@@ -33,6 +33,10 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 41627
+externalPort = 3001
 
 [[ports]]
 localPort = 43779
