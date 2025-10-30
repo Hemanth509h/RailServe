@@ -22,13 +22,12 @@
 
     .search-form .form-row {
         display: flex;
-        gap: 1.5rem;
     }
+
 
     /* Station selection layout (From/To stations) */
     #form-select {
         display: flex;
-        gap: 1rem;
         align-items: center;
         width: 100%;
         align-content: center;
@@ -228,10 +227,10 @@
         /* Station selection - stack vertically on mobile */
         #form-select {
             display: flex;
-            gap: 1rem;
             align-items: stretch;
             width: 100%;
             flex-direction: column;
+            gap: 0px;
         }
 
         /* Journey date and button - stack vertically on mobile */
@@ -241,7 +240,8 @@
             flex-direction: column;
             grid-template-columns: 1fr;
             width: 100%;
-            gap: 1rem;
+            gap: 0px;
+            
             align-items: stretch;
             height: auto;
         }
