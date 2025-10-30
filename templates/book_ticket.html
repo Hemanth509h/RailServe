@@ -485,7 +485,7 @@
                 Booking Details
             </div>
             
-            <form method="POST" class="booking-form">
+            <form method="POST" class="booking-form" id="bookingForm">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-row">
                     <div class="form-group">
@@ -1214,6 +1214,11 @@
     // Initialize everything when page loads
     addEventListeners();
     showValidationFeedback(); // Initial validation check
+    
+    // Initialize form validation
+    if (document.getElementById('bookingForm')) {
+        new FormValidator('bookingForm');
+    }
 </script>
 
 <style>
