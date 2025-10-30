@@ -500,6 +500,7 @@
                                 </option>
                             {% endfor %}
                         </select>
+                        <div class="error-message"></div>
                     </div>
                     
                     <div class="form-group">
@@ -514,6 +515,7 @@
                                 </option>
                             {% endfor %}
                         </select>
+                        <div class="error-message"></div>
                     </div>
                 </div>
                 
@@ -523,6 +525,7 @@
                             <i class="fas fa-calendar"></i> Journey Date
                         </label>
                         <input type="date" name="journey_date" id="journey_date" required>
+                        <div class="error-message"></div>
                     </div>
                     
                     <div class="form-group">
@@ -538,6 +541,7 @@
                             <option value="5">5 Passengers</option>
                             <option value="6">6 Passengers</option>
                         </select>
+                        <div class="error-message"></div>
                     </div>
                 </div>
                 
@@ -557,6 +561,7 @@
                             <option value="CC">Chair Car (CC) - ₹1.2x base fare</option>
                         </select>
                         <small class="form-help">Choose your preferred travel class</small>
+                        <div class="error-message"></div>
                     </div>
                     
                     <div class="form-group">
@@ -913,6 +918,7 @@
                            id="passenger_${index}_name" 
                            placeholder="As per government ID" 
                            required>
+                    <div class="error-message"></div>
                 </div>
                 
                 <div class="form-group">
@@ -926,6 +932,7 @@
                            max="120" 
                            placeholder="Age" 
                            required>
+                    <div class="error-message"></div>
                 </div>
             </div>
             
@@ -942,6 +949,7 @@
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                     </select>
+                    <div class="error-message"></div>
                 </div>
                 
                 <div class="form-group">
@@ -958,6 +966,7 @@
                         <option value="Voter ID">Voter ID</option>
                         <option value="Driving License">Driving License</option>
                     </select>
+                    <div class="error-message"></div>
                 </div>
             </div>
             
@@ -971,6 +980,7 @@
                            id="passenger_${index}_id_number" 
                            placeholder="Enter ID Number" 
                            required>
+                    <div class="error-message"></div>
                 </div>
                 
                 <div class="form-group">
