@@ -16,7 +16,7 @@ csrf = CSRFProtect()
 # Create the app with correct template and static paths
 app = Flask(__name__, 
             template_folder='../templates',
-            static_folder='../static')
+            static_folder='../public')
 
 # Load configuration - require SESSION_SECRET for security
 app.secret_key =os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
