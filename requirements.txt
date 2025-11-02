@@ -22,3 +22,16 @@ psycopg2-binary
 qrcode[pil]
 reportlab
 requests
+email-validator
+faker
+flask
+flask-login
+flask-sqlalchemy
+flask-wtf
+gunicorn
+psycopg2-binary
+qrcode[pil]
+reportlab
+requests
+sqlalchemy
+werkzeug
