@@ -15,14 +15,16 @@ from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash
 
 # Check for PostgreSQL connection
-# Replit automatically loads secrets as environment variables
-database_url = os.environ.get("DATABASE_URL")
+# Database connection parameters
+USER = "postgres"
+PASSWORD = "Htnameh509h#"
+HOST = "db.mapkjzlvyeddjwfkrhud.supabase.co"
+PORT = "5432"
+DBNAME = "postgres"
 
-if not database_url:
-    print("ERROR: DATABASE_URL environment variable is not set!")
-    print("Please set DATABASE_URL with your PostgreSQL connection string.")
-    print("Example: postgresql://username:password@host:port/database")
-    sys.exit(1)
+# Construct the SQLAlchemy connection string
+from urllib.parse import quote_plus
+database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
 print(f"✓ Using PostgreSQL database")
 
