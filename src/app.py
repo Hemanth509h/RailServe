@@ -26,36 +26,27 @@ if not app.secret_key:
         app.secret_key = "dev-secret-key-" + os.urandom(24).hex()
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
-# Use DATABASE_URL with fallback to local database
-database_url =  os.environ.get("DATABASE_URL", "postgresql://postgres:12345678@localhost:5432/postgres")
+# Database configuration - PostgreSQL only
+database_url = os.environ.get("DATABASE_URL")
 
-if database_url:
-    # Validate that DATABASE_URL is a proper connection string
-    if database_url.startswith(('postgresql://', 'sqlite://')):
-        # Test connection to database
-        try:
-            import sqlalchemy
-            test_engine = sqlalchemy.create_engine(database_url)
-            with test_engine.connect() as conn:
-                conn.execute(sqlalchemy.text("SELECT 1"))
-            logging.info("Database connection successful")
-        except Exception as e:
-            logging.warning(f"Database connection failed: {e}")
-            logging.info("Falling back to local SQLite database")
-            database_url = "sqlite:///local_railway.db"
-    else:
-        logging.warning("Invalid DATABASE_URL format, using local SQLite")
-        database_url = "sqlite:///local_railway.db"
-else:
-    # Use local SQLite database for development - no hardcoded credentials
-    database_url = "sqlite:///local_railway.db"
-    logging.info("Using SQLite database for development: local_railway.db")
+# Check if DATABASE_URL is provided
+if not database_url:
+    error_message = (
+        "DATABASE_URL environment variable is required.\n"
+        "Please set DATABASE_URL with your PostgreSQL connection string.\n"
+        "Example: postgresql://username:password@host:port/database"
+    )
+    logging.error(error_message)
+    raise RuntimeError(error_message)
 
+# Configure SQLAlchemy with PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
+
+logging.info("Using PostgreSQL database")
 
 
 # Security settings - production ready

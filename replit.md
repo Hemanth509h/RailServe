@@ -132,9 +132,11 @@ Preferred communication style: Simple, everyday language.
 ## External Dependencies
 
 ### Database
-- **PostgreSQL** (production) - Configured via `DATABASE_URL` environment variable
-- **SQLite** (development fallback) - Local file-based database at `local_railway.db`
-- **Connection Strategy:** Validates DATABASE_URL format and tests connection, falls back to SQLite on failure
+- **PostgreSQL** (required) - Configured via `DATABASE_URL` environment variable
+- **Connection Strategy:** 
+  - `DATABASE_URL` environment variable must be set with a valid PostgreSQL connection string
+  - Application will not start without DATABASE_URL
+  - No fallback databases - PostgreSQL only for production reliability
 
 ### Python Packages
 - **Flask Ecosystem:**
@@ -164,13 +166,18 @@ Preferred communication style: Simple, everyday language.
 
 ### Environment Variables
 **Required:**
+- `DATABASE_URL` - PostgreSQL connection string (e.g., `postgresql://user:password@host:port/database`)
 - `SESSION_SECRET` - Flask session encryption key (required in production)
-- `DATABASE_URL` - Database connection string
+
+**Recommended:**
+- `FLASK_ENV` - Set to `production` for production deployments
 
 **Optional:**
-- `FLASK_ENV` - Environment mode (development/production)
-- `ADMIN_PASSWORD` - Initial admin user password
-- SMTP configuration variables for email functionality
+- `ADMIN_PASSWORD` - Initial admin user password  
+- SMTP configuration variables for email functionality (`SMTP_SERVER`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`)
+
+**Important:**
+- Application requires `DATABASE_URL` to start - no fallback database
 
 ### Initialization & Setup
 - `init_db.py` - Database initialization script that populates 1250 stations, 1500 trains, routes, and sample admin user
