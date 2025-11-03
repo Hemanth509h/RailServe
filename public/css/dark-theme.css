@@ -1,0 +1,110 @@
+/* Dark Theme Styles for RailServe */
+
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-accent: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    --bg-table-header: #1e293b;
+    --bg-table-hover: #334155;
+    --bg-nav-mobile: #1e3a8a;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-inverse: #0f172a;
+    --text-table-header: #e2e8f0;
+    --border-color: #334155;
+    --btn-primary: #3b82f6;
+    --btn-primary-hover: #60a5fa;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --card-hover-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    --hero-gradient: linear-gradient(135deg, #1e3a8ab0 0%, #1e40af 50%, #0891b2 100%);
+    --status-confirmed-bg: #065f46;
+    --status-confirmed-text: #d1fae5;
+    --status-waitlist-bg: #78350f;
+    --status-waitlist-text: #fef3c7;
+    --status-cancelled-bg: #7f1d1d;
+    --status-cancelled-text: #fee2e2;
+    --fare-calc-bg: #1e3a8a;
+    --fare-calc-border: #3b82f6;
+    --fare-calc-text: #bfdbfe;
+    --security-bg: #064e3b;
+    --security-text: #d1fae5;
+    --security-icon: #34d399;
+    --accent-color: #60a5fa;
+    --accent-hover: #3b82f6;
+    --success-color: #34d399;
+    --success-hover: #10b981;
+    --warning-color: #fbbf24;
+    --warning-hover: #f59e0b;
+    --danger-color: #f87171;
+    --danger-hover: #ef4444;
+    --info-color: #22d3ee;
+    --info-hover: #06b6d4;
+    --alert-success-bg: #064e3b;
+    --alert-success-text: #d1fae5;
+    --alert-success-border: #059669;
+    --alert-error-bg: #7f1d1d;
+    --alert-error-text: #fee2e2;
+    --alert-error-border: #dc2626;
+    --alert-info-bg: #1e3a8a;
+    --alert-info-text: #dbeafe;
+    --alert-info-border: #3b82f6;
+    
+    /* Admin Specific Dark Theme */
+    --admin-header-bg: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    --admin-card-bg: #1e293b;
+    --admin-border-light: #334155;
+    --admin-text-primary: #f1f5f9;
+    --admin-text-secondary: #cbd5e1;
+    --admin-accent-blue: #60a5fa;
+    --admin-accent-green: #34d399;
+    --admin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --admin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --admin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark theme image adjustments */
+[data-theme="dark"] img {
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+[data-theme="dark"] img:hover {
+    opacity: 1;
+}
+
+/* Improve contrast for dark theme */
+[data-theme="dark"] .card,
+[data-theme="dark"] .train-card,
+[data-theme="dark"] .feature-card {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] select::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Dark theme scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar {
+    width: 10px;
+    background-color: var(--bg-secondary);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 5px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--accent-color);
+}
