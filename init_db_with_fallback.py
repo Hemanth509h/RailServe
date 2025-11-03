@@ -15,7 +15,8 @@ from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash
 
 # Check for PostgreSQL connection
-database_url = os.environ.get("DATABASE_URL","postgresql://postgres:Htnameh509h#@db.mapkjzlvyeddjwfkrhud.supabase.co:5432/postgres")
+# Replit automatically loads secrets as environment variables
+database_url = os.environ.get("DATABASE_URL")
 
 if not database_url:
     print("ERROR: DATABASE_URL environment variable is not set!")

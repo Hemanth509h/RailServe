@@ -27,7 +27,8 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Database configuration - PostgreSQL only
-database_url = os.environ.get("DATABASE_URL","postgresql://postgres:@Railserve509@db.mapkjzlvyeddjwfkrhud.supabase.co:5432/postgres")
+# Replit automatically loads secrets as environment variables
+database_url = os.environ.get("DATABASE_URL")
 
 # Check if DATABASE_URL is provided
 if not database_url:
