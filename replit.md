@@ -17,13 +17,14 @@ Preferred communication style: Simple, everyday language.
 - **Theming System:** Dual theme support (light/dark) with localStorage persistence and system preference detection
 - **Design Pattern:** Modern gradient-based UI with glassmorphism effects and animations
 - **Template Inheritance:** Base template (`base.html`) provides consistent navigation, footer, and theme support across all pages
-- **Component Organization:** Separated CSS for animations and dark theme to maintain modularity
+- **Inline Assets:** All CSS and JavaScript are embedded inline within HTML templates (no external static files) for simplified deployment
 
 **Key Design Decisions:**
 - Gradient backgrounds for visual appeal and modern aesthetics
 - Glass-effect cards with backdrop blur for depth
-- Inline critical CSS to prevent FOUC (Flash of Unstyled Content)
+- All CSS and JavaScript embedded inline in `base.html` (no static folder) for simpler Vercel deployment
 - Touch-optimized navigation for mobile devices
+- Dark theme styles, animations, and form validation all inline for better portability
 
 ### Backend Architecture
 
