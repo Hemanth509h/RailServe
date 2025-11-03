@@ -14,19 +14,7 @@ import random
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash
 
-# Check for PostgreSQL connection
-# Database connection parameters
-USER = "postgres"
-PASSWORD = "Htnameh509h#"
-HOST = "db.mapkjzlvyeddjwfkrhud.supabase.co"
-PORT = "5432"
-DBNAME = "postgres"
-
-# Construct the SQLAlchemy connection string
-from urllib.parse import quote_plus
-database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
-
-print(f"✓ Using PostgreSQL database")
+# This section was already updated earlier in the file - database URL now comes from environment
 
 from src.app import app
 from src.database import db
@@ -290,35 +278,122 @@ def generate_trains(count=1500):
     return Train.query.all()
 
 def create_train_routes(trains, stations):
-    """Create routes for all trains"""
-    print("\n[ROUTES] Creating train routes (2 stations per train)...")
+    """Create realistic multi-station routes for all trains"""
+    print("\n[ROUTES] Creating realistic multi-station train routes...")
+    
+    # Organize stations by major hubs for realistic route planning
+    major_hubs = [s for s in stations if any(s.name.startswith(ms[0]) for ms in MAJOR_STATIONS)]
+    other_stations = [s for s in stations if s not in major_hubs]
     
     routes = []
-    for train in trains:
-        route_stations = random.sample(stations, 2)
-        
-        routes.append({
-            'train_id': train.id,
-            'station_id': route_stations[0].id,
-            'sequence': 1,
-            'arrival_time': None,
-            'departure_time': time(random.randint(0, 23), random.randint(0, 59)),
-            'distance_from_start': 0
-        })
-        
-        routes.append({
-            'train_id': train.id,
-            'station_id': route_stations[1].id,
-            'sequence': 2,
-            'arrival_time': time(random.randint(0, 23), random.randint(0, 59)),
-            'departure_time': None,
-            'distance_from_start': random.randint(200, 800)
-        })
+    total_routes = 0
     
-    print(f"  Inserting {len(routes):,} routes...")
-    db.session.bulk_insert_mappings(TrainRoute, routes)
-    db.session.commit()
-    print(f"✓ Created {len(routes):,} train routes")
+    for idx, train in enumerate(trains):
+        # Determine number of stops based on train type
+        train_name = train.name.lower()
+        if 'rajdhani' in train_name or 'duronto' in train_name:
+            num_stops = random.randint(5, 8)  # Express trains with fewer stops
+        elif 'shatabdi' in train_name:
+            num_stops = random.randint(6, 10)  # Day trains with moderate stops
+        elif 'passenger' in train_name:
+            num_stops = random.randint(10, 15)  # Local trains with many stops
+        else:
+            num_stops = random.randint(7, 12)  # Regular express trains
+        
+        # Select stations for this route
+        # Start and end with major hubs, include intermediate stations
+        if len(major_hubs) >= 2:
+            start_hub = random.choice(major_hubs)
+            end_hub = random.choice([h for h in major_hubs if h.id != start_hub.id])
+            
+            # Mix of major and minor stations for intermediate stops
+            intermediate_count = num_stops - 2
+            intermediate = []
+            if intermediate_count > 0:
+                # Use mix of hubs and regular stations
+                available_hubs = [h for h in major_hubs if h.id not in [start_hub.id, end_hub.id]]
+                hub_count = min(len(available_hubs), intermediate_count // 2)
+                intermediate.extend(random.sample(available_hubs, hub_count))
+                
+                remaining = intermediate_count - len(intermediate)
+                if remaining > 0 and other_stations:
+                    intermediate.extend(random.sample(other_stations, min(remaining, len(other_stations))))
+            
+            route_stations = [start_hub] + intermediate + [end_hub]
+        else:
+            # Fallback if not enough major hubs
+            route_stations = random.sample(stations, min(num_stops, len(stations)))
+        
+        # Ensure unique stations in route
+        seen = set()
+        unique_route = []
+        for s in route_stations:
+            if s.id not in seen:
+                unique_route.append(s)
+                seen.add(s.id)
+        route_stations = unique_route[:num_stops]
+        
+        # Generate route with realistic times and distances
+        base_hour = random.randint(0, 23)
+        base_minute = random.choice([0, 15, 30, 45])
+        current_time = base_hour * 60 + base_minute  # Time in minutes from midnight
+        cumulative_distance = 0
+        
+        for seq, station in enumerate(route_stations):
+            is_first = (seq == 0)
+            is_last = (seq == len(route_stations) - 1)
+            
+            # Calculate distance from previous station
+            if seq > 0:
+                # Realistic distance between stations: 50-200 km
+                distance_increment = random.randint(50, 200)
+                cumulative_distance += distance_increment
+                
+                # Calculate travel time (assuming avg 60 km/h)
+                travel_minutes = distance_increment + random.randint(5, 15)
+                current_time += travel_minutes
+            
+            # Convert current time to hours and minutes
+            arrival_hour = (current_time // 60) % 24
+            arrival_minute = current_time % 60
+            arrival = time(arrival_hour, arrival_minute)
+            
+            # Departure time (halt time: 2-10 minutes, except last station)
+            if not is_last:
+                halt_minutes = random.randint(2, 10) if not is_first else 0
+                departure_time_minutes = current_time + halt_minutes
+                departure_hour = (departure_time_minutes // 60) % 24
+                departure_minute = departure_time_minutes % 60
+                departure = time(departure_hour, departure_minute)
+                current_time = departure_time_minutes
+            else:
+                departure = None
+            
+            routes.append({
+                'train_id': train.id,
+                'station_id': station.id,
+                'sequence': seq + 1,
+                'arrival_time': None if is_first else arrival,
+                'departure_time': departure,
+                'distance_from_start': cumulative_distance
+            })
+            total_routes += 1
+        
+        # Progress indicator
+        if (idx + 1) % 300 == 0:
+            print(f"  Progress: {idx + 1}/{len(trains)} trains, {total_routes:,} route stops...")
+    
+    # Bulk insert all routes
+    print(f"  Inserting {len(routes):,} route stops...")
+    batch_size = 1000
+    for i in range(0, len(routes), batch_size):
+        batch = routes[i:i + batch_size]
+        db.session.bulk_insert_mappings(TrainRoute, batch)
+        db.session.commit()
+    
+    print(f"✓ Created {len(routes):,} train route stops for {len(trains)} trains")
+    avg_stops = len(routes) / len(trains) if trains else 0
+    print(f"  Average stops per train: {avg_stops:.1f}")
 
 def create_seat_availability(trains):
     """Create seat availability for first 150 trains × 7 days"""
@@ -392,7 +467,7 @@ def main():
     print("\n📋 This will create:")
     print("  • 1000 Indian railway stations")
     print("  • 1500 trains with seat numbers")
-    print("  • Train routes (2 stations per train)")
+    print("  • Realistic multi-station train routes (5-15 stations per train)")
     print("  • Seat availability (150 trains × 7 days)")
     print("  • Admin user and Tatkal time slots")
     print("=" * 70)
