@@ -1,10 +1,11 @@
 """
-RailServe Database Initialization with Automatic Fallback
-==========================================================
-This script initializes the database with automatic fallback:
-- Tries PostgreSQL first (DATABASE_URL)
-- Falls back to SQLite if PostgreSQL fails
-- Creates all necessary data for the railway reservation system
+RailServe Database Initialization (PostgreSQL Only)
+====================================================
+This script initializes the PostgreSQL database with:
+- 1000 Indian railway stations
+- 1500 trains with seat numbers
+- Train routes and seat availability
+- Admin user and Tatkal time slots
 """
 
 import os
@@ -13,29 +14,15 @@ import random
 from datetime import datetime, date, time, timedelta
 from werkzeug.security import generate_password_hash
 
-# Set up database connection with fallback
-def setup_database():
-    """Configure database connection with automatic fallback"""
-    database_url = os.environ.get("DATABASE_URL")
-    
-    if database_url and database_url.startswith('postgresql://'):
-        try:
-            import sqlalchemy
-            test_engine = sqlalchemy.create_engine(database_url)
-            with test_engine.connect() as conn:
-                conn.execute(sqlalchemy.text("SELECT 1"))
-            print("✓ Using PostgreSQL database")
-            return database_url
-        except Exception as e:
-            print(f"⚠ PostgreSQL connection failed: {e}")
-            print("→ Falling back to SQLite database")
-            return "sqlite:///local_railway.db"
-    else:
-        print("✓ Using SQLite database (local_railway.db)")
-        return "sqlite:///local_railway.db"
+# Check for PostgreSQL connection
+database_url = os.environ.get("DATABASE_URL")
+if not database_url:
+    print("ERROR: DATABASE_URL environment variable is not set!")
+    print("Please set DATABASE_URL with your PostgreSQL connection string.")
+    print("Example: postgresql://username:password@host:port/database")
+    sys.exit(1)
 
-# Override DATABASE_URL before importing app
-os.environ['SQLALCHEMY_DATABASE_URI'] = setup_database()
+print(f"✓ Using PostgreSQL database")
 
 from src.app import app
 from src.database import db
@@ -220,15 +207,51 @@ def generate_stations(count=1000):
     return Station.query.all()
 
 def generate_trains(count=1500):
-    """Generate trains"""
-    print(f"\n[TRAINS] Generating {count} trains...")
+    """Generate trains with realistic Indian Railway fares"""
+    print(f"\n[TRAINS] Generating {count} trains with realistic fares...")
     
+    # Realistic Indian Railway fare structure (₹ per km)
     train_types = [
-        {"name": "Rajdhani Express", "prefix": "12", "total_seats": 900, "fare": 1.8, "tatkal_pct": 0.1},
-        {"name": "Shatabdi Express", "prefix": "12", "total_seats": 600, "fare": 2.0, "tatkal_pct": 0.1},
-        {"name": "Duronto Express", "prefix": "22", "total_seats": 950, "fare": 1.7, "tatkal_pct": 0.1},
-        {"name": "Express", "prefix": "1", "total_seats": 1400, "fare": 0.8, "tatkal_pct": 0.1},
-        {"name": "Passenger", "prefix": "5", "total_seats": 1600, "fare": 0.6, "tatkal_pct": 0.05},
+        {
+            "name": "Rajdhani Express", 
+            "prefix": "12", 
+            "total_seats": 900, 
+            "base_fare": 2.20,  # Premium AC train
+            "tatkal_multiplier": 1.30,  # 30% Tatkal surcharge
+            "tatkal_pct": 0.10
+        },
+        {
+            "name": "Shatabdi Express", 
+            "prefix": "12", 
+            "total_seats": 600, 
+            "base_fare": 2.80,  # Premium day train
+            "tatkal_multiplier": 1.30,
+            "tatkal_pct": 0.10
+        },
+        {
+            "name": "Duronto Express", 
+            "prefix": "22", 
+            "total_seats": 950, 
+            "base_fare": 1.75,  # Non-stop express
+            "tatkal_multiplier": 1.30,
+            "tatkal_pct": 0.10
+        },
+        {
+            "name": "Mail/Express", 
+            "prefix": "1", 
+            "total_seats": 1400, 
+            "base_fare": 0.60,  # Regular express (Sleeper class base)
+            "tatkal_multiplier": 1.30,
+            "tatkal_pct": 0.10
+        },
+        {
+            "name": "Passenger", 
+            "prefix": "5", 
+            "total_seats": 1600, 
+            "base_fare": 0.30,  # Local/slow trains
+            "tatkal_multiplier": 1.10,  # Lower Tatkal for passenger
+            "tatkal_pct": 0.05
+        },
     ]
     
     trains = []
@@ -241,15 +264,17 @@ def generate_trains(count=1500):
         name = f"{source[2]}-{dest[2]} {train_type['name']}"
         total_seats = train_type['total_seats'] + random.randint(-100, 100)
         tatkal_seats = int(total_seats * train_type['tatkal_pct'])
-        fare = train_type['fare'] + random.uniform(-0.2, 0.2)
-        tatkal_fare = fare * random.uniform(1.5, 2.0)
+        
+        # Use realistic base fare
+        base_fare = train_type['base_fare']
+        tatkal_fare = base_fare * train_type['tatkal_multiplier']
         
         trains.append(Train(
             number=number,
             name=name,
             total_seats=total_seats,
             available_seats=total_seats,
-            fare_per_km=round(fare, 2),
+            fare_per_km=round(base_fare, 2),
             tatkal_seats=tatkal_seats,
             tatkal_fare_per_km=round(tatkal_fare, 2),
             active=True
@@ -358,7 +383,7 @@ def main():
     """Main initialization function"""
     print("=" * 70)
     print(" " * 15 + "RailServe Database Initialization")
-    print(" " * 20 + "with Auto-Fallback")
+    print(" " * 20 + "(PostgreSQL Only)")
     print("=" * 70)
     print("\n📋 This will create:")
     print("  • 1000 Indian railway stations")

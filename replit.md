@@ -180,6 +180,16 @@ Preferred communication style: Simple, everyday language.
 - Application requires `DATABASE_URL` to start - no fallback database
 
 ### Initialization & Setup
-- `init_db.py` - Database initialization script that populates 1250 stations, 1500 trains, routes, and sample admin user
-- `setup_database.py` - Alternative initialization with 52 major stations and 20 popular trains
-- Scripts use Faker library to generate realistic Indian railway data (cities, names, etc.)
+- `init_db_with_fallback.py` - PostgreSQL database initialization script that populates:
+  - 1000 Indian railway stations (major cities + generated stations)
+  - 1500 trains with realistic Indian Railway fares:
+    - Rajdhani Express: ₹2.20/km (Tatkal: ₹2.86/km)
+    - Shatabdi Express: ₹2.80/km (Tatkal: ₹3.64/km)
+    - Duronto Express: ₹1.75/km (Tatkal: ₹2.28/km)
+    - Mail/Express: ₹0.60/km (Tatkal: ₹0.78/km)
+    - Passenger: ₹0.30/km (Tatkal: ₹0.33/km)
+  - Train routes (2 stations per train)
+  - Seat availability (150 trains × 7 days × 6 coach classes)
+  - Admin user (username: admin, password: admin123)
+  - Tatkal time slots (AC: 10:00 AM, Non-AC: 11:00 AM)
+- Requires `DATABASE_URL` environment variable to be set before running
