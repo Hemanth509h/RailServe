@@ -37,3 +37,4 @@ reportlab
 requests
 sqlalchemy
 werkzeug
+python-dotenv
