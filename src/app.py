@@ -27,18 +27,16 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Database configuration - PostgreSQL only
-# Use DATABASE_URL from environment, fallback to local development database
-database_url = os.environ.get('DATABASE_URL')
-if not database_url:
-    if flask_env == 'production':
-        raise RuntimeError("DATABASE_URL environment variable is required in production")
-    else:
-        database_url = "postgresql://postgres:password@localhost:5432/railserve_dev"
-        logging.warning("Using default development database URL")
+# Database connection parameters
+USER = "postgres"
+PASSWORD = "Htnameh509h#"
+HOST = "db.mapkjzlvyeddjwfkrhud.supabase.co"
+PORT = "5432"
+DBNAME = "postgres"
 
-# Convert postgres:// to postgresql:// if needed (some services use old format)
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+# Construct the SQLAlchemy connection string
+from urllib.parse import quote_plus
+database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
 # Configure SQLAlchemy with PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
