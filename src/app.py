@@ -26,30 +26,12 @@ if not app.secret_key:
         app.secret_key = "dev-secret-key-" + os.urandom(24).hex()
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
-# Database configuration - PostgreSQL only
-# Supabase connection parameters (hardcoded)
-# Using connection pooler for Vercel compatibility
-USER = "postgres"
-PASSWORD = "Htnameh509h#"
-HOST = "aws-0-ap-south-1.pooler.supabase.com"
-PORT = "6543"
-DBNAME = "postgres"
-
-# Construct the SQLAlchemy connection string
-from urllib.parse import quote_plus
-database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}"
-
-# Configure SQLAlchemy with PostgreSQL and connection pooler settings
+# Database configuration - SQLite
+database_url = 'sqlite:///railway.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-    "connect_args": {
-        "sslmode": "require",
-    }
-}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-logging.info("Using Supabase PostgreSQL database (pooler)")
+logging.info("Using SQLite database (railway.db)")
 
 
 # Security settings - production ready

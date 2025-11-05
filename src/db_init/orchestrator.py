@@ -18,11 +18,11 @@ def initialize_database():
     """Main initialization function"""
     print("=" * 70)
     print(" " * 15 + "RailServe Database Initialization")
-    print(" " * 20 + "(PostgreSQL Only)")
+    print(" " * 20 + "(SQLite)")
     print("=" * 70)
     print("\n📋 This will create:")
     print("  • 1000 Indian railway stations")
-    print("  • 1500 trains with seat numbers")
+    print("  • 1250 trains with seat numbers")
     print("  • Realistic multi-station train routes (5-15 stations per train)")
     print("  • Seat availability (150 trains × 7 days)")
     print("  • Admin user and Tatkal time slots")
@@ -32,7 +32,7 @@ def initialize_database():
         reset_database()
         create_admin_and_tatkal()
         stations = generate_stations(1000)
-        trains = generate_trains(1500)
+        trains = generate_trains(1250)
         create_train_routes(trains, stations)
         create_seat_availability(trains)
         
