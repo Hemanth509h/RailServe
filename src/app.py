@@ -26,12 +26,26 @@ if not app.secret_key:
         app.secret_key = "dev-secret-key-" + os.urandom(24).hex()
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
-# Database configuration - SQLite
-database_url = 'sqlite:///railway.db'
+# Database configuration - Supabase PostgreSQL
+USER = os.environ.get("user", "postgres")
+PASSWORD = os.environ.get("SUPABASE_PASSWORD")
+HOST = os.environ.get("host", "db.nswfyjdpesymrlsosbzg.supabase.co")
+PORT = os.environ.get("port", "5432")
+DBNAME = os.environ.get("dbname", "postgres")
+
+if PASSWORD:
+    database_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+    logging.info(f"Using Supabase PostgreSQL database at {HOST}")
+else:
+    database_url = 'sqlite:///railway.db'
+    logging.info("SUPABASE_PASSWORD not set, falling back to SQLite database (railway.db)")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-logging.info("Using SQLite database (railway.db)")
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 
 # Security settings - production ready

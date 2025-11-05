@@ -6,8 +6,26 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///railway.db'
+# Database configuration - Supabase PostgreSQL
+USER = os.environ.get("user", "postgres")
+PASSWORD = os.environ.get("SUPABASE_PASSWORD")
+HOST = os.environ.get("host", "db.nswfyjdpesymrlsosbzg.supabase.co")
+PORT = os.environ.get("port", "5432")
+DBNAME = os.environ.get("dbname", "postgres")
+
+if PASSWORD:
+    database_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+    print(f"Using Supabase PostgreSQL database at {HOST}")
+else:
+    database_url = 'sqlite:///railway.db'
+    print("SUPABASE_PASSWORD not set, falling back to SQLite")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 app.secret_key = os.environ.get('SECRET_KEY', 'database-api-secret-key-2025')
 
 db.init_app(app)
