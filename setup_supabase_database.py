@@ -17,13 +17,13 @@ print("   - 1000+ railway stations")
 print("   - 1250+ trains")
 print("   - Real routes and pricing\n")
 
-USER = "postgres"
-PASSWORD = "password"
-HOST = "helium"
+USER = "postgres.nswfyjdpesymrlsosbzg"
+PASSWORD = "Railserve%23"
+HOST = "aws-1-ap-southeast-1.pooler.supabase.com"
 PORT = "5432"
-DBNAME = "heliumdb"
+DBNAME = "postgres"
 
-DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=disable"
+DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
 
 print("Connecting to Supabase database...")
 try:

@@ -20,8 +20,15 @@ app = Flask(__name__,
 # Load configuration - require SESSION_SECRET for security
 app.secret_key = "ETXad0uTaE4NsBiJGjVjXAK/BYda9Qw/lec2PygBma3WGhQpv8VtBsSMoFrSXHvqkhml6Lw8DKgDkrjxaJ7now=="
 
-# Database configuration - Supabase PostgreSQL with Session Pooler (IPv4 compatible for Vercel)
-database_url = "postgresql://postgres:password@helium/heliumdb?sslmode=disable"
+# Database configuration - Fetch from environment variables
+USER = os.getenv("user", "postgres")
+PASSWORD = os.getenv("password", "password")
+HOST = os.getenv("host", "helium")
+PORT = os.getenv("port", "5432")
+DBNAME = os.getenv("dbname", "heliumdb")
+
+# Construct the database URL
+database_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
 
 if not database_url:
     raise RuntimeError("DATABASE_URL environment variable is required. Please set your Supabase PostgreSQL connection string.")
