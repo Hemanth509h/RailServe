@@ -27,37 +27,22 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Database configuration - PostgreSQL only
-# Use DATABASE_URL from environment variables for Vercel/Supabase
-database_url = os.environ.get('DATABASE_URL')
+# Supabase connection parameters (hardcoded)
+USER = "postgres"
+PASSWORD = "Htnameh509h#"
+HOST = "db.mapkjzlvyeddjwfkrhud.supabase.co"
+PORT = "5432"
+DBNAME = "postgres"
 
-if not database_url:
-    # Fallback for local development - construct from individual variables
-    USER = os.environ.get('SUPABASE_USER', 'postgres')
-    PASSWORD = os.environ.get('SUPABASE_PASSWORD', 'Htnameh509h#')
-    HOST = os.environ.get('SUPABASE_HOST', 'aws-0-ap-south-1.pooler.supabase.com')
-    PORT = os.environ.get('SUPABASE_PORT', '6543')
-    DBNAME = os.environ.get('SUPABASE_DB', 'postgres')
-    
-    from urllib.parse import quote_plus
-    database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}"
-
-# Ensure we're using the psycopg2 dialect
-if database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
-elif database_url.startswith('postgresql://') and 'psycopg2' not in database_url:
-    database_url = database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
+# Construct the SQLAlchemy connection string
+from urllib.parse import quote_plus
+database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
 # Configure SQLAlchemy with PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
-    "pool_size": 5,
-    "max_overflow": 10,
-    "connect_args": {
-        "sslmode": "require",
-        "connect_timeout": 10,
-    }
 }
 
 logging.info("Using Supabase PostgreSQL database")
