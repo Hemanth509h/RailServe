@@ -28,24 +28,28 @@ if not app.secret_key:
 
 # Database configuration - PostgreSQL only
 # Supabase connection parameters (hardcoded)
+# Using connection pooler for Vercel compatibility
 USER = "postgres"
 PASSWORD = "Htnameh509h#"
-HOST = "db.mapkjzlvyeddjwfkrhud.supabase.co"
-PORT = "5432"
+HOST = "aws-0-ap-south-1.pooler.supabase.com"
+PORT = "6543"
 DBNAME = "postgres"
 
 # Construct the SQLAlchemy connection string
 from urllib.parse import quote_plus
-database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}"
 
-# Configure SQLAlchemy with PostgreSQL
+# Configure SQLAlchemy with PostgreSQL and connection pooler settings
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
+    "connect_args": {
+        "sslmode": "require",
+    }
 }
 
-logging.info("Using Supabase PostgreSQL database")
+logging.info("Using Supabase PostgreSQL database (pooler)")
 
 
 # Security settings - production ready
