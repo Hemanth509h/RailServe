@@ -30,8 +30,8 @@ if not app.secret_key:
 PROJECT_REF = "nswfyjdpesymrlsosbzg"
 USER = f"postgres.{PROJECT_REF}"
 PASSWORD = os.environ.get("SUPABASE_PASSWORD")
-HOST = "aws-0-us-east-1.pooler.supabase.com"
-PORT = "6543"
+HOST = "aws-1-ap-southeast-1.pooler.supabase.com"
+PORT = "5432"
 DBNAME = "postgres"
 
 if PASSWORD:
