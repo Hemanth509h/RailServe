@@ -6,12 +6,13 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Database configuration - Supabase PostgreSQL with Session Pooler (IPv4 compatible)
-USER = os.environ.get("user", "postgres.nswfyjdpesymrlsosbzg")
+# Database configuration - Supabase PostgreSQL with Session Pooler (IPv4 compatible for Vercel)
+PROJECT_REF = "nswfyjdpesymrlsosbzg"
+USER = f"postgres.{PROJECT_REF}"
 PASSWORD = os.environ.get("SUPABASE_PASSWORD")
-HOST = os.environ.get("host", "aws-0-us-east-1.pooler.supabase.com")
-PORT = os.environ.get("port", "6543")
-DBNAME = os.environ.get("dbname", "postgres")
+HOST = "aws-0-us-east-1.pooler.supabase.com"
+PORT = "6543"
+DBNAME = "postgres"
 
 if PASSWORD:
     database_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
