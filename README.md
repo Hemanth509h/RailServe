@@ -1,15 +1,19 @@
-# RailServe - Professional Railway Reservation System
+# RailServe - Modern Railway Reservation System
 
-A comprehensive railway ticket booking system built with Flask, featuring **real-time seat availability displays** matching professional booking websites like IRCTC, advanced booking management, dynamic pricing, waitlist handling, and admin analytics.
+A comprehensive railway ticket booking system built with a **microservices architecture**, featuring separate frontend and database API applications for better scalability, security, and maintainability.
+
+## 🏗️ Architecture
+
+This project consists of **two separate applications**:
+
+1. **Main Application** - Frontend and business logic
+2. **Database API** (`database-api/`) - SQLite database with REST API
+
+```
+Main Application  ←→  HTTP/REST  ←→  Database API (SQLite)
+```
 
 ## 🌟 Key Features
-
-### Real-Time Seat Availability (NEW!)
-- **Professional IRCTC-style seat availability tables** showing all coach classes
-- Color-coded availability status (Available, RAC, Waitlist)
-- Live updates for AC1, AC2, AC3, Sleeper, 2S, and Chair Car
-- Detailed fare multipliers for each coach class
-- Visual indicators matching real railway booking websites
 
 ### User Features
 - ✅ User registration and secure authentication
@@ -39,61 +43,47 @@ A comprehensive railway ticket booking system built with Flask, featuring **real
 
 ### Prerequisites
 - Python 3.11 or higher
-- PostgreSQL database (or SQLite for development)
+- Vercel account (for database API deployment)
 - pip package manager
 
-### Installation
+### 1. Deploy Database API
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd railserve
-   ```
+```bash
+cd database-api
+vercel deploy
+```
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Save the deployed URL (e.g., `https://railserve-db-api.vercel.app`)
 
-3. **Set environment variables**
-   ```bash
-   # Required for production
-   export SESSION_SECRET="your-secure-random-key-here"
-   export DATABASE_URL="postgresql://user:password@localhost:5432/railserve"
-   
-   # Optional: Set to 'production' in production environment
-   export FLASK_ENV="development"
-   ```
+### 2. Configure Environment Variables
 
-4. **Initialize database with 1500 trains and 1250 stations**
-   ```bash
-   python init_db.py
-   ```
-   
-   This will create:
-   - 1,250 railway stations across India
-   - 1,500 trains with complete routes
-   - Seat availability data for next 30 days
-   - All 6 coach classes (AC1, AC2, AC3, SL, 2S, CC)
-   - Admin user (username: `admin`, password: `admin123`)
+```bash
+export DATABASE_API_URL=https://your-database-api-url.vercel.app
+export SESSION_SECRET=your-secret-key-here
+export FLASK_ENV=production
+```
 
-5. **Run the application**
-   
-   **Development:**
-   ```bash
-   python main.py
-   ```
-   
-   **Production:**
-   ```bash
-   gunicorn --bind 0.0.0.0:5000 --workers 4 main:app
-   ```
+### 3. Install Dependencies & Run
 
-6. **Access the application**
-   
-   Open your browser and navigate to: `http://localhost:5000`
-   
-   **Admin login:** `admin` / `admin123`
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+### 4. Access the Application
+
+Open your browser: `http://localhost:5000`
+
+## 📚 Documentation
+
+For detailed setup and deployment:
+
+- **DATABASE_API_SETUP.md** - Quick setup guide
+- **ARCHITECTURE.md** - System architecture
+- **doc/DEPLOYMENT_GUIDE.md** - Deployment instructions
+- **doc/DATABASE_SCHEMA.md** - Database documentation
+- **doc/API_MIGRATION_GUIDE.md** - Migration guide
+- **doc/PROJECT_OVERVIEW.md** - Project overview
 
 ## 📊 Database Schema
 
@@ -172,157 +162,110 @@ A comprehensive railway ticket booking system built with Flask, featuring **real
 - Train load factors
 - Revenue analytics
 
-## 🎨 Professional Seat Availability Display
+## 📝 Environment Variables
 
-RailServe features a professional seat availability system matching real railway booking websites:
+### Main Application
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_API_URL` | Yes | Database API URL |
+| `SESSION_SECRET` | Yes | Session encryption key |
+| `FLASK_ENV` | No | Environment mode (development/production) |
 
-### Features
-- **Table-based layout** with headers for Class, Type, Fare, and Availability
-- **Color-coded rows**: Green (Available), Yellow (RAC), Red (Waitlist)
-- **Formatted status badges**: AVAILABLE-###, RAC-##, WL-##
-- **Real-time updates** as seats are booked
-- **All coach classes** shown in one view
-- **Legend footer** explaining the color codes
-
-### Coach Classes
-| Class | Name | Description |
-|-------|------|-------------|
-| AC1 | First AC | Premium air-conditioned class |
-| AC2 | AC 2 Tier | Two-tier air-conditioned sleeper |
-| AC3 | AC 3 Tier | Three-tier air-conditioned sleeper |
-| SL | Sleeper | Non-AC sleeper class |
-| 2S | 2nd Sitting | Second-class seating |
-| CC | Chair Car | AC seating class |
+### Database API
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SECRET_KEY` | No | Flask secret key (auto-generated if not set) |
 
 ## 🏗️ Project Structure
 
 ```
-railserve/
-├── src/                     # Application source code
-│   ├── app.py              # Flask app initialization & database config
-│   ├── models.py           # SQLAlchemy database models
-│   ├── utils.py            # Utility functions (seat availability, etc)
-│   ├── auth.py             # Authentication routes
-│   ├── admin.py            # Admin panel routes
-│   ├── booking.py          # Booking management
-│   ├── payment.py          # Payment processing
-│   ├── pdf_routes.py       # PDF ticket generation
-│   └── pdf_generator.py    # PDF creation utilities
-├── templates/              # Jinja2 HTML templates
-│   ├── base.html           # Base template with navigation
-│   ├── index.html          # Homepage with seat availability tables
-│   ├── book_ticket.html    # Booking page with live availability
-│   ├── search_results.html # Search results
-│   └── ...
-├── static/                 # Static assets
-│   ├── css/               # Stylesheets
-│   ├── js/                # JavaScript files
-│   └── images/            # Images and icons
-├── doc/                    # Documentation
-│   ├── PROJECT_DOCUMENTATION.dox
-│   ├── PROJECT_STRUCTURE.md
-│   ├── FINAL_REVIEW.md
-│   └── PROJECT_FILE_DOCUMENTATION.md
-├── main.py                # Application entry point
-├── init_db.py             # Database initialization (1500 trains, 1250 stations)
-├── requirements.txt       # Python dependencies
-├── replit.md              # Project memory and preferences
-└── README.md             # This file
+RailServe/
+├── main.py                    # Main application entry
+├── src/
+│   ├── app.py                # Flask app configuration
+│   ├── api_client.py         # Database API client
+│   ├── auth.py               # Authentication routes
+│   ├── booking.py            # Booking routes
+│   ├── admin.py              # Admin routes
+│   ├── payment.py            # Payment routes
+│   ├── pdf_routes.py         # PDF generation
+│   └── utils.py              # Utility functions
+├── templates/                # HTML templates
+├── database-api/             # Separate database API
+│   ├── app.py               # API server
+│   ├── models/              # Database models
+│   ├── routes/              # API endpoints
+│   └── requirements.txt     # API dependencies
+└── doc/                      # Documentation
+    ├── PROJECT_OVERVIEW.md
+    ├── DEPLOYMENT_GUIDE.md
+    ├── DATABASE_SCHEMA.md
+    └── API_MIGRATION_GUIDE.md
 ```
 
 ## 🔒 Security
 
-- **Session Secret:** Requires `SESSION_SECRET` environment variable in production
-- **Password Hashing:** Bcrypt-based secure password storage
-- **CSRF Protection:** Enabled globally for all forms via Flask-WTF
-- **Secure Cookies:** HTTPOnly and SameSite attributes
-- **SQL Injection Protection:** SQLAlchemy ORM with parameterized queries
-- **Role-Based Access Control:** Admin, Super Admin, and User roles
-- **Generic Error Messages:** Prevents user enumeration attacks
+- **API Isolation**: Database not directly exposed
+- **Session Secret**: Required in production
+- **Password Hashing**: Werkzeug-based secure storage
+- **CSRF Protection**: Enabled via Flask-WTF
+- **Role-Based Access**: Admin, Super Admin, User roles
+- **HTTPS**: Support for production deployments
 
-## 🗄️ Database Support
+## 🗄️ Database
 
-The application supports both PostgreSQL and SQLite:
+The database API uses **SQLite** stored in `database-api/railway.db`:
 
-- **PostgreSQL (Production):** Set `DATABASE_URL` environment variable
-  ```bash
-  export DATABASE_URL="postgresql://username:password@host:port/database"
-  ```
+- **Portable**: Single file database
+- **Auto-created**: On first API startup
+- **No external database needed**: No Supabase or PostgreSQL required
+- **API-based access**: All operations through REST endpoints
 
-- **SQLite (Development):** Automatically uses `local_railway.db` if no `DATABASE_URL` is set
+### Database File Location
+```
+database-api/railway.db
+```
 
-### Database Initialization
-
-The `init_db.py` script populates the database with realistic Indian railway data:
-
-- **1,250 stations** across all major and minor cities
-- **1,500 trains** with diverse types (Rajdhani, Shatabdi, Duronto, Express, etc.)
-- **Routes** connecting major cities
-- **30 days** of seat availability data
-- **All 6 coach classes** with realistic capacity
-- **Admin user** for immediate system access
+The database is automatically created with all required tables when the API starts.
 
 ## 🌐 Deployment
 
-### Environment Setup
+### Step 1: Deploy Database API to Vercel
 
-1. **Production environment variables:**
-   ```bash
-   export FLASK_ENV=production
-   export SESSION_SECRET=$(openssl rand -hex 32)
-   export DATABASE_URL="postgresql://..."
-   ```
-
-2. **Use production server:**
-   ```bash
-   gunicorn --bind 0.0.0.0:5000 --workers 4 --threads 2 main:app
-   ```
-
-### Deployment Platforms
-
-#### Heroku
 ```bash
-heroku create railserve
-heroku addons:create heroku-postgresql
-heroku config:set SESSION_SECRET=$(openssl rand -hex 32)
-git push heroku main
-heroku run python init_db.py
+cd database-api
+vercel
 ```
 
-#### Docker
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "main:app"]
-```
+### Step 2: Configure Main Application
 
-Build and run:
+Set environment variables:
 ```bash
-docker build -t railserve .
-docker run -p 5000:5000 \
-  -e DATABASE_URL="postgresql://..." \
-  -e SESSION_SECRET="..." \
-  railserve
+DATABASE_API_URL=https://your-api.vercel.app
+SESSION_SECRET=your-secret-key
+FLASK_ENV=production
 ```
 
-#### Replit
+### Step 3: Deploy Main Application
 
-This project is optimized for Replit:
-1. Fork/import the repository
-2. Set environment secrets in Replit
-3. Click "Run" - the workflow is pre-configured
-4. Database initializes automatically on first run
+Deploy to Vercel, Railway, or any Python hosting platform.
 
-## 📚 Documentation
+**See doc/DEPLOYMENT_GUIDE.md for detailed instructions**
 
-- **Complete API Documentation:** See `doc/PROJECT_DOCUMENTATION.dox`
-- **Architecture Details:** See `doc/PROJECT_STRUCTURE.md`
-- **Implementation Review:** See `doc/FINAL_REVIEW.md`
-- **File Documentation:** See `doc/PROJECT_FILE_DOCUMENTATION.md`
-- **Project Memory:** See `replit.md`
+## 🛠️ Technology Stack
+
+### Main Application
+- Flask 3.1.2+
+- Flask-Login (authentication)
+- Flask-WTF (forms & CSRF)
+- ReportLab (PDF generation)
+- requests (API client)
+
+### Database API
+- Flask 3.1.2+
+- SQLite 3
+- SQLAlchemy 2.0.43+
+- Flask-CORS
 
 ## 🛠️ Development
 
@@ -364,35 +307,19 @@ pytest tests/
 - **Optimized Queries:** Eager loading for related data
 - **Production Server:** Gunicorn with worker processes
 
-## 🤝 Contributing
+## 📄 License
 
-Contributions are welcome! Please:
+Private - All rights reserved
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new features
-5. Submit a pull request
+## 🆘 Support
 
-## 📝 License
-
-[Add your license here]
-
-## 📧 Support
-
-For issues and questions:
-- Create an issue in the repository
-- Check the documentation in the `doc/` folder
-- Review the `replit.md` for project-specific details
+For detailed guides:
+1. Read `DATABASE_API_SETUP.md` for quick start
+2. Check `doc/DEPLOYMENT_GUIDE.md` for deployment help
+3. Review `doc/API_MIGRATION_GUIDE.md` for examples
 
 ---
 
-**Built with ❤️ using Flask, SQLAlchemy, and Python**
-
-### Recent Updates (October 2025)
-- ✨ Added professional IRCTC-style seat availability tables
-- ✨ Implemented real-time seat tracking across all coach classes
-- ✨ Enhanced UI with color-coded availability indicators
-- ✨ Expanded database to 1500 trains and 1250 stations
-- ✨ Optimized database initialization with batch commits
-- ✨ Added visual legends and improved booking flow
+**Version**: 2.0 (API-Based Architecture)  
+**Database**: SQLite 3  
+**Last Updated**: November 2025
