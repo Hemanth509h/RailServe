@@ -26,3 +26,17 @@ reportlab
 requests
 sqlalchemy
 werkzeug
+email-validator
+faker
+flask
+flask-login
+flask-sqlalchemy
+flask-wtf
+gunicorn
+psycopg2-binary
+python-dotenv
+qrcode[pil]
+reportlab
+requests
+sqlalchemy
+werkzeug
