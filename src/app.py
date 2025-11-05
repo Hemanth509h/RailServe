@@ -27,19 +27,16 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Database configuration - Supabase PostgreSQL with Session Pooler (IPv4 compatible for Vercel)
-PROJECT_REF = "nswfyjdpesymrlsosbzg"
-USER = f"postgres.{PROJECT_REF}"
-PASSWORD = os.environ.get("SUPABASE_PASSWORD")
-HOST = "aws-1-ap-southeast-1.pooler.supabase.com"
-PORT = "5432"
-DBNAME = "postgres"
+database_url = os.environ.get("DATABASE_URL")
 
-if PASSWORD:
-    database_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
-    logging.info(f"Using Supabase PostgreSQL database (Session Pooler) at {HOST}")
-else:
-    database_url = 'sqlite:///railway.db'
-    logging.info("SUPABASE_PASSWORD not set, falling back to SQLite database (railway.db)")
+if not database_url:
+    raise RuntimeError("DATABASE_URL environment variable is required. Please set your Supabase PostgreSQL connection string.")
+
+# Convert postgresql:// to postgresql+psycopg2:// for SQLAlchemy
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+
+logging.info(f"Using Supabase PostgreSQL database")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
