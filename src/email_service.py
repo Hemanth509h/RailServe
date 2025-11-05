@@ -4,7 +4,6 @@ Handles all email notifications including password reset, booking confirmations,
 """
 
 import smtplib
-import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
@@ -16,16 +15,16 @@ logger = logging.getLogger(__name__)
 
 class EmailService:
     def __init__(self):
-        # Email configuration - using environment variables for security
-        self.smtp_server = os.environ.get('SMTP_SERVER', 'localhost')
-        self.smtp_port = int(os.environ.get('SMTP_PORT', '587'))
-        self.smtp_username = os.environ.get('SMTP_USERNAME', '')
-        self.smtp_password = os.environ.get('SMTP_PASSWORD', '')
-        self.from_email = os.environ.get('FROM_EMAIL', 'noreply@railserve.com')
+        # Email configuration
+        self.smtp_server = 'localhost'
+        self.smtp_port = 587
+        self.smtp_username = ''
+        self.smtp_password = ''
+        self.from_email = 'noreply@railserve.com'
         self.company_name = "RailServe"
         
         # Demo mode for development (when no real SMTP configured)
-        self.demo_mode = not all([self.smtp_username, self.smtp_password])
+        self.demo_mode = True
         
     def _create_connection(self):
         """Create SMTP connection"""

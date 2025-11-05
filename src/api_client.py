@@ -1,12 +1,11 @@
 import requests
-import os
 from typing import Dict, List, Optional, Any
 
 class DatabaseAPIClient:
     """Client for interacting with the database API"""
     
     def __init__(self, base_url: str = None):
-        self.base_url = base_url or os.environ.get('DATABASE_API_URL', 'http://localhost:5000')
+        self.base_url = base_url or 'http://localhost:5000'
         self.session = requests.Session()
     
     def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:

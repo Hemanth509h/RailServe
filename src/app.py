@@ -7,8 +7,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from .database import db
 
 # Configure logging with production-ready levels
-flask_env = os.environ.get('FLASK_ENV', 'development')
-log_level = logging.INFO if flask_env == 'production' else logging.DEBUG
+flask_env = 'development'
+log_level = logging.DEBUG
 logging.basicConfig(level=log_level)
 login_manager = LoginManager()
 csrf = CSRFProtect()
@@ -18,16 +18,10 @@ app = Flask(__name__,
             template_folder='../templates')
 
 # Load configuration - require SESSION_SECRET for security
-app.secret_key =os.environ.get("SESSION_SECRET", "railway-secret-key-2025")
-if not app.secret_key:
-    if flask_env == 'production':
-        raise RuntimeError("SESSION_SECRET environment variable is required in production")
-    else:
-        app.secret_key = "dev-secret-key-" + os.urandom(24).hex()
-        logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
+app.secret_key = "ETXad0uTaE4NsBiJGjVjXAK/BYda9Qw/lec2PygBma3WGhQpv8VtBsSMoFrSXHvqkhml6Lw8DKgDkrjxaJ7now=="
 
 # Database configuration - Supabase PostgreSQL with Session Pooler (IPv4 compatible for Vercel)
-database_url = os.environ.get("DATABASE_URL")
+database_url = "postgresql://postgres:password@helium/heliumdb?sslmode=disable"
 
 if not database_url:
     raise RuntimeError("DATABASE_URL environment variable is required. Please set your Supabase PostgreSQL connection string.")
@@ -48,8 +42,8 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 
 # Security settings - production ready
-flask_env = os.environ.get("FLASK_ENV", "development")
-app.config['SESSION_COOKIE_SECURE'] = (flask_env == 'production')  # Secure cookies in production
+flask_env = 'development'
+app.config['SESSION_COOKIE_SECURE'] = False  # Secure cookies in production
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = "Lax"
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600

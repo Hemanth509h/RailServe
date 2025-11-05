@@ -1,4 +1,3 @@
-import os
 import sys
 import requests
 import json
@@ -18,18 +17,13 @@ print("   - 1000+ railway stations")
 print("   - 1250+ trains")
 print("   - Real routes and pricing\n")
 
-USER = os.environ.get("SUPABASE_USER")
-PASSWORD = os.environ.get("SUPABASE_PASSWORD")
-HOST = os.environ.get("SUPABASE_HOST")
-PORT = os.environ.get("SUPABASE_PORT")
-DBNAME = os.environ.get("SUPABASE_DATABASE")
+USER = "postgres"
+PASSWORD = "password"
+HOST = "helium"
+PORT = "5432"
+DBNAME = "heliumdb"
 
-if not all([USER, PASSWORD, HOST, PORT, DBNAME]):
-    print("ERROR: Missing Supabase credentials in environment variables!")
-    print("Required: SUPABASE_USER, SUPABASE_PASSWORD, SUPABASE_HOST, SUPABASE_PORT, SUPABASE_DATABASE")
-    sys.exit(1)
-
-DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=disable"
 
 print("Connecting to Supabase database...")
 try:

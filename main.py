@@ -298,8 +298,8 @@ if __name__ == '__main__':
     Note: In production, use gunicorn or another WSGI server instead
     """
     # Get environment configuration
-    flask_env = os.environ.get('FLASK_ENV', 'development')
-    debug_mode = (flask_env != 'production')
+    flask_env = 'development'
+    debug_mode = True
     
     # Start development server on all interfaces, port 5000
     app.run(host='0.0.0.0', port=5000, debug=debug_mode)
