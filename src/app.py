@@ -27,16 +27,16 @@ if not app.secret_key:
         logging.warning("Using generated secret key for development. Set SESSION_SECRET for production!")
 
 # Database configuration - PostgreSQL only
-# Database connection parameters
-USER = "postgres"
-PASSWORD = "Htnameh509h#"
-HOST = "db.mapkjzlvyeddjwfkrhud.supabase.co"
-PORT = "5432"
-DBNAME = "postgres"
+# Use DATABASE_URL from environment variables
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    raise RuntimeError("DATABASE_URL environment variable is required")
 
-# Construct the SQLAlchemy connection string
-from urllib.parse import quote_plus
-database_url = f"postgresql+psycopg2://{USER}:{quote_plus(PASSWORD)}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+# Ensure we're using the psycopg2 dialect
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql+psycopg2://', 1)
+elif database_url.startswith('postgresql://'):
+    database_url = database_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
 
 # Configure SQLAlchemy with PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
@@ -45,7 +45,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
 }
 
-logging.info("Using PostgreSQL database")
+logging.info("Using PostgreSQL database from DATABASE_URL")
 
 
 # Security settings - production ready
