@@ -22,10 +22,10 @@ app.secret_key = "ETXad0uTaE4NsBiJGjVjXAK/BYda9Qw/lec2PygBma3WGhQpv8VtBsSMoFrSXH
 
 # Database configuration - Fetch from environment variables
 USER = os.getenv("user", "postgres")
-PASSWORD = os.getenv("password", "password")
-HOST = os.getenv("host", "helium")
+PASSWORD = os.getenv("password", "Railserve123#")
+HOST = os.getenv("host", "db.nswfyjdpesymrlsosbzg.supabase.co")
 PORT = os.getenv("port", "5432")
-DBNAME = os.getenv("dbname", "heliumdb")
+DBNAME = os.getenv("dbname", "postgres")
 
 # Construct the database URL
 database_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
