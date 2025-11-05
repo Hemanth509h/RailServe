@@ -6,16 +6,16 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Database configuration - Supabase PostgreSQL
-USER = os.environ.get("user", "postgres")
+# Database configuration - Supabase PostgreSQL with Session Pooler (IPv4 compatible)
+USER = os.environ.get("user", "postgres.nswfyjdpesymrlsosbzg")
 PASSWORD = os.environ.get("SUPABASE_PASSWORD")
-HOST = os.environ.get("host", "db.nswfyjdpesymrlsosbzg.supabase.co")
-PORT = os.environ.get("port", "5432")
+HOST = os.environ.get("host", "aws-0-us-east-1.pooler.supabase.com")
+PORT = os.environ.get("port", "6543")
 DBNAME = os.environ.get("dbname", "postgres")
 
 if PASSWORD:
-    database_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
-    print(f"Using Supabase PostgreSQL database at {HOST}")
+    database_url = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
+    print(f"Using Supabase PostgreSQL database (Session Pooler) at {HOST}")
 else:
     database_url = 'sqlite:///railway.db'
     print("SUPABASE_PASSWORD not set, falling back to SQLite")
@@ -25,6 +25,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
     'pool_recycle': 300,
+    'poolclass': None,
 }
 app.secret_key = os.environ.get('SECRET_KEY', 'database-api-secret-key-2025')
 
