@@ -65,7 +65,7 @@ def create_train():
     db.session.commit()
     return jsonify({'id': train.id}), 201
 
-@bp.route('/<int:train_id>', methods='PUT'])
+@bp.route('/<int:train_id>', methods=['PUT'])
 def update_train(train_id):
     train = Train.query.get_or_404(train_id)
     data = request.json
