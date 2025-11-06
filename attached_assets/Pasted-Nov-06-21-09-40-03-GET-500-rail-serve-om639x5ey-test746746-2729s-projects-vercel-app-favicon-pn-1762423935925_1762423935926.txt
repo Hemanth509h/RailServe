@@ -1,0 +1,66 @@
+Nov 06 21:09:40.03
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.png
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:35.91
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.png
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:32.80
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.png
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:30.72
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.ico
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:26.72
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.ico
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:23.75
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.ico
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:21.63
+GET
+---
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:09:18.56
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:08:34.73
+GET
+---
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.ico
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:08:34.46
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/favicon.ico
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Nov 06 21:08:32.55
+GET
+500
+rail-serve-om639x5ey-test746746-2729s-projects.vercel.app
+/
+Python process exited with exit status: 1. The logs above can help with debugging the issue.
