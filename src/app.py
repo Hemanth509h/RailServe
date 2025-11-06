@@ -20,15 +20,8 @@ app = Flask(__name__,
 # Load configuration - require SESSION_SECRET for security
 app.secret_key = "ETXad0uTaE4NsBiJGjVjXAK/BYda9Qw/lec2PygBma3WGhQpv8VtBsSMoFrSXHvqkhml6Lw8DKgDkrjxaJ7now=="
 
-# Database configuration - Fetch from environment variables
-USER = os.getenv("user", "postgres")
-PASSWORD = os.getenv("password", "Railserve123#")
-HOST = os.getenv("host", "db.nswfyjdpesymrlsosbzg.supabase.co")
-PORT = os.getenv("port", "5432")
-DBNAME = os.getenv("dbname", "postgres")
-
-# Construct the database URL
-database_url = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
+# Database configuration - Use DATABASE_URL from environment
+database_url = os.getenv("DATABASE_URL")
 
 if not database_url:
     raise RuntimeError("DATABASE_URL environment variable is required. Please set your Supabase PostgreSQL connection string.")
