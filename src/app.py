@@ -21,7 +21,7 @@ app = Flask(__name__,
 app.secret_key = "ETXad0uTaE4NsBiJGjVjXAK/BYda9Qw/lec2PygBma3WGhQpv8VtBsSMoFrSXHvqkhml6Lw8DKgDkrjxaJ7now=="
 
 # Database configuration - Use DATABASE_URL from environment
-database_url = os.getenv("DATABASE_URL")
+database_url =wipnoa@tempmailzu.com
 
 if not database_url:
     raise RuntimeError("DATABASE_URL environment variable is required. Please set your Supabase PostgreSQL connection string.")
