@@ -1,20 +1,11 @@
 {
-  "version": 2,
-  "name": "railserve",
-  "builds": [
+  "rewrites": [
     {
-      "src": "main.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "main.py"
+      "source": "/(.*)",
+      "destination": "/api/index"
     }
   ],
   "env": {
     "FLASK_ENV": "production"
-  },
-  "regions": ["iad1"]
+  }
 }
