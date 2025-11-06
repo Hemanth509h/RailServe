@@ -1,3 +1,4 @@
+import os
 import sys
 import requests
 import json
@@ -17,13 +18,14 @@ print("   - 1000+ railway stations")
 print("   - 1250+ trains")
 print("   - Real routes and pricing\n")
 
-USER = "postgres.nswfyjdpesymrlsosbzg"
-PASSWORD = "Railserve%23"
-HOST = "aws-1-ap-southeast-1.pooler.supabase.com"
-PORT = "5432"
-DBNAME = "postgres"
+USER = os.getenv("user", "postgres")
+PASSWORD = os.getenv("password", "Railserve123#")
+HOST = os.getenv("host", "db.nswfyjdpesymrlsosbzg.supabase.co")
+PORT = os.getenv("port", "5432")
+DBNAME = os.getenv("dbname", "postgres")
 
-DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
+# Construct the database URL
+DATABASE_URL = f"postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}"
 
 print("Connecting to Supabase database...")
 try:
@@ -38,23 +40,7 @@ print("STEP 1: Dropping all existing tables...")
 print("-" * 80)
 
 with engine.connect() as connection:
-    connection.execute(text("DROP TABLE IF EXISTS pnr_status_tracking CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS tatkal_override CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS notification_preferences CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS loyalty_program CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS chart_preparation CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS seat_availability CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS train_status CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS refund_request CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS tatkal_time_slot CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS passenger CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS waitlist CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS payment CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS booking CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS train_route CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS train CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS station CASCADE"))
-    connection.execute(text("DROP TABLE IF EXISTS user CASCADE"))
+   
     connection.commit()
     print("✓ All tables dropped successfully\n")
 
