@@ -3,23 +3,37 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import check_password_hash, generate_password_hash
 from .models import User
 from .database import db
+from .validators import FormValidator
 import secrets
 from datetime import datetime, timedelta
+import re
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """User login"""
+    """User login with comprehensive validation"""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = FormValidator.sanitize_input(request.form.get('username', ''))
+        password = request.form.get('password', '')
         
+        # COMPREHENSIVE LOGIN VALIDATION
         if not username or not password:
-            flash('Please enter username and password', 'error')
+            flash('Both username and password are required', 'error')
+            return render_template('login.html')
+        
+        # Validate username format
+        is_valid, error_msg = FormValidator.validate_username(username)
+        if not is_valid:
+            flash('Invalid username or password', 'error')  # Generic message for security
+            return render_template('login.html')
+        
+        # Validate password length (basic check without revealing requirements)
+        if len(password) < 3 or len(password) > 128:
+            flash('Invalid username or password', 'error')
             return render_template('login.html')
         
         user = User.query.filter_by(username=username).first()
@@ -46,57 +60,84 @@ def login():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    """User registration"""
+    """User registration with comprehensive validation"""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        username = FormValidator.sanitize_input(request.form.get('username', ''))
+        email = FormValidator.sanitize_input(request.form.get('email', ''))
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        phone = FormValidator.sanitize_input(request.form.get('phone', ''))
         
-        # Validation
-        if not all([username, email, password, confirm_password]):
-            flash('Please fill all fields', 'error')
+        # COMPREHENSIVE REGISTRATION VALIDATION
+        
+        # 1. Check all required fields
+        is_valid, error_msg = FormValidator.validate_required_fields(
+            {'username': username, 'email': email, 'password': password, 'confirm_password': confirm_password},
+            ['username', 'email', 'password', 'confirm_password']
+        )
+        if not is_valid:
+            flash(error_msg or 'Please fill in all required fields', 'error')
             return render_template('register.html')
         
-        if password != confirm_password:
-            flash('Passwords do not match', 'error')
+        # 2. Validate username
+        is_valid, error_msg = FormValidator.validate_username(username)
+        if not is_valid:
+            flash(error_msg or 'Invalid username', 'error')
             return render_template('register.html')
         
-        if password and len(password) < 8:
-            flash('Password must be at least 8 characters with letters and numbers', 'error')
+        # 3. Validate email
+        is_valid, error_msg, normalized_email = FormValidator.validate_email_address(email)
+        if not is_valid:
+            flash(error_msg or 'Invalid email address', 'error')
             return render_template('register.html')
         
-        # Enhanced password policy
-        import re
-        if password and not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$', password):
-            flash('Password must contain at least 8 characters including letters and numbers', 'error')
+        # 4. Validate password
+        is_valid, error_msg = FormValidator.validate_password(password, confirm_password)
+        if not is_valid:
+            flash(error_msg or 'Invalid password', 'error')
             return render_template('register.html')
         
-        # Check if user already exists
+        # 5. Validate phone (optional)
+        if phone:
+            is_valid, error_msg = FormValidator.validate_phone_number(phone, required=False)
+            if not is_valid:
+                flash(error_msg or 'Invalid phone number', 'error')
+                return render_template('register.html')
+        
+        # 6. Check for existing username
         if User.query.filter_by(username=username).first():
-            flash('Username already exists', 'error')
+            flash('Username already exists. Please choose a different username.', 'error')
             return render_template('register.html')
         
-        if User.query.filter_by(email=email).first():
-            flash('Email already exists', 'error')
+        # 7. Check for existing email
+        if User.query.filter_by(email=normalized_email or email).first():
+            flash('Email address already registered. Please use a different email or login.', 'error')
             return render_template('register.html')
         
         # Create new user
         user = User(
             username=username,
-            email=email,
-            password_hash=generate_password_hash(password or ''),
+            email=normalized_email or email,
+            password_hash=generate_password_hash(password),
             role='user'
         )
         
-        db.session.add(user)
-        db.session.commit()
+        # Add phone if User model has phone field (optional - comment out if not in model)
+        # if hasattr(user, 'phone') and phone:
+        #     user.phone = phone
         
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('auth.login'))
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('Registration successful! Please log in with your credentials.', 'success')
+            return redirect(url_for('auth.login'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Registration failed. Please try again.', 'error')
+            return render_template('register.html')
     
     return render_template('register.html')
 

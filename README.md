@@ -70,20 +70,23 @@ Open http://localhost:5000
 
 - **Backend:** Flask 3.1+, SQLAlchemy 2.0+, Gunicorn
 - **Database:** Supabase PostgreSQL (managed, scalable)
-- **Frontend:** Jinja2, HTML5/CSS3, JavaScript
+- **Frontend:** Jinja2, HTML5/CSS3, Vanilla JavaScript
+- **Validation:** Dual-Layer (JavaScript + Python) - See [VALIDATION_GUIDE.md](VALIDATION_GUIDE.md)
 - **PDF:** ReportLab, QRCode
-- **Deployment:** Vercel Serverless
+- **Deployment:** Render (Production), Replit (Development)
 
 ---
 
 ## 📚 Documentation
 
-All documentation is in the `docs/` folder:
+### For Team Collaboration
+- **[TEAM_DIVISION.md](TEAM_DIVISION.md)** - ⭐ 5-member team structure and responsibilities
+- **[VALIDATION_GUIDE.md](VALIDATION_GUIDE.md)** - ⭐ Dual-layer validation architecture
+- **[replit.md](replit.md)** - Technical implementation details
 
-### Getting Started
+### Getting Started (See docs/ folder)
 - **[Quick Start Guide](docs/README_PROJECT.md)** - Complete setup instructions
 - **[Developer Onboarding](docs/DEVELOPER_ONBOARDING.md)** - For new team members
-- **[Team Assignment](docs/TEAM_ASSIGNMENT.md)** - Roles and responsibilities
 
 ### Architecture & Design
 - **[System Architecture](docs/ARCHITECTURE.md)** - Complete system design
@@ -93,43 +96,46 @@ All documentation is in the `docs/` folder:
 
 ### Database & Deployment
 - **[Database Schema](docs/DATABASE_SCHEMA.md)** - All tables and relationships
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Vercel deployment
-- **[Project Overview](docs/PROJECT_OVERVIEW.md)** - High-level overview
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Deployment instructions
 
-**→ [Complete Documentation Index](docs/INDEX.md)**
+**→ [Complete Documentation Index](docs/INDEX.md)** (if exists)
 
 ---
 
 ## 🎯 For Team Members
 
-This project is designed for a **6-member team** (3 frontend, 3 backend):
+This project is designed for a **5-member team** (3 frontend, 2 backend):
 
-1. **Frontend Member 1:** Landing page, search, PNR enquiry
-2. **Frontend Member 2:** Booking flow, payments, user profile
-3. **Frontend Member 3:** Admin dashboard and reports
-4. **Backend Member 1:** Authentication and user management
-5. **Backend Member 2:** Booking engine and seat allocation
-6. **Backend Member 3:** Data management and system operations
+1. **Frontend Member 1:** Homepage, Layout, Navigation, PNR Enquiry
+2. **Frontend Member 2:** Booking Flow, Forms, Client-Side Validation
+3. **Frontend Member 3:** Admin Dashboard, Analytics, Reports
+4. **Backend Member 1:** Authentication, User Management, Core Validation
+5. **Backend Member 2:** Booking Engine, Payments, PDF Generation
 
-**→ See [TEAM_ASSIGNMENT.md](docs/TEAM_ASSIGNMENT.md) for detailed assignments**
+**→ See [TEAM_DIVISION.md](TEAM_DIVISION.md) for detailed assignments and workflows**
 
 ---
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+### Render (Production)
+
+**Configuration:** See `render.yaml` for deployment settings
 
 ```bash
-# Deploy to Vercel
-vercel
+# Render automatically deploys from GitHub
+# 1. Connect your repository to Render
+# 2. Render detects render.yaml
+# 3. Set environment variables:
+#    - DATABASE_URL (Supabase connection)
+#    - SECRET_KEY (Flask secret)
+# 4. Deploy automatically
 ```
 
-Set environment variables in Vercel dashboard:
-- `DATABASE_URL` - Supabase PostgreSQL connection string
-- `SESSION_SECRET` - Random secret key
-- `FLASK_ENV` - Set to `production`
+**Build Command:** `pip install -r requirements.txt`  
+**Start Command:** `gunicorn main:app`
 
-**→ See [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) for details**
+**→ See [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) for details**
 
 ---
 
