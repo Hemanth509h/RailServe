@@ -458,10 +458,39 @@ vercel
 - 12,479 route stops with realistic routes
 - Admin user setup
 
-✅ **Vercel Deployment Ready**
-- `vercel.json` configured
-- Environment variable management
-- Production-ready settings
+✅ **Render Deployment Configuration**
+- Removed Vercel configuration (vercel.json, api/)
+- Added render.yaml for Render deployment
+- Configured proper start command: `gunicorn main:app`
+- Environment variables managed via Render dashboard
+
+✅ **Comprehensive Booking Form Validation** (November 7, 2025)
+- **Backend Validation** (src/booking.py):
+  - All required fields validation
+  - Station uniqueness check (from ≠ to)
+  - Station existence and active status verification
+  - Journey date format and range validation (past dates rejected, 120 days max advance)
+  - Passenger count validation (1-6 passengers)
+  - Coach class validation (AC1, AC2, AC3, SL, 2S, CC)
+  - Booking type validation (general, tatkal)
+  - Quota validation (8 valid quota types)
+  - Passenger details validation:
+    * Name: 2-100 characters, letters/spaces/dots/hyphens only
+    * Age: 1-120 years
+    * Gender: Male, Female, Other
+    * ID proof type: Aadhar, PAN, Passport, Voter ID, Driving License
+    * ID proof number: 5-20 characters
+
+- **Frontend Validation** (templates/book_ticket.html):
+  - Real-time field validation with visual feedback
+  - Error toast system showing all validation errors
+  - Inline error messages below each field
+  - Field highlighting (red border for errors, green for success)
+  - Smart button state management
+  - Automatic passenger form generation with validation
+  - Tatkal booking flow with special warnings
+  - Live fare calculation
+  - Form submission prevention when errors exist
 
 ## Design Decisions
 

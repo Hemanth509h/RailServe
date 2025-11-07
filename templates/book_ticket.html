@@ -112,6 +112,35 @@
     margin-top: 0.5rem;
 }
 
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: none;
+    font-weight: 500;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.form-group.has-error input,
+.form-group.has-error select {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.form-group.has-success input,
+.form-group.has-success select {
+    border-color: #48bb78;
+    background-color: #f0fff4;
+}
+
+.required-indicator {
+    color: #dc3545;
+    margin-left: 0.25rem;
+}
+
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

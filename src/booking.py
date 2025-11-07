@@ -63,30 +63,116 @@ def book_ticket_post(train_id):
         # If booking_type is tatkal but quota is not, force quota to tatkal
         quota = 'tatkal'
     
-    # Backend validation (frontend should handle most of this)
-    if not all([from_station_id, to_station_id, journey_date, passengers, coach_class]):
-        flash('Please fill all fields including coach class', 'error')
+    # COMPREHENSIVE BACKEND VALIDATION FOR ALL FIELDS
+    
+    # 1. Validate required fields are present
+    if not all([from_station_id, to_station_id, journey_date, passengers, coach_class, booking_type, quota]):
+        flash('All fields are required. Please fill in all booking details.', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
-    # Validate coach class
+    # 2. Validate from and to stations are different
+    if from_station_id == to_station_id:
+        flash('Departure and destination stations cannot be the same', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # 3. Validate stations exist and are active
+    from_station = Station.query.filter_by(id=from_station_id, active=True).first()
+    to_station = Station.query.filter_by(id=to_station_id, active=True).first()
+    
+    if not from_station or not to_station:
+        flash('Invalid station selection. Please select valid stations.', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # 4. Validate journey date format and range
+    try:
+        journey_date = datetime.strptime(journey_date or '', '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date format. Please select a valid journey date.', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # Validate date is not in the past
+    if journey_date < date.today():
+        flash('Journey date cannot be in the past. Please select a future date.', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # Validate date is within booking window (120 days advance)
+    max_advance_days = 120
+    if (journey_date - date.today()).days > max_advance_days:
+        flash(f'Journey date cannot be more than {max_advance_days} days in advance', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # 5. Validate passenger count
+    if not passengers or passengers < 1 or passengers > 6:
+        flash('Passenger count must be between 1 and 6', 'error')
+        return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # 6. Validate coach class
     valid_classes = ['AC1', 'AC2', 'AC3', 'SL', '2S', 'CC']
     if coach_class not in valid_classes:
         flash('Invalid coach class selected', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
-    # Validate passenger count
-    if not passengers or passengers < 1 or passengers > 6:
-        flash('Passenger count must be between 1 and 6', 'error')
+    # 7. Validate booking type
+    valid_booking_types = ['general', 'tatkal']
+    if booking_type not in valid_booking_types:
+        flash('Invalid booking type selected', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
     
-    # Passenger details validation - allow booking to proceed without complete passenger details
-    # Details can be completed later in the booking process
-    
-    try:
-        journey_date = datetime.strptime(journey_date or '', '%Y-%m-%d').date()
-    except ValueError:
-        flash('Invalid date format', 'error')
+    # 8. Validate quota
+    valid_quotas = ['general', 'ladies', 'senior', 'disability', 'tatkal', 'premium_tatkal', 'lower_berth', 'defence']
+    if quota not in valid_quotas:
+        flash('Invalid quota selected', 'error')
         return redirect(url_for('booking.book_ticket', train_id=train_id))
+    
+    # 9. Validate passenger details if provided
+    for i in range(passengers):
+        passenger_name = request.form.get(f'passenger_{i}_name', '').strip()
+        passenger_age = request.form.get(f'passenger_{i}_age', type=int)
+        passenger_gender = request.form.get(f'passenger_{i}_gender', '')
+        passenger_id_type = request.form.get(f'passenger_{i}_id_type', '')
+        passenger_id_number = request.form.get(f'passenger_{i}_id_number', '').strip()
+        
+        # Validate name if provided
+        if passenger_name:
+            if len(passenger_name) < 2:
+                flash(f'Passenger {i+1}: Name must be at least 2 characters long', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+            if len(passenger_name) > 100:
+                flash(f'Passenger {i+1}: Name cannot exceed 100 characters', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+            # Check for valid name characters (letters, spaces, dots, hyphens)
+            if not all(c.isalpha() or c.isspace() or c in '.-' for c in passenger_name):
+                flash(f'Passenger {i+1}: Name contains invalid characters. Only letters, spaces, dots and hyphens allowed', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+        
+        # Validate age if provided
+        if passenger_age is not None:
+            if passenger_age < 1 or passenger_age > 120:
+                flash(f'Passenger {i+1}: Age must be between 1 and 120 years', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+        
+        # Validate gender if provided
+        if passenger_gender:
+            valid_genders = ['Male', 'Female', 'Other']
+            if passenger_gender not in valid_genders:
+                flash(f'Passenger {i+1}: Invalid gender selection', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+        
+        # Validate ID proof type if provided
+        if passenger_id_type:
+            valid_id_types = ['Aadhar', 'PAN', 'Passport', 'Voter ID', 'Driving License']
+            if passenger_id_type not in valid_id_types:
+                flash(f'Passenger {i+1}: Invalid ID proof type', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+        
+        # Validate ID number format if provided
+        if passenger_id_number:
+            if len(passenger_id_number) < 5:
+                flash(f'Passenger {i+1}: ID proof number must be at least 5 characters', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
+            if len(passenger_id_number) > 20:
+                flash(f'Passenger {i+1}: ID proof number cannot exceed 20 characters', 'error')
+                return redirect(url_for('booking.book_ticket', train_id=train_id))
     
     # Process booking with proper transaction handling
     try:
