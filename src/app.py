@@ -13,9 +13,10 @@ logging.basicConfig(level=log_level)
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
-# Create the app with correct template path (no static folder needed - all inline)
+# Create the app with correct template and static paths
 app = Flask(__name__, 
-            template_folder='../templates')
+            template_folder='../templates',
+            static_folder='../static')
 
 # Load configuration - require SESSION_SECRET for security
 app.secret_key = "ETXad0uTaE4NsBiJGjVjXAK/BYda9Qw/lec2PygBma3WGhQpv8VtBsSMoFrSXHvqkhml6Lw8DKgDkrjxaJ7now=="
