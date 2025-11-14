@@ -578,7 +578,12 @@
             </div>
             
             <div class="action-buttons">
-                <a href="{{ url_for('pnr_enquiry') }}" class="btn btn-secondary">
+                {% if booking.status in ['confirmed', 'rac'] %}
+                <a href="{{ url_for('pdf.download_ticket', booking_id=booking.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-download"></i> Download Ticket (PDF)
+                </a>
+                {% endif %}
+                <a href="{{ url_for('pnr_enquiry') }}" class="btn btn-primary">
                     <i class="fas fa-search"></i> Check PNR Status
                 </a>
                 <a href="{{ url_for('auth.profile') }}" class="btn btn-primary">
