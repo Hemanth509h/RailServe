@@ -7,6 +7,7 @@ from .utils import calculate_fare, check_seat_availability, is_booking_open, che
 from .seat_allocation import SeatAllocator
 from .queue_manager import WaitlistManager
 from .route_graph import get_route_graph
+from .validators import validate_id_proof, ID_VALIDATORS
 import random
 import json
 
@@ -158,21 +159,18 @@ def book_ticket_post(train_id):
                 flash(f'Passenger {i+1}: Invalid gender selection', 'error')
                 return redirect(url_for('booking.book_ticket', train_id=train_id))
         
-        # Validate ID proof type if provided
-        if passenger_id_type:
-            valid_id_types = ['Aadhar', 'PAN', 'Passport', 'Voter ID', 'Driving License']
-            if passenger_id_type not in valid_id_types:
-                flash(f'Passenger {i+1}: Invalid ID proof type', 'error')
+        # Validate ID proof using comprehensive validation
+        if passenger_id_type and passenger_id_number:
+            is_valid, error_msg, _ = validate_id_proof(passenger_id_type, passenger_id_number)
+            if not is_valid:
+                flash(f'Passenger {i+1}: {error_msg}', 'error')
                 return redirect(url_for('booking.book_ticket', train_id=train_id))
-        
-        # Validate ID number format if provided
-        if passenger_id_number:
-            if len(passenger_id_number) < 5:
-                flash(f'Passenger {i+1}: ID proof number must be at least 5 characters', 'error')
-                return redirect(url_for('booking.book_ticket', train_id=train_id))
-            if len(passenger_id_number) > 20:
-                flash(f'Passenger {i+1}: ID proof number cannot exceed 20 characters', 'error')
-                return redirect(url_for('booking.book_ticket', train_id=train_id))
+        elif passenger_id_type and not passenger_id_number:
+            flash(f'Passenger {i+1}: ID proof number is required when ID type is selected', 'error')
+            return redirect(url_for('booking.book_ticket', train_id=train_id))
+        elif not passenger_id_type and passenger_id_number:
+            flash(f'Passenger {i+1}: Please select an ID proof type', 'error')
+            return redirect(url_for('booking.book_ticket', train_id=train_id))
     
     # Process booking with proper transaction handling
     try:

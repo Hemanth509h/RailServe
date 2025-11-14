@@ -265,3 +265,90 @@ class FormValidator:
         text = text.replace('\x00', '')
         
         return text
+
+
+# ID Proof Validation Configuration
+ID_VALIDATORS = {
+    'Aadhar': {
+        'pattern': r'^\d{12}$',
+        'min_length': 12,
+        'max_length': 12,
+        'normalize': lambda x: re.sub(r'\s+', '', x),
+        'description': '12-digit Aadhar number',
+        'example': '123456789012'
+    },
+    'PAN': {
+        'pattern': r'^[A-Z]{5}\d{4}[A-Z]$',
+        'min_length': 10,
+        'max_length': 10,
+        'normalize': lambda x: x.strip().upper().replace(' ', ''),
+        'description': 'PAN format: 5 letters, 4 digits, 1 letter',
+        'example': 'ABCDE1234F'
+    },
+    'Passport': {
+        'pattern': r'^[A-Z]\d{7}$',
+        'min_length': 8,
+        'max_length': 8,
+        'normalize': lambda x: x.strip().upper().replace(' ', ''),
+        'description': '1 letter followed by 7 digits',
+        'example': 'A1234567'
+    },
+    'Voter ID': {
+        'pattern': r'^[A-Z]{3}\d{7}$',
+        'min_length': 10,
+        'max_length': 10,
+        'normalize': lambda x: x.strip().upper().replace(' ', ''),
+        'description': '3 letters followed by 7 digits',
+        'example': 'ABC1234567'
+    },
+    'Driving License': {
+        'pattern': r'^[A-Z]{2}\d{13}$',
+        'min_length': 15,
+        'max_length': 16,
+        'normalize': lambda x: x.strip().upper().replace(' ', '').replace('-', ''),
+        'description': 'State code (2 letters) followed by 13 digits',
+        'example': 'DL1234567890123'
+    }
+}
+
+
+def validate_id_proof(id_type, id_number):
+    """
+    Validate ID proof number based on type
+    
+    Args:
+        id_type: Type of ID (Aadhar, PAN, Passport, etc.)
+        id_number: ID number to validate
+        
+    Returns:
+        tuple: (is_valid, error_message, normalized_value)
+    """
+    if not id_type:
+        return False, "Please select an ID proof type", None
+    
+    if not id_number or not id_number.strip():
+        return False, f"Please enter your {id_type} number", None
+    
+    if id_type not in ID_VALIDATORS:
+        return False, f"Invalid ID proof type: {id_type}", None
+    
+    validator = ID_VALIDATORS[id_type]
+    
+    # Normalize the input
+    try:
+        normalized = validator['normalize'](id_number)
+    except Exception:
+        return False, f"Invalid {id_type} format", None
+    
+    # Check length
+    if len(normalized) < validator['min_length']:
+        return False, f"{id_type} must be at least {validator['min_length']} characters. {validator['description']}", None
+    
+    if len(normalized) > validator['max_length']:
+        return False, f"{id_type} cannot exceed {validator['max_length']} characters. {validator['description']}", None
+    
+    # Validate pattern
+    if not re.match(validator['pattern'], normalized):
+        return False, f"Invalid {id_type} format. {validator['description']}. Example: {validator['example']}", None
+    
+    return True, None, normalized

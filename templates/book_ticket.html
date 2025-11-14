@@ -820,6 +820,52 @@
                     if (!genderField || !genderField.value) {
                         errors.push(`Please select gender for Passenger ${i + 1}`);
                     }
+                    
+                    // Validate ID proof fields
+                    const idTypeField = document.getElementById(`passenger_${i}_id_type`);
+                    const idNumberField = document.getElementById(`passenger_${i}_id_number`);
+                    
+                    if (idTypeField && idTypeField.value && (!idNumberField || !idNumberField.value.trim())) {
+                        errors.push(`Please enter ID proof number for Passenger ${i + 1}`);
+                    }
+                    
+                    if (idNumberField && idNumberField.value.trim() && (!idTypeField || !idTypeField.value)) {
+                        errors.push(`Please select ID proof type for Passenger ${i + 1}`);
+                    }
+                    
+                    // Basic format validation for ID proof
+                    if (idTypeField && idTypeField.value && idNumberField && idNumberField.value.trim()) {
+                        const idType = idTypeField.value;
+                        const idNumber = idNumberField.value.trim().replace(/\s+/g, '');
+                        
+                        switch(idType) {
+                            case 'Aadhar':
+                                if (!/^\d{12}$/.test(idNumber)) {
+                                    errors.push(`Passenger ${i + 1}: Aadhar must be 12 digits`);
+                                }
+                                break;
+                            case 'PAN':
+                                if (!/^[A-Z]{5}\d{4}[A-Z]$/.test(idNumber.toUpperCase())) {
+                                    errors.push(`Passenger ${i + 1}: PAN format should be AAAAA9999A`);
+                                }
+                                break;
+                            case 'Passport':
+                                if (!/^[A-Z]\d{7}$/.test(idNumber.toUpperCase())) {
+                                    errors.push(`Passenger ${i + 1}: Passport should be 1 letter + 7 digits`);
+                                }
+                                break;
+                            case 'Voter ID':
+                                if (!/^[A-Z]{3}\d{7}$/.test(idNumber.toUpperCase())) {
+                                    errors.push(`Passenger ${i + 1}: Voter ID should be 3 letters + 7 digits`);
+                                }
+                                break;
+                            case 'Driving License':
+                                if (!/^[A-Z]{2}\d{13}$/.test(idNumber.toUpperCase().replace(/-/g, ''))) {
+                                    errors.push(`Passenger ${i + 1}: Driving License should be 2 letters + 13 digits`);
+                                }
+                                break;
+                        }
+                    }
                 }
             }
         }
