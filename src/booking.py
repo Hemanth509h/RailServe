@@ -205,8 +205,8 @@ def book_ticket_post(train_id):
             flash('Booking is closed - chart preparation has been completed for this train', 'error')
             return redirect(url_for('booking.book_ticket', train_id=train_id))
         
-        # Validate Tatkal booking window with coach class
-        if booking_type == 'tatkal' and not check_tatkal_availability(journey_date, coach_class):
+        # Validate Tatkal booking window with coach class and train_id for override check
+        if booking_type == 'tatkal' and not check_tatkal_availability(journey_date, coach_class, train_id):
             flash('Tatkal booking is not yet open for this date and coach class', 'error')
             return redirect(url_for('booking.book_ticket', train_id=train_id))
         

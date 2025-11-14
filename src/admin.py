@@ -843,28 +843,62 @@ def add_station_to_route(train_id):
     departure_time = request.form.get('departure_time')
     distance = request.form.get('distance', type=float)
     
-    # Convert time strings to time objects
+    # Validate required fields
+    if not station_id:
+        flash('Please select a station', 'error')
+        return redirect(url_for('admin.view_train_route', train_id=train_id))
+    
+    if sequence is None:
+        flash('Please provide a sequence number', 'error')
+        return redirect(url_for('admin.view_train_route', train_id=train_id))
+    
+    if distance is None:
+        flash('Please provide distance from start', 'error')
+        return redirect(url_for('admin.view_train_route', train_id=train_id))
+    
+    # Validate station exists
+    station = Station.query.get(station_id)
+    if not station:
+        flash('Invalid station selected', 'error')
+        return redirect(url_for('admin.view_train_route', train_id=train_id))
+    
+    # Check for duplicate sequence
+    existing_route = TrainRoute.query.filter_by(train_id=train_id, sequence=sequence).first()
+    if existing_route:
+        flash(f'Sequence {sequence} is already used for {existing_route.station.name}. Please use a different sequence number.', 'error')
+        return redirect(url_for('admin.view_train_route', train_id=train_id))
+    
+    # Convert time strings to time objects with error handling
     arrival_time_obj = None
     departure_time_obj = None
     
-    if arrival_time:
-        arrival_time_obj = datetime.strptime(arrival_time, '%H:%M').time()
-    if departure_time:
-        departure_time_obj = datetime.strptime(departure_time, '%H:%M').time()
+    try:
+        if arrival_time:
+            arrival_time_obj = datetime.strptime(arrival_time, '%H:%M').time()
+        if departure_time:
+            departure_time_obj = datetime.strptime(departure_time, '%H:%M').time()
+    except ValueError as e:
+        flash('Invalid time format. Please use HH:MM format (e.g., 14:30)', 'error')
+        return redirect(url_for('admin.view_train_route', train_id=train_id))
     
-    route = TrainRoute(
-        train_id=train_id,
-        station_id=station_id,
-        sequence=sequence,
-        arrival_time=arrival_time_obj,
-        departure_time=departure_time_obj,
-        distance_from_start=distance
-    )
+    try:
+        route = TrainRoute(
+            train_id=train_id,
+            station_id=station_id,
+            sequence=sequence,
+            arrival_time=arrival_time_obj,
+            departure_time=departure_time_obj,
+            distance_from_start=distance
+        )
+        
+        db.session.add(route)
+        db.session.commit()
+        
+        flash(f'Station {station.name} added to route at sequence {sequence} successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding station to route: {str(e)}', 'error')
     
-    db.session.add(route)
-    db.session.commit()
-    
-    flash('Station added to route successfully', 'success')
     return redirect(url_for('admin.view_train_route', train_id=train_id))
 
 @admin_bp.route('/seat-allocation')
